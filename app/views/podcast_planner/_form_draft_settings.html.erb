@@ -34,7 +34,7 @@
   <div class="container">
     <div class="row">
       <% feeds = @podcast.feeds.tab_order %>
-      <% defaults = feeds.filter_map { |f| f.id if f.default? || f.integration_type } %>
+      <% defaults = feeds.filter_map { |f| f.id if f.default? || f.integration_types.any? } %>
       <% data = {planner_target: "feedIds", action: "planner#setFeedIds"} %>
 
       <%= form.collection_check_boxes(:feed_ids, feeds, :id, :label, {checked: defaults}) do |b| %>

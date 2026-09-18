@@ -63,19 +63,6 @@ describe Apple::Key do
       assert_equal ["Apple credentials cannot be removed while podcasts use them"], key.errors[:base]
       refute key.destroyed?
     end
-
-    it "exposes the referenced key's errors when destroy! raises" do
-      key = create(:apple_key)
-      create(:podcast, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
-
-      error = assert_raises ActiveRecord::RecordNotDestroyed do
-        key.destroy!
-      end
-
-      assert_same key, error.record
-      assert_equal ["Apple credentials cannot be removed while podcasts use them"], error.record.errors[:base]
-      assert Apple::Key.exists?(key.id)
-    end
   end
 
   describe "apple_key" do

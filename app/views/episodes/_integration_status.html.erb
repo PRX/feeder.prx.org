@@ -1,0 +1,21 @@
+<div class="col-12 mt-4">
+  <h3 class="status-text fw-bold mb-2">
+    <% if local_assigns[:feed] %>
+      <%= link_to label, podcast_feed_path(feed.podcast, feed) %>
+    <% else %>
+      <%= label %>
+    <% end %>
+  </h3>
+  <p class="status-text">
+    <strong>Status:</strong>
+    <span class="badge rounded-pill prx-badge-<%= status %>">
+      <%= t("helpers.label.episode.media_statuses.#{status}") %>
+    </span>
+    <% if local_assigns[:updated_at] %>
+      <br>
+      <strong><%= t("episodes.form_status.last_updated") %></strong>
+      <br>
+      <%= local_time_ago(updated_at) %>
+    <% end %>
+  </p>
+</div>

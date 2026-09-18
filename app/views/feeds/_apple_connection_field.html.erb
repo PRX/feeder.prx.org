@@ -1,0 +1,20 @@
+<% if lookup_failed %>
+  <div class="alert alert-danger" role="alert"><%= t("feeds.form_apple_connection.show_lookup_failed") %></div>
+<% end %>
+
+<%# Keep the submitted selection while the disabled placeholder loads. %>
+<%= form.hidden_field :apple_connection, id: nil if loading %>
+<div class="form-floating input-group mb-3">
+  <% data = {} %>
+  <% if feed.apple_show_feed_binding&.delegated_delivery_config %>
+    <% data = {
+         confirm_field_target: "field",
+         confirm_with: t("feeds.form_apple_connection.confirm_replace"),
+         confirm_delete: t("feeds.form_apple_connection.confirm_remove")
+       } %>
+  <% end %>
+  <%= form.select :apple_connection, apple_connection_options(feed, options), {include_blank: true},
+    disabled: loading || !policy(feed).update?, data: data %>
+  <%= form.label :apple_connection %>
+  <%= field_help_text t("feeds.form_apple_connection.help.connection") %>
+</div>

@@ -298,6 +298,7 @@ describe PublishingPipelineState do
 
     describe "error!" do
       it 'sets the status to "error"' do
+        create(:apple_feed, podcast: podcast)
         pqi = nil
         PublishFeedJob.stub_any_instance(:save_file, nil) do
           PublishFeedJob.stub_any_instance(:publish_integration, ->(*args) { raise "error" }) do

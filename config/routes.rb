@@ -19,8 +19,8 @@ Rails.application.routes.draw do
       post "attach", on: :member
     end
     resources :feeds, except: [:edit] do
-      get "new_apple", on: :collection
       get "new_megaphone", on: :collection
+      resource :apple_connection, only: :show, controller: :feed_apple_connections
     end
     resources :episodes, only: [:index, :create, :new] do
       get "export", on: :collection

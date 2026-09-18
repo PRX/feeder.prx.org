@@ -24,14 +24,16 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.start!(podcast)
 
     # Publish each integration for each feed (e.g. apple, megaphone)
-    podcast.feeds.each { |feed| publish_integration(podcast, feed) }
+    podcast.feeds.each do |feed|
+      feed.integration_types.each { |integration| publish_integration(podcast, feed, integration) }
+    end
 
     # After integrations, publish RSS, if appropriate
     podcast.feeds.each { |feed| publish_rss(podcast, feed) }
 
     PublishingPipelineState.complete!(podcast)
   # Top-level error handling, capping the entire pipeline's error status
-  # All of the intermediate errors are handled in the publish_integration and publish_rss
+  # Intermediate errors are handled by publish_integration and publish_rss
   rescue Apple::RetryPublishingError
     # Terminal state: retry
     PublishingPipelineState.retry!(podcast)
@@ -44,34 +46,44 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.settle_remaining!(podcast)
   end
 
-  def publish_integration(podcast, feed)
-    return unless feed.publish_integration?
-    res = feed.publish_integration!
-    PublishingPipelineState.publish_integration!(podcast)
-    res
-  rescue Apple::AssetStateTimeoutError => e
-    # Apple timeout errors indicate the async publishing job is still in progress
-    # We always mark the integration as errored in the pipeline state
-    PublishingPipelineState.error_integration!(podcast)
+  def publish_integration(podcast, feed, integration)
+    return unless feed.publish_integration?(integration)
 
-    # Log at the error's specified level (INFO, WARN, or ERROR)
-    e.log_error!
+    config = feed.integration_config(integration)
+    context = {feed_id: feed.id, integration: integration}
+    tags = ["integration:#{integration}", "feed:#{feed.id}"]
 
-    if feed.config.sync_blocks_rss
-      # When sync_blocks_rss is enabled, Apple publishing must succeed before RSS
-      raise Apple::RetryPublishingError.new(e.message)
-    else
-      # When sync_blocks_rss is disabled, we allow RSS publishing to continue despite timeout
-      # The integration error is recorded in pipeline state but doesn't block RSS delivery
-      Rails.logger.info("Apple publishing timed out, continuing to RSS", {podcast_id: podcast.id})
+    Rails.logger.tagged(*tags) do
+      Rails.logger.info("Starting integration feed publish", context)
+      res = feed.publish_integration!(integration)
+      PublishingPipelineState.publish_integration!(podcast)
+      Rails.logger.info("Completed integration feed publish", context)
+      res
+    rescue Apple::AssetStateTimeoutError => e
+      # Apple timeout errors indicate the async publishing job is still in progress
+      # We always mark the integration as errored in the pipeline state
+      PublishingPipelineState.error_integration!(podcast)
+
+      # Log at the error's specified level (INFO, WARN, or ERROR)
+      e.log_error!
+
+      if config.sync_blocks_rss
+        # When sync_blocks_rss is enabled, Apple publishing must succeed before RSS
+        raise Apple::RetryPublishingError.new(e.message)
+      else
+        # When sync_blocks_rss is disabled, we allow RSS publishing to continue despite timeout
+        # The integration error is recorded in pipeline state but doesn't block RSS delivery
+        Rails.logger.info("Apple publishing timed out, continuing to RSS", context)
+      end
+    rescue => e
+      Rails.logger.error("Integration feed publish failed", context.merge(error: e))
+      # All other integration errors (network failures, API errors, etc.)
+      PublishingPipelineState.error_integration!(podcast)
+
+      # Re-raise the error if sync_blocks_rss is enabled, blocking RSS publishing
+      # Otherwise, swallow the error and allow RSS publishing to proceed
+      raise e if config.sync_blocks_rss
     end
-  rescue => e
-    # All other integration errors (network failures, API errors, etc.)
-    PublishingPipelineState.error_integration!(podcast)
-
-    # Re-raise the error if sync_blocks_rss is enabled, blocking RSS publishing
-    # Otherwise, swallow the error and allow RSS publishing to proceed
-    raise e if feed.config.sync_blocks_rss
   end
 
   def publish_rss(podcast, feed)

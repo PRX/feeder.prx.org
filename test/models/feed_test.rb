@@ -139,12 +139,13 @@ describe Feed do
   end
 
   describe "#integration_episode?" do
-    it "matches feed_episode? for feeds without integrations" do
+    it "excludes feeds without Apple delivery" do
       published = create(:episode, podcast: podcast, published_at: 1.hour.ago)
       scheduled = create(:episode, podcast: podcast, published_at: 1.hour.from_now)
 
-      assert feed1.integration_episode?(published)
-      refute feed1.integration_episode?(scheduled)
+      assert_empty feed1.integration_types
+      refute feed1.integration_episode?(published, :apple)
+      refute feed1.integration_episode?(scheduled, :apple)
     end
   end
 
@@ -356,8 +357,7 @@ describe Feed do
   end
 
   describe "#publish_to_apple?" do
-    it "returns false if the feed is not an Apple Subscription feed" do
-      refute_equal feed2.type, "Feeds::AppleSubscription"
+    it "returns false if the feed has no delegated-delivery config" do
       refute feed2.publish_to_apple?
     end
   end
