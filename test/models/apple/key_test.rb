@@ -67,8 +67,9 @@ describe Apple::Key do
     it "rejects destruction while a soft-deleted podcast references the key" do
       key = create(:apple_key)
       podcast = create(:podcast, title: "First deleted show", apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
-      podcast.destroy!
-      create(:podcast, title: "Second deleted show", apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}").destroy!
+      # Simulate a podcast deleted before the key-clearing callback existed.
+      podcast.update_column(:deleted_at, Time.current)
+      create(:podcast, title: "Second deleted show", apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}").update_column(:deleted_at, Time.current)
 
       assert_no_difference "Apple::Key.count" do
         refute key.destroy
@@ -107,7 +108,8 @@ describe Apple::Key do
       podcast = create(:podcast, apple_key: key, prx_account_uri: "/api/v1/accounts/#{key.account_id}")
       assert key.in_use?
 
-      podcast.destroy!
+      # Simulate a podcast deleted before the key-clearing callback existed.
+      podcast.update_column(:deleted_at, Time.current)
       assert key.reload.in_use?
     end
 

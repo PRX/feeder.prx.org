@@ -106,7 +106,8 @@ class AppleKeysControllerTest < ActionDispatch::IntegrationTest
   test "does not remove a credential selected by a soft deleted podcast" do
     key = create(:apple_key, account_id: 123)
     deleted_podcast = create(:podcast, title: "Deleted show", prx_account_uri: "/api/v1/accounts/123", apple_key: key)
-    deleted_podcast.destroy!
+    # Simulate a podcast deleted before the key-clearing callback existed.
+    deleted_podcast.update_column(:deleted_at, Time.current)
 
     assert_no_difference "Apple::Key.count" do
       delete podcast_apple_key_url(podcast, key)
