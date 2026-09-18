@@ -51,7 +51,7 @@ describe Uncut do
     end
   end
 
-  describe "#cut_contents" do
+  describe "#slice_contents" do
     let(:episode) { create(:episode, medium: "uncut", segment_count: 3) }
     let(:segs) { [[nil, 1], [2, 3], [3, nil]] }
     let(:uncut) { create(:uncut, episode: episode, status: "complete", segmentation: segs) }
@@ -81,6 +81,18 @@ describe Uncut do
       assert_equal segs + [[0.5, 1], [3.5, nil]], episode.contents.pluck(:segmentation)
       assert_equal [false, false, false, true, true], episode.contents.map(&:changed?)
       assert_equal [true, false, true, false, false], episode.contents.map(&:marked_for_destruction?)
+    end
+
+    describe "with video episodes" do
+      let(:episode) { create(:episode, medium: "video", segment_count: 3) }
+      let(:uncut) { create(:uncut_video, episode: episode, status: "complete", segmentation: segs) }
+
+      it "slices from the preview mp3" do
+        uncut.slice_contents!
+
+        assert_equal 3, episode.contents.size
+        assert_equal [uncut.preview_url], episode.contents.pluck(:original_url).uniq
+      end
     end
   end
 

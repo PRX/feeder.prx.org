@@ -22,11 +22,15 @@ class Uncut < MediaResource
   end
 
   def preview_href
-    if video? && status_complete?
+    if episode&.video? && status_complete?
       variant_url("preview.mp3")
     else
       super
     end
+  end
+
+  def preview_url
+    episode&.video? ? variant_url("preview.mp3") : url
   end
 
   def copy_media(force = false)
@@ -58,7 +62,11 @@ class Uncut < MediaResource
   def slice_contents
     if segmentation_ready?
       episode.media = segmentation.map do |seg|
-        Content.new(original_url: url, segmentation: seg)
+        if episode.video?
+          Content.new(original_url: preview_url, segmentation: seg)
+        else
+          Content.new(original_url: url, segmentation: seg)
+        end
       end
     end
   end
