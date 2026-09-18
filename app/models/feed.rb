@@ -77,19 +77,8 @@ class Feed < ApplicationRecord
     #   a la "where's my episode?" publish tracking
   end
 
-  def default_episode_feed?
-    default? || delegated_delivery_config.present?
-  end
-
   def serve_drafts
-    publish_to_apple?
-  end
-
-  def integration_episode(episode, integration)
-    case integration
-    when :apple then apple_episode(episode)
-    when :megaphone then megaphone_episode(episode) if is_a?(Feeds::MegaphoneFeed)
-    end
+    integration_types.any? { |integration| publish_integration?(integration) }
   end
 
   def sync_log(integration)

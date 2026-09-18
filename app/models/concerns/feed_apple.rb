@@ -69,19 +69,32 @@ module FeedApple
     valid? && persisted? && !!delegated_delivery_config&.publish_to_apple?
   end
 
-  def publish_to_apple!
-    delegated_delivery_config.build_publisher.publish! if publish_to_apple?
+  # Configured integrations, including those whose publishing is paused.
+  def integration_types
+    delegated_delivery_config.present? ? [:apple] : []
+  end
+
+  def integration_config(integration)
+    delegated_delivery_config if integration == :apple
+  end
+
+  def publish_integration?(integration)
+    integration == :apple && publish_to_apple?
+  end
+
+  def publish_integration!(integration)
+    delegated_delivery_config.build_publisher.publish! if publish_integration?(integration)
   end
 
   # Whether an episode is eligible for this feed's Apple delivery.
   # Apple can upload drafts beyond the rendered RSS window.
-  def apple_episode?(episode)
-    return false unless delegated_delivery_config
+  def integration_episode?(episode, integration)
+    return false unless integration == :apple && delegated_delivery_config
 
     if episode.published_by?(episode_offset_seconds.to_i)
       feed_episode?(episode)
     elsif episode.enclosure_ready?(true)
-      apple_draft_episodes.where(id: episode.id).exists?
+      integration_draft_episodes(integration).where(id: episode.id).exists?
     else
       false
     end
@@ -89,16 +102,16 @@ module FeedApple
 
   # The Apple facade for an episode. Apple state is scoped to a
   # show, so the facade is built from this feed's connection.
-  def apple_episode(episode)
-    return unless delegated_delivery_config
+  def integration_episode(episode, integration)
+    return unless integration == :apple && delegated_delivery_config
 
     show = delegated_delivery_config.build_show
     show.build_integration_episode(episode) if show.apple_id.present?
   end
 
   # Episodes Apple may upload before they are published.
-  def apple_draft_episodes
-    return episodes.none unless delegated_delivery_config
+  def integration_draft_episodes(integration)
+    return episodes.none unless integration == :apple && delegated_delivery_config
 
     episodes.where("episodes.published_at IS NULL OR episodes.published_at > ?", Time.now - episode_offset_seconds.to_i)
   end

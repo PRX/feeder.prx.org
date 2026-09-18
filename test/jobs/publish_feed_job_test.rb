@@ -144,7 +144,7 @@ describe PublishFeedJob do
           pub_item = PublishingQueueItem.create(podcast: podcast)
           assert job.null_publishing_item?(podcast, pub_item)
 
-          private_feed.stub(:publish_to_apple!, true) do
+          private_feed.stub(:publish_integration!, true) do
             assert_equal :null, job.perform(podcast, pub_item)
           end
 
@@ -158,7 +158,7 @@ describe PublishFeedJob do
           queue_item = PublishingPipelineState.start_pipeline!(podcast)
 
           refute job.null_publishing_item?(podcast, queue_item)
-          private_feed.stub(:publish_to_apple!, true) do
+          private_feed.stub(:publish_integration!, true) do
             refute_equal :null, job.perform(podcast, queue_item)
           end
         end
@@ -176,18 +176,14 @@ describe PublishFeedJob do
       apple_config
       mixed_feed.reload
       podcast.stub(:feeds, [mixed_feed]) do
-        mixed_feed.stub(:publish_to_apple!, -> {
-          calls << :apple
-          raise apple_error if apple_error
+        errors = {apple: apple_error, megaphone: megaphone_error}
+        mixed_feed.stub(:publish_integration!, ->(integration) {
+          calls << integration
+          raise errors[integration] if errors[integration]
         }) do
-          mixed_feed.stub(:publish_to_megaphone!, -> {
-            calls << :megaphone
-            raise megaphone_error if megaphone_error
-          }) do
-            job.stub(:publish_rss, ->(*) { calls << :rss }) do
-              queue_item = PublishingPipelineState.start_pipeline!(podcast)
-              job.perform(podcast, queue_item)
-            end
+          job.stub(:publish_rss, ->(*) { calls << :rss }) do
+            queue_item = PublishingPipelineState.start_pipeline!(podcast)
+            job.perform(podcast, queue_item)
           end
         end
       end
@@ -266,7 +262,8 @@ describe PublishFeedJob do
 
     def publish_both_feeds(errors = {})
       actions = delivery_feeds.map do |feed|
-        -> {
+        ->(integration) {
+          assert_equal :apple, integration
           calls << [:integration, feed.id]
           Rails.logger.info("Publishing test episode")
           raise errors[feed.id] if errors[feed.id]
@@ -274,8 +271,8 @@ describe PublishFeedJob do
       end
       capture_json_logs do
         podcast.stub(:feeds, delivery_feeds) do
-          delivery_feeds[0].stub(:publish_to_apple!, actions[0]) do
-            delivery_feeds[1].stub(:publish_to_apple!, actions[1]) do
+          delivery_feeds[0].stub(:publish_integration!, actions[0]) do
+            delivery_feeds[1].stub(:publish_integration!, actions[1]) do
               job.stub(:publish_rss, ->(_, feed) { calls << [:rss, feed.id] }) do
                 queue_item = PublishingPipelineState.start_pipeline!(podcast)
                 job.perform(podcast, queue_item)
@@ -366,7 +363,7 @@ describe PublishFeedJob do
         job.stub(:s3_client, stub_client) do
           pqi = PublishingPipelineState.start_pipeline!(podcast)
           # Simulate some method blowing up
-          private_feed.stub(:publish_to_apple!, -> { raise "random apple error" }) do
+          private_feed.stub(:publish_integration!, ->(_) { raise "random apple error" }) do
             podcast.stub(:feeds, [private_feed]) do
               assert_raises(RuntimeError) { job.perform(podcast, pqi) }
               assert_equal ["created", "started", "error_integration", "error"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.order(id: :asc).pluck(:status)
@@ -378,26 +375,26 @@ describe PublishFeedJob do
 
     it "does not schedule publishing to apple if the delegated delivery config prevents it" do
       apple_feed.delegated_delivery_config.update!(publish_enabled: false)
-      assert_nil job.publish_apple(podcast, apple_feed)
+      assert_nil job.publish_integration(podcast, apple_feed, :apple)
     end
 
     it "does not schedule publishing to apple if the delegated delivery config is disabled" do
       apple_feed.delegated_delivery_config.update!(publish_enabled: false)
-      assert_nil job.publish_apple(podcast, apple_feed)
+      assert_nil job.publish_integration(podcast, apple_feed, :apple)
     end
 
     describe "when the delegated delivery config is present" do
       it "does not schedule publishing to apple if the config is marked as not publishable" do
         apple_feed.delegated_delivery_config.update!(publish_enabled: false)
 
-        assert_nil job.publish_apple(podcast, apple_feed)
+        assert_nil job.publish_integration(podcast, apple_feed, :apple)
       end
 
       it "does run the apple publishing if the config is present and marked as publishable" do
         assert apple_feed.delegated_delivery_config.present?
         assert apple_feed.delegated_delivery_config.publish_enabled
-        private_feed.stub(:publish_to_apple!, :publishing_apple!) do
-          assert_equal :publishing_apple!, job.publish_apple(podcast, apple_feed)
+        private_feed.stub(:publish_integration!, :publishing_apple!) do
+          assert_equal :publishing_apple!, job.publish_integration(podcast, apple_feed, :apple)
         end
       end
 
@@ -428,7 +425,7 @@ describe PublishFeedJob do
             PublishFeedJob.stub(:s3_client, stub_client) do
               episode1.stub(:measure_asset_processing_duration, duration) do
                 episode2.stub(:measure_asset_processing_duration, nil) do
-                  private_feed.stub(:publish_to_apple!, -> { raise Apple::AssetStateTimeoutError.new(episodes) }) do
+                  private_feed.stub(:publish_integration!, ->(_) { raise Apple::AssetStateTimeoutError.new(episodes) }) do
                     podcast.stub(:feeds, [private_feed]) do
                       lines = capture_json_logs do
                         PublishingQueueItem.ensure_queued!(podcast)
@@ -454,7 +451,7 @@ describe PublishFeedJob do
           assert apple_feed.delegated_delivery_config.present?
           assert apple_feed.delegated_delivery_config.publish_enabled
 
-          private_feed.stub(:publish_to_apple!, -> { raise Apple::AssetStateTimeoutError.new([]) }) do
+          private_feed.stub(:publish_integration!, ->(_) { raise Apple::AssetStateTimeoutError.new([]) }) do
             podcast.stub(:feeds, [private_feed]) do
               PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
 
@@ -471,7 +468,7 @@ describe PublishFeedJob do
           feed.reload
 
           PublishFeedJob.stub(:s3_client, stub_client) do
-            private_feed.stub(:publish_to_apple!, -> { raise "some apple error" }) do
+            private_feed.stub(:publish_integration!, ->(_) { raise "some apple error" }) do
               feed.podcast.stub(:feeds, [podcast.public_feed, private_feed, feed]) do
                 # no error raised
                 PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
@@ -486,7 +483,7 @@ describe PublishFeedJob do
           assert apple_feed.delegated_delivery_config.publish_enabled
           apple_feed.delegated_delivery_config.update!(sync_blocks_rss: true)
 
-          private_feed.stub(:publish_to_apple!, -> { raise StandardError.new("some apple error") }) do
+          private_feed.stub(:publish_integration!, ->(_) { raise StandardError.new("some apple error") }) do
             podcast.stub(:feeds, [private_feed]) do
               assert_raises(StandardError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
 
@@ -503,7 +500,7 @@ describe PublishFeedJob do
           feed.reload
 
           PublishFeedJob.stub(:s3_client, stub_client) do
-            private_feed.stub(:publish_to_apple!, -> { raise Apple::AssetStateTimeoutError.new([]) }) do
+            private_feed.stub(:publish_integration!, ->(_) { raise Apple::AssetStateTimeoutError.new([]) }) do
               feed.podcast.stub(:feeds, [podcast.public_feed, private_feed, feed]) do
                 # no error raised, continues to RSS
                 PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
@@ -523,7 +520,7 @@ describe PublishFeedJob do
           PublishFeedJob.stub(:s3_client, stub_client) do
             episode1.stub(:measure_asset_processing_duration, 2000) do
               episode2.stub(:measure_asset_processing_duration, nil) do
-                private_feed.stub(:publish_to_apple!, -> { raise Apple::AssetStateTimeoutError.new(episodes) }) do
+                private_feed.stub(:publish_integration!, ->(_) { raise Apple::AssetStateTimeoutError.new(episodes) }) do
                   feed.podcast.stub(:feeds, [podcast.public_feed, private_feed, feed]) do
                     lines = capture_json_logs do
                       PublishingQueueItem.ensure_queued!(podcast)

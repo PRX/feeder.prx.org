@@ -19,14 +19,9 @@ module Integrations::EpisodeIntegrations
   # podcast can have several, so membership is resolved per episode.
   def integration_feeds(integration)
     podcast.feeds.select do |feed|
-      case integration
-      when :apple
-        feed.publish_to_apple? && feed.apple_episode?(self)
-      when :megaphone
-        feed.is_a?(Feeds::MegaphoneFeed) && feed.publish_to_megaphone? && feed.feed_episode?(self)
-      else
-        false
-      end
+      feed.integration_types.include?(integration) &&
+        feed.publish_integration?(integration) &&
+        feed.integration_episode?(self, integration)
     end
   end
 

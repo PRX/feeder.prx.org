@@ -298,9 +298,10 @@ describe PublishingPipelineState do
 
     describe "error!" do
       it 'sets the status to "error"' do
+        create(:apple_feed, podcast: podcast)
         pqi = nil
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishFeedJob.stub_any_instance(:publish_apple, ->(*args) { raise "error" }) do
+          PublishFeedJob.stub_any_instance(:publish_integration, ->(*args) { raise "error" }) do
             pqi = PublishingQueueItem.ensure_queued!(podcast)
 
             assert_raises(RuntimeError) { PublishingPipelineState.attempt!(podcast, perform_later: false) }
@@ -336,7 +337,7 @@ describe PublishingPipelineState do
 
         pqi = nil
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          private_feed.stub(:publish_to_apple!, ->(*args) { raise Apple::AssetStateTimeoutError.new([episode]) }) do
+          private_feed.stub(:publish_integration!, ->(*args) { raise Apple::AssetStateTimeoutError.new([episode]) }) do
             podcast.stub(:feeds, [private_feed]) do
               pqi = PublishingQueueItem.ensure_queued!(podcast)
               PublishingPipelineState.attempt!(podcast, perform_later: false)
@@ -360,7 +361,7 @@ describe PublishingPipelineState do
     describe "complete!" do
       it 'sets the status to "complete"' do
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishFeedJob.stub_any_instance(:publish_apple, "pub!") do
+          PublishFeedJob.stub_any_instance(:publish_integration, "pub!") do
             PublishFeedJob.stub_any_instance(:publish_rss, "pub!") do
               PublishingPipelineState.attempt!(podcast, perform_later: false)
             end
@@ -375,7 +376,7 @@ describe PublishingPipelineState do
         PublishingQueueItem.create!(podcast: podcast)
 
         PublishFeedJob.stub_any_instance(:save_file, nil) do
-          PublishFeedJob.stub_any_instance(:publish_apple, "pub!") do
+          PublishFeedJob.stub_any_instance(:publish_integration, "pub!") do
             PublishFeedJob.stub_any_instance(:publish_rss, "pub!") do
               PublishingPipelineState.attempt!(podcast, perform_later: false)
             end
@@ -400,7 +401,7 @@ describe PublishingPipelineState do
         stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
         assert [f1, f2, f3]
 
-        f3.stub(:publish_to_apple!, "published apple!") do
+        f3.stub(:publish_integration!, "published apple!") do
           podcast.stub(:feeds, [f1, f2, f3]) do
             PublishFeedJob.stub_any_instance(:save_file, FeedBuilder.new(podcast, f1)) do
               PublishingPipelineState.attempt!(podcast, perform_later: false)

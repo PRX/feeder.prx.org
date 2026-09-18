@@ -680,7 +680,7 @@ describe Apple::Publisher do
 
     it "archives and unarchives published draft candidates for redelivery" do
       create_apple_state.call(draft_episode, "ARCHIVED")
-      apple_feed.apple_episode(draft_episode).update_delivery_status(
+      apple_feed.integration_episode(draft_episode, :apple).update_delivery_status(
         uploaded: true,
         delivered: true,
         source_media_version_id: draft_episode.media_version_id,
@@ -711,15 +711,15 @@ describe Apple::Publisher do
         end
       end
 
-      status = apple_feed.apple_episode(draft_episode.reload).delivery_status(true)
+      status = apple_feed.integration_episode(draft_episode.reload, :apple).delivery_status(true)
       assert poll_called
       assert archive_called
       assert unarchive_called
       refute status.uploaded
       refute status.delivered
       assert_equal 0, status.asset_processing_attempts
-      assert apple_feed.apple_episode(draft_episode).needs_upload?
-      assert apple_feed.apple_episode(draft_episode).needs_delivery_processing?
+      assert apple_feed.integration_episode(draft_episode, :apple).needs_upload?
+      assert apple_feed.integration_episode(draft_episode, :apple).needs_delivery_processing?
     end
 
     it "does not unarchive draft candidates when polling confirms Apple is already drafting" do
@@ -773,7 +773,7 @@ describe Apple::Publisher do
 
     it "marks unarchived draft episodes for redelivery" do
       create_apple_state.call(draft_episode, "ARCHIVED")
-      apple_feed.apple_episode(draft_episode).update_delivery_status(
+      apple_feed.integration_episode(draft_episode, :apple).update_delivery_status(
         uploaded: true,
         delivered: true,
         source_media_version_id: draft_episode.media_version_id,
@@ -789,12 +789,12 @@ describe Apple::Publisher do
         apple_publisher.unarchive_draft_candidates!([apple_episode])
       end
 
-      status = apple_feed.apple_episode(draft_episode.reload).delivery_status(true)
+      status = apple_feed.integration_episode(draft_episode.reload, :apple).delivery_status(true)
       refute status.uploaded
       refute status.delivered
       assert_equal 0, status.asset_processing_attempts
-      assert apple_feed.apple_episode(draft_episode).needs_upload?
-      assert apple_feed.apple_episode(draft_episode).needs_delivery_processing?
+      assert apple_feed.integration_episode(draft_episode, :apple).needs_upload?
+      assert apple_feed.integration_episode(draft_episode, :apple).needs_delivery_processing?
     end
   end
 

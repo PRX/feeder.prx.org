@@ -83,7 +83,7 @@ module Apple
       @draft_upload_candidates ||=
         begin
           draft_ids = Set.new(
-            private_feed.apple_draft_episodes
+            private_feed.integration_draft_episodes(:apple)
               .includes(:contents)
               .select { |ep| ep.enclosure_ready?(true) }
               .map(&:id)

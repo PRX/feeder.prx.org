@@ -25,8 +25,7 @@ class PublishFeedJob < ApplicationJob
 
     # Publish each integration for each feed (e.g. apple, megaphone)
     podcast.feeds.each do |feed|
-      publish_apple(podcast, feed)
-      publish_megaphone(podcast, feed)
+      feed.integration_types.each { |integration| publish_integration(podcast, feed, integration) }
     end
 
     # After integrations, publish RSS, if appropriate
@@ -34,7 +33,7 @@ class PublishFeedJob < ApplicationJob
 
     PublishingPipelineState.complete!(podcast)
   # Top-level error handling, capping the entire pipeline's error status
-  # Intermediate errors are handled by with_integration_publishing and publish_rss
+  # Intermediate errors are handled by publish_integration and publish_rss
   rescue Apple::RetryPublishingError
     # Terminal state: retry
     PublishingPipelineState.retry!(podcast)
@@ -47,29 +46,16 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.settle_remaining!(podcast)
   end
 
-  def publish_apple(podcast, feed)
-    return unless feed.publish_to_apple?
+  def publish_integration(podcast, feed, integration)
+    return unless feed.publish_integration?(integration)
 
-    with_integration_publishing(podcast, feed, :apple, config: feed.delegated_delivery_config) do
-      feed.publish_to_apple!
-    end
-  end
-
-  def publish_megaphone(podcast, feed)
-    return unless feed.is_a?(Feeds::MegaphoneFeed) && feed.publish_to_megaphone?
-
-    with_integration_publishing(podcast, feed, :megaphone, config: feed.megaphone_config) do
-      feed.publish_to_megaphone!
-    end
-  end
-
-  def with_integration_publishing(podcast, feed, integration, config:)
+    config = feed.integration_config(integration)
     context = {feed_id: feed.id, integration: integration}
     tags = ["integration:#{integration}", "feed:#{feed.id}"]
 
     Rails.logger.tagged(*tags) do
       Rails.logger.info("Starting integration feed publish", context)
-      res = yield
+      res = feed.publish_integration!(integration)
       PublishingPipelineState.publish_integration!(podcast)
       Rails.logger.info("Completed integration feed publish", context)
       res

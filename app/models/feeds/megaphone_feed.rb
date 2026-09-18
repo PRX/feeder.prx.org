@@ -39,16 +39,24 @@ class Feeds::MegaphoneFeed < Feed
     Feed.model_name
   end
 
-  def default_episode_feed?
-    true
+  def integration_types
+    super + [:megaphone]
+  end
+
+  def integration_config(integration)
+    (integration == :megaphone) ? megaphone_config : super
   end
 
   def label
     default? ? super : I18n.t("helpers.label.feed.labels.megaphone")
   end
 
-  def megaphone_episode(episode)
-    episode.megaphone_episode
+  def integration_episode(episode, integration)
+    (integration == :megaphone) ? episode.megaphone_episode : super
+  end
+
+  def integration_episode?(episode, integration)
+    (integration == :megaphone) ? feed_episode?(episode) : super
   end
 
   def set_defaults
@@ -66,14 +74,14 @@ class Feeds::MegaphoneFeed < Feed
     self.tokens = [FeedToken.new(label: DEFAULT_LABEL)] if tokens.empty?
   end
 
-  def serve_drafts
-    super || publish_to_megaphone?
+  def publish_integration?(integration)
+    (integration == :megaphone) ? publish_to_megaphone? : super
   end
 
-  def publish_to_megaphone!
-    if publish_to_megaphone?
-      ::Megaphone::Publisher.new(self).publish!
-    end
+  def publish_integration!(integration)
+    return super unless integration == :megaphone
+
+    ::Megaphone::Publisher.new(self).publish! if publish_integration?(integration)
   end
 
   def publish_to_megaphone?

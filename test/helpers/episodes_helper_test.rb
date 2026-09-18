@@ -132,7 +132,7 @@ describe EpisodesHelper do
       it "returns 'disconnected' when the integration facade is unavailable" do
         feed = episode.integration_feeds(:apple).first
 
-        feed.stub(:apple_episode, nil) do
+        feed.stub(:integration_episode, nil) do
           assert_equal({feed => "disconnected"}, helper.episode_integration_statuses(episode, :apple))
         end
       end
@@ -142,7 +142,7 @@ describe EpisodesHelper do
         integration_episode.define_singleton_method(:delivery_status) { |*| nil }
         feed = episode.integration_feeds(:apple).first
 
-        feed.stub(:apple_episode, integration_episode) do
+        feed.stub(:integration_episode, integration_episode) do
           assert_equal({feed => "disconnected"}, helper.episode_integration_statuses(episode, :apple))
         end
       end
@@ -253,7 +253,7 @@ describe EpisodesHelper do
       before { megaphone_feed }
 
       it "builds the megaphone facade from the feed" do
-        facade = megaphone_feed.megaphone_episode(episode)
+        facade = megaphone_feed.integration_episode(episode, :megaphone)
 
         assert_instance_of Megaphone::Episode, facade
         assert_equal episode, facade.feeder_episode
@@ -282,7 +282,7 @@ describe EpisodesHelper do
     end
 
     it "returns episode updated_at when the integration facade is unavailable" do
-      apple_feed.stub(:apple_episode, nil) do
+      apple_feed.stub(:integration_episode, nil) do
         assert_equal episode.updated_at, helper.episode_integration_updated_at(episode, :apple, apple_feed)
       end
     end

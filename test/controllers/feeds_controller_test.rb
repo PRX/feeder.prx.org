@@ -24,7 +24,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select 'select[name="feed[delegated_delivery_config_attributes][show_feed_binding_id]"]'
     assert_nil private_feed.reload.delegated_delivery_config
-    assert_nil private_feed.delegated_delivery_config
+    assert_empty private_feed.integration_types
   end
 
   test "should get new" do
