@@ -151,8 +151,8 @@ module EpisodeMedia
       super
     end
 
-    self.medium = if uncut.present?
-      "uncut"
+    if uncut.present?
+      self.medium = uncut.video? ? "video" : "uncut"
     end
   end
 
@@ -185,11 +185,11 @@ module EpisodeMedia
 
     # infer episode medium
     current = contents.reject(&:marked_for_destruction?)
-    unless medium_uncut?
+    unless medium_uncut? || medium_video?
       if current.all?(&:audio?)
         self.medium = "audio"
       elsif current.all?(&:video?)
-        self.medium = "video"
+        self.medium = "passthru"
       end
     end
   end

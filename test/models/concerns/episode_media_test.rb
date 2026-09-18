@@ -414,9 +414,9 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       assert_equal "audio", ep.medium
     end
 
-    it "infers episode medium video" do
+    it "infers episode medium passthru" do
       ep.media = ["http://some.new/url.mov", "http://some.new/url.mp4"]
-      assert_equal "video", ep.medium
+      assert_equal "passthru", ep.medium
     end
 
     it "defaults to audio" do
