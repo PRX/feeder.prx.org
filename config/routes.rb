@@ -9,7 +9,8 @@ Rails.application.routes.draw do
 
   resources :podcasts do
     resource :integrations, only: [:show, :update], controller: :podcast_integrations
-    resources :apple_keys, only: [:create, :destroy]
+    post "apple_keys", to: "podcast_integrations#create_apple_key", as: :apple_keys
+    delete "apple_keys/:id", to: "podcast_integrations#destroy_apple_key", as: :apple_key
     resource :engagement, only: [:show, :update], controller: :podcast_engagement
     resource :player, only: :show, controller: :podcast_player
     resources :imports, only: [:index, :show, :create]

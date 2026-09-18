@@ -1415,11 +1415,10 @@ en:
       required: cannot be removed while this podcast has connected Apple shows
       inaccessible: "cannot access the connected Apple shows: %{show_ids}"
       verification_failed: could not be verified with Apple Podcasts Connect
-  apple_keys:
-    create:
+    create_apple_key:
       notice: Apple credential uploaded
       error: Unable to upload Apple credential
-    destroy:
+    destroy_apple_key:
       notice: Apple credential removed
       error: Unable to remove Apple credential
       in_use: Apple credentials cannot be removed while podcasts use them
