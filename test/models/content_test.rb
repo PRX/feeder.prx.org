@@ -79,11 +79,12 @@ describe Content do
       c1.episode.medium = "audio"
       assert c1.valid?
 
+      # NOTE: video episodes transcode to audio contents
       c1.episode.medium = "video"
-      refute c1.valid?
+      assert c1.valid?
 
       c1.medium = "video"
-      assert c1.valid?
+      refute c1.valid?
     end
   end
 
