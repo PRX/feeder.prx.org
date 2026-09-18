@@ -35,10 +35,20 @@ describe Api::Auth::FeedRepresenter do
     _(json["itunesImage"]["altText"]).must_equal "d3"
   end
 
-  it "allows draft audio for megaphone feeds only" do
+  it "allows draft audio for private integration feeds" do
     _(json["serveDrafts"]).must_equal false
 
     mp_json = JSON.parse(Api::Auth::FeedRepresenter.new(megaphone_feed).to_json)
     _(mp_json["serveDrafts"]).must_equal true
+  end
+
+  it "does not allow draft audio for public Apple delivery feeds" do
+    public_feed = podcast.default_feed
+    binding = create(:apple_show_feed_binding, feed: public_feed)
+    create(:delegated_delivery_config, feed: public_feed, show_feed_binding: binding)
+
+    assert public_feed.publish_to_apple?
+    public_json = JSON.parse(Api::Auth::FeedRepresenter.new(public_feed).to_json)
+    _(public_json["serveDrafts"]).must_equal false
   end
 end

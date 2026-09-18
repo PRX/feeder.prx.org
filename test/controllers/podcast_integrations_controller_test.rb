@@ -8,7 +8,7 @@ class PodcastIntegrationsControllerTest < ActionDispatch::IntegrationTest
   test "shows only Apple credentials from the podcast account" do
     visible = create(:apple_key, account_id: 123, key_id: "visible_key")
     hidden = create(:apple_key, account_id: 456, key_id: "hidden_key_")
-    another_podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/123", apple_key: visible)
+    create(:podcast, prx_account_uri: "/api/v1/accounts/123", apple_key: visible)
     podcast.update!(apple_key: visible)
 
     get podcast_integrations_url(podcast)
@@ -19,7 +19,6 @@ class PodcastIntegrationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "select[name='podcast[apple_key_id]'] option[selected][value='#{visible.id}']", count: 1
     assert_select "body", text: /Used by 2 podcasts/
     assert_select "body", text: /Stubbed Account \(123\)/
-    assert another_podcast
   end
 
   test "offers credential removal after its podcast is destroyed" do
