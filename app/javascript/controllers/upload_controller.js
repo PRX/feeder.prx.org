@@ -5,7 +5,7 @@ import sha256 from "sha256"
 import humanBytes from "util/humanBytes"
 
 export default class extends Controller {
-  static values = { fileSizeError: String }
+  static values = { maxFileSize: Number, fileSizeError: String }
   static outlets = ["disable"]
   static targets = [
     "field",
@@ -38,7 +38,7 @@ export default class extends Controller {
     if (this.hasNonMp3WarningTarget && file.type !== "audio/mpeg") {
       this.modal = new bootstrap.Modal(this.nonMp3WarningTarget)
       this.modal.show()
-    } else if (file.size >= 1024 * 1024 * 1024) {
+    } else if (this.maxFileSizeValue && file.size >= this.maxFileSizeValue) {
       this.fileNameTargets.forEach((t) => (t.innerHTML = file.name))
       this.fileSizeTargets.forEach((t) => (t.innerHTML = humanBytes(file.size)))
       this.onError(this.fileSizeErrorValue)

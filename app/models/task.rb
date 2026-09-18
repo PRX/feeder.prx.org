@@ -32,6 +32,10 @@ class Task < ApplicationRecord
   scope :bad_audio_bytes, -> { where("result ~ '\"UnidentifiedBytes\":[1-9]'") }
   scope :bad_audio_vbr, -> { where("result ~ '\"VariableBitrate\":true'") }
 
+  def self.start!(owner)
+    create! { |t| t.owner = owner }.start!
+  end
+
   def self.callback(msg)
     job_id = porter_callback_job_id(msg)
     task = lookup_task(job_id)
@@ -39,9 +43,9 @@ class Task < ApplicationRecord
     task&.with_lock do
       status = task.cancelled? ? "cancelled" : porter_callback_status(msg)
       time = porter_callback_time(msg)
-
-      if status && time && (task.logged_at.nil? || (time >= task.logged_at))
-        task.update!(status: status, logged_at: time, result: msg)
+      if status && time
+        task.handle_callback(status, time, msg)
+        task.save!
       end
     end
   end
@@ -82,13 +86,7 @@ class Task < ApplicationRecord
 
   def start!
     self.status = "started"
-    self.options = {
-      Id: job_id,
-      Source: porter_source,
-      Tasks: porter_tasks,
-      Callbacks: porter_callbacks
-    }
-
+    self.options = porter_options
     porter_start!(options)
     save!
   end
@@ -99,5 +97,13 @@ class Task < ApplicationRecord
 
   # before save hook, implemented by child tasks
   def update_owner
+  end
+
+  def handle_callback(new_status, time, msg)
+    if logged_at.nil? || time >= logged_at
+      self.status = new_status
+      self.logged_at = time
+      self.result = msg
+    end
   end
 end

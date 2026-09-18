@@ -18,7 +18,7 @@
       </div>
     </div>
 
-    <audio class="d-none" src="<%= media.href %>" preload="none" data-audio-player-target="audio" data-action="timeupdate->audio-player#audioTimeUpdate ended->audio-player#audioEnded"></audio>
+    <audio class="d-none" src="<%= media.preview_href %>" preload="none" data-audio-player-target="audio" data-action="timeupdate->audio-player#audioTimeUpdate ended->audio-player#audioEnded"></audio>
 
     <small class="text-muted" data-audio-player-target="duration">(<%= episode_media_duration(media) %>)</small>
   </div>
