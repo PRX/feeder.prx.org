@@ -1,15 +1,13 @@
 class PodcastIntegrationsController < ApplicationController
   before_action :set_podcast
-  before_action :authorize_podcast_access, only: [:create_apple_key, :destroy_apple_key]
   before_action :set_apple_key, only: :destroy_apple_key
 
   def show
-    authorize @podcast
     load_apple_credentials
   end
 
   def update
-    authorize @podcast
+    authorize @podcast, :update?
     load_apple_credentials
 
     submitted_key_id = podcast_integration_params[:apple_key_id].presence
@@ -56,6 +54,7 @@ class PodcastIntegrationsController < ApplicationController
 
   def set_podcast
     @podcast = Podcast.find(params[:podcast_id])
+    authorize @podcast, :show?
   rescue ActiveRecord::RecordNotFound => error
     render_not_found(error)
   end
@@ -70,10 +69,6 @@ class PodcastIntegrationsController < ApplicationController
       .joins(:apple_show_feed_binding)
       .distinct
       .pluck("apple_show_feed_bindings.apple_show_id")
-  end
-
-  def authorize_podcast_access
-    authorize @podcast, :show?
   end
 
   def set_apple_key
