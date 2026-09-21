@@ -83,7 +83,9 @@ class AppleCutoverBackfillMigrationTest < ActiveSupport::TestCase
 
     podcast = create(:podcast)
     private_feed = create(:private_feed, podcast: podcast, apple_show_id: "show-1")
-    config = create(:delegated_delivery_config, :legacy_routing, feed: private_feed)
+    config = build(:delegated_delivery_config, :legacy_routing, feed: private_feed)
+    # Reproduce an unfinished setup saved before bindings were required.
+    config.save!(validate: false)
     podcast.update_column(:apple_key_id, nil)
     episode = create(:episode, podcast: podcast)
     sync_log = SyncLog.new(integration: :apple, feeder_type: :episodes, feeder_id: episode.id, external_id: "episode-1")
