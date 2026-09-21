@@ -1,6 +1,6 @@
 <%= turbo_frame_tag dom_id(@feed, :apple_connection) do %>
   <%= fields_for :feed, @feed do |form| %>
     <%= render "feeds/apple_connection_field", feed: @feed, form: form,
-      options: @apple_connection_options, loading: false, lookup_failed: @apple_show_lookup_failed %>
+          options: @apple_connection_options, loading: false, lookup_failed: @apple_show_lookup_failed %>
   <% end %>
 <% end %>

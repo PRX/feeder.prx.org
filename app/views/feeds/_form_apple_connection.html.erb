@@ -11,7 +11,7 @@
     <% end %>
 
     <%= turbo_frame_tag dom_id(feed, :apple_connection),
-      src: podcast_feed_apple_connection_path(podcast, feed, selection: feed.apple_connection.to_s), loading: "lazy" do %>
+          src: podcast_feed_apple_connection_path(podcast, feed, selection: feed.apple_connection.to_s), loading: "lazy" do %>
       <%= render "apple_connection_field", feed: feed, form: form, options: [], loading: true, lookup_failed: false %>
     <% end %>
 

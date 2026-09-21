@@ -14,7 +14,7 @@
        } %>
   <% end %>
   <%= form.select :apple_connection, apple_connection_options(feed, options), {include_blank: true},
-    disabled: loading || !policy(feed).update?, data: data %>
+        disabled: loading || !policy(feed).update?, data: data %>
   <%= form.label :apple_connection %>
   <%= field_help_text t("feeds.form_apple_connection.help.connection") %>
 </div>

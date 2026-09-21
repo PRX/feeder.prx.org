@@ -31,10 +31,10 @@
         <div class="form-floating input-group mb-3">
           <% select_options = configured ? {} : {include_blank: t(".select_connection")} %>
           <%= config_form.select :show_feed_binding_id,
-            options,
-            select_options,
-            disabled: !selectable,
-            required: configured && selectable %>
+                options,
+                select_options,
+                disabled: !selectable,
+                required: configured && selectable %>
           <%= config_form.label :show_feed_binding_id, t(".connection") %>
           <%= field_help_text t(".help.connection") %>
         </div>
