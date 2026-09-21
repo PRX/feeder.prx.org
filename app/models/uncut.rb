@@ -68,12 +68,16 @@ class Uncut < MediaResource
           Content.new(original_url: url, segmentation: seg)
         end
       end
+
+      if episode.video?
+        episode.set_alt_media(url, segmentation)
+      end
     end
   end
 
   def slice_contents!
     slice_contents
-    episode.save! if episode.contents.any?(&:changed?)
+    episode.save! if episode.contents.any?(&:changed?) || episode.alternate_media_resource&.changed?
   end
 
   def generate_waveform?

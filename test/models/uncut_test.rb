@@ -87,9 +87,15 @@ describe Uncut do
       let(:episode) { create(:episode, medium: "video", segment_count: 3) }
       let(:uncut) { create(:uncut_video, episode: episode, status: "complete", segmentation: segs) }
 
-      it "slices from the preview mp3" do
+      it "creates alt media and contents" do
         uncut.slice_contents!
 
+        assert episode.alt_media.previously_new_record?
+        assert_equal "created", episode.alt_media.status
+        assert_equal uncut.url, episode.alt_media.original_url
+        assert_equal [[nil, 1], [2, 3], [3, nil]], episode.alt_media.segmentation
+
+        # should slice contents from the preview mp3, not the full mp4
         assert_equal 3, episode.contents.size
         assert_equal [uncut.preview_url], episode.contents.pluck(:original_url).uniq
       end

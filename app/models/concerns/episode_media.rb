@@ -65,6 +65,8 @@ module EpisodeMedia
       else
         contents.select(&:persisted?).each(&:mark_for_destruction)
         uncut.mark_for_destruction if uncut&.persisted?
+        external_media_resource.mark_for_destruction if external_media_resource&.persisted?
+        alternate_media_resource.mark_for_destruction if alternate_media_resource&.persisted?
       end
     end
 
@@ -77,6 +79,7 @@ module EpisodeMedia
     transcript&.copy_media(force)
     uncut&.copy_media(force)
     external_media_resource&.copy_media(force)
+    alternate_media_resource&.copy_media(force)
   end
 
   def segment_range
@@ -299,5 +302,19 @@ module EpisodeMedia
       external_media_resource&.destroy
       create_external_media_resource(original_url: enclosure_override_url)
     end
+  end
+
+  def alt_media
+    alternate_media_resource if video?
+  end
+
+  def set_alt_media(url, segs)
+    unless alt_media && alt_media.original_url == url && alt_media.segmentation == segs
+      build_alternate_media_resource(original_url: url, segmentation: segs)
+    end
+  end
+
+  def ready_alt_media
+    complete_alternate_media_resource if video?
   end
 end
