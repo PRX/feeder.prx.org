@@ -20,7 +20,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_000001) do
     t.bigint "feed_id", null: false
     t.bigint "key_id"
     t.boolean "publish_enabled", default: false, null: false
-    t.bigint "show_feed_binding_id"
+    t.bigint "show_feed_binding_id", null: false
     t.boolean "sync_blocks_rss", default: false, null: false
     t.datetime "updated_at", null: false
     t.index ["feed_id"], name: "index_apple_configs_on_feed_id", unique: true
