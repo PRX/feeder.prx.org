@@ -1,6 +1,9 @@
 require "test_helper"
+require_relative "../support/apple_pre_cutover_schema"
 
 class FeedsControllerTest < ActionDispatch::IntegrationTest
+  include ApplePreCutoverSchema
+
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/123") }
   let(:feed) { create(:feed, podcast: podcast, private: false) }
   let(:locked_feed) { create(:feed, podcast: podcast, private: false, edit_locked: true) }
@@ -300,41 +303,45 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "repairs an unfinished legacy setup through the feed form" do
-    apple_feed = create(:apple_feed, podcast: podcast)
-    config = apple_feed.delegated_delivery_config
-    binding = config.show_feed_binding
-    config.update_column(:show_feed_binding_id, nil)
+    with_apple_pre_cutover_schema do
+      apple_feed = create(:apple_feed, podcast: podcast)
+      config = apple_feed.delegated_delivery_config
+      binding = config.show_feed_binding
+      config.update_column(:show_feed_binding_id, nil)
 
-    get podcast_feed_url(podcast, apple_feed)
-    assert_response :success
+      get podcast_feed_url(podcast, apple_feed)
+      assert_response :success
 
-    patch podcast_feed_url(podcast, apple_feed), params: {
-      feed: {delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: binding.id}}
-    }
+      patch podcast_feed_url(podcast, apple_feed), params: {
+        feed: {delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: binding.id}}
+      }
 
-    assert_redirected_to podcast_feed_url(podcast, apple_feed)
-    assert_equal binding, config.reload.show_feed_binding
+      assert_redirected_to podcast_feed_url(podcast, apple_feed)
+      assert_equal binding, config.reload.show_feed_binding
+    end
   end
 
   test "removes an unfinished legacy setup without a connection" do
-    apple_feed = create(:apple_feed, podcast: podcast)
-    config = apple_feed.delegated_delivery_config
-    binding = config.show_feed_binding
-    config.update_column(:show_feed_binding_id, nil)
-    binding.reload.destroy!
+    with_apple_pre_cutover_schema do
+      apple_feed = create(:apple_feed, podcast: podcast)
+      config = apple_feed.delegated_delivery_config
+      binding = config.show_feed_binding
+      config.update_column(:show_feed_binding_id, nil)
+      binding.reload.destroy!
 
-    get podcast_feed_url(podcast, apple_feed)
-    assert_response :success
+      get podcast_feed_url(podcast, apple_feed)
+      assert_response :success
 
-    assert_difference("Apple::DelegatedDeliveryConfig.count", -1) do
-      patch podcast_feed_url(podcast, apple_feed), params: {
-        feed: {delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: "", _destroy: "1"}}
-      }
+      assert_difference("Apple::DelegatedDeliveryConfig.count", -1) do
+        patch podcast_feed_url(podcast, apple_feed), params: {
+          feed: {delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: "", _destroy: "1"}}
+        }
+      end
+
+      assert_redirected_to podcast_feed_url(podcast, apple_feed)
+      assert_predicate apple_feed.reload, :persisted?
+      assert_nil apple_feed.delegated_delivery_config
     end
-
-    assert_redirected_to podcast_feed_url(podcast, apple_feed)
-    assert_predicate apple_feed.reload, :persisted?
-    assert_nil apple_feed.delegated_delivery_config
   end
 
   test "authorize update feed" do
