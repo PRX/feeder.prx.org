@@ -494,30 +494,29 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_nil default_feed.delegated_delivery_config
   end
 
-  test "rolls back the connection and sync log when legacy mirroring fails" do
+  test "updates the connection when the private feed is invalid" do
     default_feed = podcast.default_feed
     key = create(:apple_key, account_id: podcast.account_id)
     podcast.update!(apple_key: key)
     binding = create(:apple_show_feed_binding, feed: default_feed, apple_show_id: "old-show")
-    create(:delegated_delivery_config, feed: private_feed, key: key, show_feed_binding: binding)
+    config = create(:delegated_delivery_config, feed: private_feed, key: key, show_feed_binding: binding)
     sync_log = Apple::SyncLog.log!(feeder_id: default_feed.id, feeder_type: :feeds, external_id: "old-show")
-    original_title = default_feed.title
+    private_feed.update_column(:file_name, "")
+    refute private_feed.reload.valid?
+    assert private_feed.errors[:file_name].any?
     body = {data: {id: "new-show", type: "shows", attributes: {title: "New show"}}}.to_json
     stub_request(:get, "https://aardvark.prx.org/shows/new-show").to_return(status: 200, body: body)
 
-    failure = ActiveRecord::RecordInvalid.new(private_feed)
-    Feed.stub_any_instance(:update!, ->(*) { raise failure }) do
-      assert_raises ActiveRecord::RecordInvalid do
-        patch podcast_feed_url(podcast, default_feed), params: {
-          feed: {apple_connection: "new-show", title: "Changed title"}
-        }
-      end
-    end
+    patch podcast_feed_url(podcast, default_feed), params: {
+      feed: {apple_connection: "new-show", title: "Changed title"}
+    }
 
-    assert_equal original_title, default_feed.reload.title
-    assert_equal "old-show", binding.reload.apple_show_id
-    assert_equal "old-show", private_feed.reload.apple_show_id
-    assert_equal "old-show", sync_log.reload.external_id
+    assert_redirected_to podcast_feed_url(podcast, default_feed)
+    assert_equal "Changed title", default_feed.reload.title
+    assert_equal "new-show", binding.reload.apple_show_id
+    assert_equal "new-show", private_feed.reload.apple_show_id
+    assert_equal "new-show", sync_log.reload.external_id
+    assert_equal key, config.reload.key
   end
 
   test "validate update feed" do
