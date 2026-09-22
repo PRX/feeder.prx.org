@@ -159,6 +159,38 @@ describe Feed do
     end
   end
 
+  describe "soft deletion" do
+    it "preserves default-feed identity through deletion and restoration" do
+      default_feed_id = feed1.id
+
+      feed1.destroy!
+
+      deleted_feed = Feed.with_deleted.find(default_feed_id)
+      assert deleted_feed.deleted?
+      assert_nil deleted_feed.slug
+      assert deleted_feed.default?
+
+      deleted_feed.restore!
+
+      assert_nil deleted_feed.reload.slug
+      assert deleted_feed.default?
+      assert_equal default_feed_id, Podcast.find(podcast.id).default_feed.id
+    end
+
+    it "continues to reject a replacement while the original default feed is deleted" do
+      feed1.destroy!
+
+      assert_raises ActiveRecord::RecordNotUnique do
+        Feed.transaction(requires_new: true) do
+          Feed.create!(podcast: podcast, slug: nil, file_name: Feed::DEFAULT_FILE_NAME)
+        end
+      end
+
+      assert_nil Feed.with_deleted.find(feed1.id).slug
+      assert_nil podcast.feeds.default.first
+    end
+  end
+
   describe "#valid?" do
     it "validates unique slugs" do
       assert feed2.valid?
