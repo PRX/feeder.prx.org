@@ -69,7 +69,6 @@ module Apple
       return unless delegated_delivery_config
 
       delegated_delivery_config.update!(key: feed.podcast.apple_key)
-      delegated_delivery_config.private_feed.update!(apple_show_id: apple_show_id)
     end
 
     private def protect_delegated_delivery
