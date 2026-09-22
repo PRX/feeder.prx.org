@@ -4,6 +4,7 @@ require_relative "../../../support/apple_pre_cutover_schema"
 module Apple
   describe ShowFeedBinding::Backfill do
     include ApplePreCutoverSchema
+    around { |test| with_apple_pre_cutover_schema { test.call } }
 
     describe ".backfill!" do
       it "creates a binding and sets the config from a public feed sync log" do
@@ -156,8 +157,6 @@ module Apple
     end
 
     describe ".verify_episode_show_consistency!" do
-      around { |test| with_apple_pre_cutover_schema { test.call } }
-
       it "reports zero mismatches when every legacy episode id belongs to the bound show" do
         config = create_config_with_legacy_show_id(sync_log_show_id: "show-1")
         ShowFeedBinding::Backfill.backfill!
