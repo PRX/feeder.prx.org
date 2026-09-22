@@ -2,3 +2,17 @@
       src: podcast_feed_apple_connection_path(podcast, feed, selection: settings.connection.to_s), loading: "lazy" do %>
   <%= render "apple_connection_field", feed: feed, settings: settings, apple: apple, options: [], loading: true, lookup_failed: false %>
 <% end %>
+
+<% if settings.hls_available? %>
+  <div class="form-check mb-2">
+    <%= apple.check_box :hls_enabled, disabled: !policy(feed).update? %>
+    <div class="d-flex align-items-center">
+      <%= apple.label :hls_enabled %>
+      <%= help_text t("feeds.form_apple_settings.help.hls_enabled") %>
+    </div>
+  </div>
+
+  <% if settings.hls_config&.not_eligible? %>
+    <div class="alert alert-warning mb-3" role="status"><%= t("feeds.form_apple_settings.hls_not_eligible") %></div>
+  <% end %>
+<% end %>

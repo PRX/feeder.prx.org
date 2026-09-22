@@ -22,6 +22,10 @@
         <div class="alert alert-danger lh-sm" role="alert"><%= settings.errors[:connection].to_sentence %></div>
       <% end %>
 
+      <% if settings.errors[:hls_enabled].any? %>
+        <div class="alert alert-danger lh-sm" role="alert"><%= settings.errors[:hls_enabled].to_sentence %></div>
+      <% end %>
+
       <%= form.fields_for :apple_settings, settings do |apple| %>
         <% if settings.deliverable? %>
           <%= render "apple_settings_delivery", feed: feed, settings: settings, apple: apple %>
@@ -59,6 +63,10 @@
         <strong class="d-block mb-0"><%= t(".status") %></strong>
         <% if (checked = [binding, config].compact.find(&:persisted?)) %>
           <span class="text-muted"><%= t(".last_checked_html", time: local_time_ago(checked.updated_at)) %></span>
+        <% end %>
+        <% hls_config = settings.hls_config if settings.hls_available? %>
+        <% if hls_config&.enabled? && hls_config.last_checked_at %>
+          <span class="d-block text-muted"><%= t(".hls_last_checked_html", time: local_time_ago(hls_config.last_checked_at)) %></span>
         <% end %>
       </p>
       <% if binding %>
