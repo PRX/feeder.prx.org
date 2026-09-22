@@ -1,6 +1,9 @@
 require "test_helper"
+require_relative "../support/apple_pre_cutover_schema"
 
 describe Episode do
+  include ApplePreCutoverSchema
+
   let(:episode) { create(:episode_with_media) }
 
   it "initializes guid" do
@@ -375,17 +378,19 @@ describe Episode do
 
     describe "#integration_feed" do
       it "returns nil for a legacy configuration without a show identity" do
-        apple_feed = create(:apple_feed, podcast: podcast)
-        config = apple_feed.delegated_delivery_config
-        binding = config.show_feed_binding
-        binding.feed.apple_sync_log&.destroy!
-        # Incomplete legacy configurations predate the required binding validation.
-        config.update_column(:show_feed_binding_id, nil)
-        binding.reload.destroy!
-        apple_feed.update_column(:apple_show_id, nil)
-        podcast.reload
+        with_apple_pre_cutover_schema do
+          apple_feed = create(:apple_feed, podcast: podcast)
+          config = apple_feed.delegated_delivery_config
+          binding = config.show_feed_binding
+          binding.feed.apple_sync_log&.destroy!
+          # Incomplete legacy configurations predate the required binding validation.
+          config.update_column(:show_feed_binding_id, nil)
+          binding.reload.destroy!
+          apple_feed.update_column(:apple_show_id, nil)
+          podcast.reload
 
-        assert_nil episode.integration_feed(:apple)
+          assert_nil episode.integration_feed(:apple)
+        end
       end
     end
 

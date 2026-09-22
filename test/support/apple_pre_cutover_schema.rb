@@ -8,6 +8,7 @@ module ApplePreCutoverSchema
       connection.transaction(requires_new: true) do
         connection.remove_check_constraint :sync_logs, name: "apple_episode_sync_logs_require_show"
         connection.remove_check_constraint :integrations_episode_delivery_statuses, name: "apple_delivery_statuses_require_show"
+        connection.change_column_null :apple_configs, :show_feed_binding_id, true
         connection.change_column_null :apple_podcast_containers, :apple_show_id, true
         yield
         raise ActiveRecord::Rollback
