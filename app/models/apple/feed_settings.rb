@@ -9,6 +9,7 @@ module Apple
   #   config, OWN for this feed's own binding (which may not exist until
   #   this save connects it), or the id of a public feed's binding
   # - publish_enabled, sync_blocks_rss: the delivery config's flags
+  # - hls_enabled: whether a public feed's binding delivers HLS video
   #
   # Every attribute is optional. A missing one keeps the saved setting, so
   # a form that doesn't render a field can't clear it.
@@ -20,8 +21,8 @@ module Apple
     include ActiveModel::Model
 
     OWN = "own"
-    ATTRIBUTES = %i[delivery connection publish_enabled sync_blocks_rss].freeze
-    BOOLEANS = %i[publish_enabled sync_blocks_rss].freeze
+    ATTRIBUTES = %i[delivery connection publish_enabled sync_blocks_rss hls_enabled].freeze
+    BOOLEANS = %i[publish_enabled sync_blocks_rss hls_enabled].freeze
 
     attr_reader :feed
 
@@ -71,6 +72,10 @@ module Apple
       !!config&.sync_blocks_rss?
     end
 
+    def hls_enabled_was
+      !!hls_config&.enabled?
+    end
+
     # Megaphone feeds deliver to Apple without an Apple show connection.
     def connectable?
       feed.apple_connectable?
@@ -80,6 +85,11 @@ module Apple
     # delivery of its own.
     def deliverable?
       connectable? && !feed.default?
+    end
+
+    # HLS video is delivered through a public feed's own binding.
+    def hls_available?
+      connectable? && feed.public?
     end
 
     # A new feed maps to a public feed; its own show is set up once saved.
@@ -138,6 +148,10 @@ module Apple
       feed.delegated_delivery_config
     end
 
+    def hls_config
+      binding&.hls_config
+    end
+
     # Point the feed's config at the submitted delivery before the feed
     # validates. The config saves with the feed.
     def apply
@@ -165,6 +179,32 @@ module Apple
       connection_changed(binding.disconnect)
     end
 
+    # Save HLS after the feed saves and after disconnect, so a disconnected
+    # binding takes its HLS config with it.
+    #
+    # Enabling HLS, or reconnecting while enabled, rechecks Apple video
+    # eligibility. Disabling makes no Apple request and leaves Apple video as is.
+    def save_hls_config
+      return true unless hls_submitted?
+
+      if binding.nil?
+        return true if !hls_enabled || connection_change
+
+        errors.add(:hls_enabled, "HLS video requires an Apple show connection")
+        return false
+      end
+
+      hls = binding.hls_config || binding.build_hls_config
+      return true if hls.new_record? && !hls_enabled
+
+      recheck = hls_enabled && (!hls.enabled? || connection_change)
+      hls.enabled = hls_enabled
+      return false if recheck && !refresh_hls_eligibility(hls)
+
+      hls.save!
+      true
+    end
+
     private
 
     def submitted?(name)
@@ -177,6 +217,10 @@ module Apple
 
     def delivery_submitted?
       deliverable? && submitted?(:delivery)
+    end
+
+    def hls_submitted?
+      hls_available? && submitted?(:hls_enabled)
     end
 
     def mapped_binding_id
@@ -255,6 +299,15 @@ module Apple
       feed.association(:apple_show_feed_binding).reset
       @connection_binding = nil
       true
+    end
+
+    def refresh_hls_eligibility(hls)
+      hls.refresh_eligibility
+      true
+    rescue => error
+      Rails.logger.error("Unable to check Apple HLS eligibility", feed_id: feed.id, apple_show_id: binding.apple_show_id, error: error)
+      errors.add(:hls_enabled, "Could not check Apple video eligibility for this show")
+      false
     end
   end
 end

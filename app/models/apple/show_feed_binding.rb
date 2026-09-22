@@ -12,6 +12,12 @@ module Apple
       inverse_of: :show_feed_binding,
       dependent: :destroy
 
+    has_one :hls_config,
+      class_name: "Apple::HlsConfig",
+      foreign_key: :show_feed_binding_id,
+      inverse_of: :show_feed_binding,
+      dependent: :destroy
+
     alias_method :config, :delegated_delivery_config
     alias_method :config=, :delegated_delivery_config=
 
