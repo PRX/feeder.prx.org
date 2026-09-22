@@ -122,7 +122,7 @@ module FeedApple
   def disconnect_apple_show
     return unless @apple_settings
 
-    unless @apple_settings.disconnect
+    unless @apple_settings.disconnect && @apple_settings.save_hls_config
       errors.add(:apple_settings, :invalid)
       raise ActiveRecord::RecordInvalid, self
     end
