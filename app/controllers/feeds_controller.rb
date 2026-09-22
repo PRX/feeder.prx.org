@@ -146,6 +146,7 @@ class FeedsController < ApplicationController
       :import_locked,
       :apple_verify_token,
       :apple_connection,
+      :apple_hls_enabled,
       itunes_category: [],
       itunes_subcategory: [],
       feed_tokens_attributes: %i[id label token _destroy],

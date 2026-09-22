@@ -5,6 +5,7 @@ require "text_sanitizer"
 
 class Episode < ApplicationRecord
   include EpisodeAdBreaks
+  include EpisodeAppleHls
   include EpisodeEnclosure
   include EpisodeFilters
   include EpisodeHasFeeds

@@ -423,6 +423,7 @@ en:
         url: Episode URL
       feed:
         apple_connection: Apple show connection
+        apple_hls_enabled: Enable HLS Video
         apple_verify_token: Apple Podcasts Verify Token
         audio_type: Format
         audio_bitrate: Bitrate
@@ -942,8 +943,11 @@ en:
       last_checked_html: "Last checked: %{time}"
       confirm_replace: Are you sure you want to replace this Apple connection? Dependent delegated-delivery feeds will use the new connection.
       confirm_remove: Are you sure you want to remove this Apple connection?
+      hls_not_eligible: Apple has not enabled video for this show. HLS video requires the podcaster's own Podcasts Connect account and API key.
+      hls_last_checked_html: "HLS eligibility last checked: %{time}"
       help:
         connection: Select the Apple show to connect to this feed. This will allow you to setup Apple's Delegated Delivery on private feeds.
+        hls_enabled: Deliver this feed's HLS video to Apple Podcasts. Turning this off stops Feeder managing the video and leaves video already on Apple in place.
     form_audio_format:
       title: Audio Format
       help:
