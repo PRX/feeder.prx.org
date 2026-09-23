@@ -69,8 +69,10 @@ class Uncut < MediaResource
         end
       end
 
-      if episode.video?
-        episode.set_alt_media(url, segmentation)
+      # NOTE: manually assigning association, which won't destroy the old
+      # alt_media until the after create :replace_resources! runs
+      if episode.video? && !episode.alternate_media_resource&.same_uncut?(self)
+        episode.association(:alternate_media_resource).target = AlternateMediaResource.from_uncut(self)
       end
     end
   end

@@ -1,56 +1,49 @@
-class Tasks::TranscodeHlsTask < Tasks::CopyMediaTask
-  DEFAULT_MP3_BITRATE = 192
-
-  def source_url
-    media_resource&.href
+class Tasks::TranscodeHlsTask < ::Task
+  def media_resource
+    owner
   end
 
-  def source_file_name
+  def source_url
+    media_resource&.original_url
   end
 
   def porter_tasks
     [].tap do |tasks|
-      tasks << porter_inspect_task
-      tasks << porter_copy_task
-      tasks << porter_mp3_task
-      # TODO: tasks << porter_apple_hls_task
+      tasks << porter_hls_task
     end
+  end
+
+  def update_owner
+    media_resource.status = status
+
+    # change status, if metadata doesn't pass validations
+    media_resource.status = "invalid" if complete? && media_resource.invalid?
+
+    media_resource.save!
+    media_resource.after_hls_transcode(self) if media_resource.status_complete?
   end
 
   private
 
-  # create an mp3 version of the video, for the plain enclosure url
-  def porter_mp3_task
+  def porter_hls_task
     {
-      Type: "Transcode",
-      Format: "mp3",
+      Type: "HLS",
+      Preset: "Standard Podcast 2026 v1",
+      AdBreaks: hls_ad_breaks,
       Destination: {
         Mode: "AWS/S3",
         BucketName: ENV["FEEDER_STORAGE_BUCKET"],
-        ObjectKey: porter_escape(media_resource.variant_path("audio.mp3")),
-        ContentType: "REPLACE",
+        ObjectKeyPrefix: media_resource.variant_path(""),
         Parameters: {
           CacheControl: "max-age=86400",
-          ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.file_name + ".mp3")}\""
+          ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.file_name)}\""
         }
-      },
-      FFmpeg: {
-        OutputFileOptions: "-b:a #{mp3_bitrate}k"
       }
     }
   end
 
-  # NOTE: need to specify something, to force converting to CBR
-  def mp3_bitrate
-    fmt = media_resource.episode&.podcast&.default_feed&.audio_format
-    if fmt && fmt[:f] == "mp3"
-      fmt[:b]
-    else
-      DEFAULT_MP3_BITRATE
-    end
-  end
-
-  # TODO: transcode index.m3u8 and variants
-  def porter_apple_hls_task
+  # NOTE: HLS task doesn't support pre/post or cutting content out of midroll break
+  def hls_ad_breaks
+    media_resource.segmentation[0...-1].map(&:last)
   end
 end

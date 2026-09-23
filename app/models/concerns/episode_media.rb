@@ -262,6 +262,8 @@ module EpisodeMedia
   def media_status
     states = if override?
       [external_media_resource&.status]
+    elsif video?
+      ([uncut, alternate_media_resource] + media).compact.map(&:status).uniq
     else
       ([uncut] + media).compact.map(&:status).uniq
     end
@@ -304,14 +306,12 @@ module EpisodeMedia
     end
   end
 
-  def alt_media
-    alternate_media_resource if video?
+  def alt_media?
+    alt_media
   end
 
-  def set_alt_media(url, segs)
-    unless alt_media && alt_media.original_url == url && alt_media.segmentation == segs
-      build_alternate_media_resource(original_url: url, segmentation: segs)
-    end
+  def alt_media
+    alternate_media_resource if video?
   end
 
   def ready_alt_media
