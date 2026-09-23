@@ -1,6 +1,7 @@
 .prx-badge-incomplete,
 .prx-badge-duplicate,
 .prx-badge-scheduled,
+.prx-badge-cancelled,
 .prx-badge-draft {
   background: $warning;
   color: $black;
@@ -17,6 +18,7 @@
 }
 
 .prx-badge-started,
+.prx-badge-retrying,
 .prx-badge-importing {
   background: $primary;
 }
@@ -40,4 +42,16 @@
 .prx-badge-no_media,
 .prx-badge-error {
   background: $danger;
+}
+
+.prx-badge-spinner {
+  line-height: 1.5em;
+  // margin-left: 0.25rem;
+
+  .spinner-border {
+    margin-left: 0.25rem;
+    height: 0.75rem;
+    width: 0.75rem;
+    vertical-align: text-top;
+  }
 }

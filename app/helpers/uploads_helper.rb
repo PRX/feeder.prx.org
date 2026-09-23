@@ -100,6 +100,17 @@ module UploadsHelper
     end
   end
 
+  def upload_status_badge(rec)
+    tag.span class: "badge rounded-pill prx-badge-spinner prx-badge-#{rec.status}" do
+      label = t("helpers.label.media_resource.statuses.#{rec.status}").html_safe
+      if upload_processing?(rec)
+        label + tag.span(class: "spinner-border")
+      else
+        label
+      end
+    end
+  end
+
   def upload_invalid_messages(rec)
     msgs =
       if rec.status_invalid?
@@ -134,16 +145,6 @@ module UploadsHelper
 
   def upload_complete?(rec)
     %w[complete].include?(rec.status)
-  end
-
-  def upload_status_class(rec)
-    if upload_processing?(rec)
-      "secondary"
-    elsif upload_complete?(rec)
-      "success"
-    else
-      "danger"
-    end
   end
 
   def upload_file_size_error(media)

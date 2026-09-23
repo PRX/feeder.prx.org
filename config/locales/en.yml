@@ -499,6 +499,15 @@ en:
           passthru: Video File
           uncut: Audio File
           video: Video File
+        statuses:
+          cancelled: Cancelled
+          complete: Complete
+          created: Created
+          error: Error
+          invalid: Invalid
+          processing: Processing
+          retrying: Retrying
+          started: Started
       podcast:
         author_email: Author Email
         author_name: Author Name
@@ -816,14 +825,17 @@ en:
         hint: Processing
         still_processing: *still_processing
     segmenter:
-      modal:
+      table:
+        empty: Mark your ad breaks to generate segments
         label:
-          file_name: File Name
-          position: "#"
-          slice_end: Slice End
-          slice_start: Slice Start
+          duration: Duration
+          name: Segment
+          slice_end: Ends At
+          slice_start: Starts At
           status: Status
-        title: Audio Segments
+          updated_at: Last Updated
+        segment: "Audio Segment %{position}"
+        video: HLS Video
     show:
       title: "%{title} - Media Files"
     update:

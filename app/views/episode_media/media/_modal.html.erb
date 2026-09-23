@@ -21,7 +21,7 @@
             <tr>
               <th scope="row"><strong><%= t(".status") %>:</strong></th>
               <td>
-                <span class="badge bg-<%= upload_status_class(media) %>"><%= media.status.capitalize %></span>
+                <%= upload_status_badge(media) %>
               </td>
             </tr>
             <tr>
