@@ -250,8 +250,7 @@ module Apple
       show_id = scoped_apple_show_id!
       logs = SyncLog.apple.episodes.where(feeder_id: feeder_episode.id, feeder_type: :episodes)
 
-      # TODO remove with cutover once all legacy NULL-show rows are stamped.
-      logs.find_by(external_show_id: show_id) || logs.find_by(external_show_id: nil)
+      logs.find_by(external_show_id: show_id)
     end
 
     def apple_show_id
@@ -536,8 +535,7 @@ module Apple
     def podcast_container
       show_id = scoped_apple_show_id!
       containers = Apple::PodcastContainer.where(episode_id: feeder_id)
-      # TODO remove with cutover after all legacy NULL-show rows are stamped.
-      containers.find_by(apple_show_id: show_id) || containers.find_by(apple_show_id: nil)
+      containers.find_by(apple_show_id: show_id)
     end
 
     def podcast_deliveries
@@ -577,9 +575,8 @@ module Apple
     def delivery_statuses
       show_id = scoped_apple_show_id!
 
-      # TODO remove with cutover after all legacy NULL-show rows are stamped.
       Apple::EpisodeDeliveryStatus
-        .where(episode_id: feeder_id, apple_show_id: [show_id, nil])
+        .where(episode_id: feeder_id, apple_show_id: show_id)
         .order(created_at: :desc)
     end
 
