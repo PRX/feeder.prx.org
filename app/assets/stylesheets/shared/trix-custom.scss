@@ -73,4 +73,21 @@ trix-editor.trix-content[contenteditable="false"] {
     background-color: $light-blue-300;
     border-color: $border-color-dark;
   }
+
+  .trix-dialog,
+  .trix-dialog .trix-input--dialog,
+  .trix-dialog .trix-button-group {
+    background-color: $dark;
+    border-color: $border-color-dark;
+    color: $white;
+  }
+
+  .trix-dialog .trix-button {
+    color: $link-color-dark;
+    border-color: $border-color-dark;
+  }
+
+  .trix-content pre {
+    background-color: $navy;
+  }
 }
