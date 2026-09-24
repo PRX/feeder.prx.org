@@ -374,6 +374,99 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_equal key, podcast.reload.apple_key
   end
 
+  def stub_apple_show_video(show_id, video_enabled, status: 200)
+    body = {data: {id: show_id, type: "shows", attributes: {alternateAssetVideoEnabled: video_enabled}}}.to_json
+    stub_request(:get, "https://aardvark.prx.org/shows/#{show_id}").to_return(status: status, body: body)
+  end
+
+  test "enables HLS video and caches Apple video eligibility" do
+    connected_apple_feed
+    stub_apple_show_video("show-1", true)
+
+    patch podcast_feed_url(podcast, feed), params: {feed: {apple_connection: "show-1", apple_hls_enabled: "1"}}
+
+    assert_redirected_to podcast_feed_url(podcast, feed)
+    config = feed.reload.apple_hls_config
+    assert config.enabled?
+    assert config.video_enabled_cache
+    assert config.last_checked_at.present?
+  end
+
+  test "connects a show and enables HLS video in one save" do
+    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
+    stub_apple_show_video("show-1", true)
+
+    patch podcast_feed_url(podcast, feed), params: {feed: {apple_connection: "show-1", apple_hls_enabled: "1"}}
+
+    assert_redirected_to podcast_feed_url(podcast, feed)
+    assert feed.reload.apple_hls_config.publishable?
+  end
+
+  test "keeps an ineligible show connected and explains HLS eligibility" do
+    connected_apple_feed
+    stub_apple_show_video("show-1", false)
+
+    patch podcast_feed_url(podcast, feed), params: {feed: {apple_connection: "show-1", apple_hls_enabled: "1"}}
+
+    assert_redirected_to podcast_feed_url(podcast, feed)
+    assert feed.reload.apple_hls_config.not_eligible?
+    assert_equal "show-1", feed.apple_show_feed_binding.apple_show_id
+
+    get podcast_feed_url(podcast, feed)
+    assert_select '.alert-warning[role="status"]', text: I18n.t("feeds.form_apple_connection.hls_not_eligible")
+  end
+
+  test "does not recheck Apple while HLS stays enabled" do
+    connected_apple_feed
+    create(:apple_hls_config, show_feed_binding: feed.apple_show_feed_binding, video_enabled_cache: true)
+
+    patch podcast_feed_url(podcast, feed), params: {feed: {apple_connection: "show-1", apple_hls_enabled: "1"}}
+
+    assert_redirected_to podcast_feed_url(podcast, feed)
+    assert_not_requested :get, "https://aardvark.prx.org/shows/show-1"
+  end
+
+  test "disables HLS video without calling Apple" do
+    connected_apple_feed
+    config = create(:apple_hls_config, show_feed_binding: feed.apple_show_feed_binding)
+
+    patch podcast_feed_url(podcast, feed), params: {feed: {apple_connection: "show-1", apple_hls_enabled: "0"}}
+
+    assert_redirected_to podcast_feed_url(podcast, feed)
+    refute config.reload.enabled?
+    assert_not_requested :get, "https://aardvark.prx.org/shows/show-1"
+  end
+
+  test "rejects enabling HLS video when Apple cannot read the show" do
+    connected_apple_feed
+    stub_apple_show_video("show-1", true, status: 500)
+
+    patch podcast_feed_url(podcast, feed), params: {feed: {title: "Changed", apple_connection: "show-1", apple_hls_enabled: "1"}}
+
+    assert_response :unprocessable_entity
+    assert_select '.card-body > .alert-danger[role="alert"]', text: "Could not check Apple video eligibility for this show"
+    assert_nil feed.reload.apple_hls_config
+    refute_equal "Changed", feed.title
+  end
+
+  test "requires an Apple show connection to enable HLS video" do
+    patch podcast_feed_url(podcast, feed), params: {feed: {apple_hls_enabled: "1"}}
+
+    assert_response :unprocessable_entity
+    assert_select '.card-body > .alert-danger[role="alert"]', text: "HLS video requires an Apple show connection"
+  end
+
+  test "disconnecting a show removes its HLS configuration" do
+    connected_apple_feed
+    config = create(:apple_hls_config, show_feed_binding: feed.apple_show_feed_binding)
+
+    patch podcast_feed_url(podcast, feed), params: {feed: {apple_connection: "", apple_hls_enabled: "1"}}
+
+    assert_redirected_to podcast_feed_url(podcast, feed)
+    assert_nil feed.reload.apple_show_feed_binding
+    refute Apple::HlsConfig.exists?(config.id)
+  end
+
   test "does not connect without a selected podcast credential" do
     patch podcast_feed_url(podcast, feed), params: {
       feed: {apple_connection: "show-1"}

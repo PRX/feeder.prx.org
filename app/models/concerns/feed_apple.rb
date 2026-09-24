@@ -41,10 +41,27 @@ module FeedApple
     apple_connection.to_s != apple_connection_was.to_s
   end
 
+  def apple_hls_config
+    apple_show_feed_binding&.hls_config
+  end
+
+  def apple_hls_enabled
+    if defined?(@apple_hls_enabled)
+      @apple_hls_enabled
+    else
+      !!apple_hls_config&.enabled?
+    end
+  end
+
+  def apple_hls_enabled=(value)
+    @apple_hls_enabled = ActiveModel::Type::Boolean.new.cast(value) || false
+  end
+
   def save_with_apple_connection
     saved = false
     transaction do
-      if save && save_apple_connection
+      connection_changed = public? && apple_connection_changed?
+      if save && save_apple_connection && save_apple_hls_config(connection_changed)
         saved = true
       else
         raise ActiveRecord::Rollback
@@ -65,6 +82,39 @@ module FeedApple
     binding.errors.full_messages.each { |message| errors.add(:apple_connection, message) }
     association(:apple_show_feed_binding).reset if binding.errors.empty?
     binding.errors.empty?
+  end
+
+  # Enabling HLS, or reconnecting while enabled, rechecks Apple video
+  # eligibility. Disabling makes no Apple request and leaves Apple video as is.
+  private def save_apple_hls_config(connection_changed)
+    return true unless public? && defined?(@apple_hls_enabled)
+
+    binding = apple_show_feed_binding
+    if binding.nil?
+      return true unless @apple_hls_enabled && !connection_changed
+
+      errors.add(:apple_hls_enabled, "HLS video requires an Apple show connection")
+      return false
+    end
+
+    config = binding.hls_config || binding.build_hls_config
+    return true if config.new_record? && !@apple_hls_enabled
+
+    recheck = @apple_hls_enabled && (!config.enabled? || connection_changed)
+    config.enabled = @apple_hls_enabled
+    return false if recheck && !refresh_apple_hls_eligibility(config)
+
+    config.save!
+    true
+  end
+
+  private def refresh_apple_hls_eligibility(config)
+    config.refresh_eligibility
+    true
+  rescue => error
+    Rails.logger.error("Unable to check Apple HLS eligibility", feed_id: id, apple_show_id: config.show_feed_binding.apple_show_id, error: error)
+    errors.add(:apple_hls_enabled, "Could not check Apple video eligibility for this show")
+    false
   end
 
   def publish_to_apple?
