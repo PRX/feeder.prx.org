@@ -78,131 +78,131 @@ describe Apple::Episode do
       end
     end
 
-    # it "rejects new delivery status rows without a show id" do
-    #   status = build(:apple_episode_delivery_status, episode: episode, apple_show_id: nil)
+    it "rejects new delivery status rows without a show id" do
+      status = build(:apple_episode_delivery_status, episode: episode, apple_show_id: nil)
 
-    #   refute status.valid?
-    #   assert_includes status.errors[:apple_show_id], "Can't be blank"
-    # end
+      refute status.valid?
+      assert_includes status.errors[:apple_show_id], "Can't be blank"
+    end
 
-    # it "does not expose the generic instance update path" do
-    #   status = create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-1")
+    it "does not expose the generic instance update path" do
+      status = create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-1")
 
-    #   assert_raises(NoMethodError) { status.send(:update_status, delivered: true) }
-    # end
+      assert_raises(NoMethodError) { status.send(:update_status, delivered: true) }
+    end
 
-    # it "lets a known show read legacy status and stamps the next write" do
-    #   legacy_status = create_legacy_record(:apple_episode_delivery_status,
-    #     episode: episode,
-    #     apple_show_id: nil,
-    #     delivered: false,
-    #     uploaded: false,
-    #     asset_processing_attempts: 2)
+    it "lets a known show read legacy status and stamps the next write" do
+      legacy_status = create_legacy_record(:apple_episode_delivery_status,
+        episode: episode,
+        apple_show_id: nil,
+        delivered: false,
+        uploaded: false,
+        asset_processing_attempts: 2)
 
-    #   assert_equal legacy_status, show_one_episode.delivery_status
-    #   assert_includes show_one_episode.delivery_statuses, legacy_status
+      assert_equal legacy_status, show_one_episode.delivery_status
+      assert_includes show_one_episode.delivery_statuses, legacy_status
 
-    #   scoped_status = show_one_episode.update_delivery_status(uploaded: true)
+      scoped_status = show_one_episode.update_delivery_status(uploaded: true)
 
-    #   refute_equal legacy_status, scoped_status
-    #   assert_equal "show-1", scoped_status.apple_show_id
-    #   assert scoped_status.uploaded
-    #   assert_equal 2, scoped_status.asset_processing_attempts
-    #   assert_nil legacy_status.reload.apple_show_id
-    #   refute legacy_status.uploaded
-    # end
+      refute_equal legacy_status, scoped_status
+      assert_equal "show-1", scoped_status.apple_show_id
+      assert scoped_status.uploaded
+      assert_equal 2, scoped_status.asset_processing_attempts
+      assert_nil legacy_status.reload.apple_show_id
+      refute legacy_status.uploaded
+    end
 
-    # it "allows an existing legacy status to remain saveable during backfill" do
-    #   legacy_status = create_legacy_record(:apple_episode_delivery_status,
-    #     episode: episode,
-    #     apple_show_id: nil,
-    #     delivered: false)
+    it "allows an existing legacy status to remain saveable during backfill" do
+      legacy_status = create_legacy_record(:apple_episode_delivery_status,
+        episode: episode,
+        apple_show_id: nil,
+        delivered: false)
 
-    #   legacy_status.update!(source_fetch_count: 1)
+      legacy_status.update!(source_fetch_count: 1)
 
-    #   assert_equal 1, legacy_status.reload.source_fetch_count
-    #   assert_nil legacy_status.apple_show_id
-    # end
+      assert_equal 1, legacy_status.reload.source_fetch_count
+      assert_nil legacy_status.apple_show_id
+    end
 
-    # it "keeps delivery-status reads and writes within the current show" do
-    #   legacy_status = create_legacy_record(:apple_episode_delivery_status,
-    #     episode: episode,
-    #     apple_show_id: nil,
-    #     delivered: false)
+    it "keeps delivery-status reads and writes within the current show" do
+      legacy_status = create_legacy_record(:apple_episode_delivery_status,
+        episode: episode,
+        apple_show_id: nil,
+        delivered: false)
 
-    #   show_one_episode.update_delivery_status(delivered: true)
-    #   show_two_episode.update_delivery_status(delivered: false, uploaded: true)
+      show_one_episode.update_delivery_status(delivered: true)
+      show_two_episode.update_delivery_status(delivered: false, uploaded: true)
 
-    #   assert show_one_episode.delivery_status.delivered
-    #   refute show_two_episode.delivery_status.delivered
-    #   assert show_two_episode.delivery_status.uploaded
-    #   assert_equal "show-1", show_one_episode.delivery_status.apple_show_id
-    #   assert_equal "show-2", show_two_episode.delivery_status.apple_show_id
-    #   assert_nil legacy_status.reload.apple_show_id
+      assert show_one_episode.delivery_status.delivered
+      refute show_two_episode.delivery_status.delivered
+      assert show_two_episode.delivery_status.uploaded
+      assert_equal "show-1", show_one_episode.delivery_status.apple_show_id
+      assert_equal "show-2", show_two_episode.delivery_status.apple_show_id
+      assert_nil legacy_status.reload.apple_show_id
 
-    #   show_one_episode.update_delivery_status(uploaded: false)
+      show_one_episode.update_delivery_status(uploaded: false)
 
-    #   refute show_one_episode.delivery_status.uploaded
-    #   assert show_two_episode.delivery_status.uploaded
-    # end
+      refute show_one_episode.delivery_status.uploaded
+      assert show_two_episode.delivery_status.uploaded
+    end
 
-    # it "increments asset wait through the show-scoped episode" do
-    #   legacy_status = create_legacy_record(:apple_episode_delivery_status,
-    #     episode: episode,
-    #     apple_show_id: nil,
-    #     delivered: false,
-    #     uploaded: true,
-    #     asset_processing_attempts: 2)
+    it "increments asset wait through the show-scoped episode" do
+      legacy_status = create_legacy_record(:apple_episode_delivery_status,
+        episode: episode,
+        apple_show_id: nil,
+        delivered: false,
+        uploaded: true,
+        asset_processing_attempts: 2)
 
-    #   new_status = show_one_episode.increment_asset_wait!
+      new_status = show_one_episode.increment_asset_wait!
 
-    #   assert_equal 3, new_status.asset_processing_attempts
-    #   assert_equal "show-1", new_status.apple_show_id
-    #   assert_nil legacy_status.reload.apple_show_id
-    # end
+      assert_equal 3, new_status.asset_processing_attempts
+      assert_equal "show-1", new_status.apple_show_id
+      assert_nil legacy_status.reload.apple_show_id
+    end
 
-    # it "does not read another show's container or deliveries" do
-    #   container = create(:apple_podcast_container,
-    #     episode: episode,
-    #     apple_show_id: "show-1")
-    #   delivery = create(:apple_podcast_delivery,
-    #     episode: episode,
-    #     podcast_container: container)
+    it "does not read another show's container or deliveries" do
+      container = create(:apple_podcast_container,
+        episode: episode,
+        apple_show_id: "show-1")
+      delivery = create(:apple_podcast_delivery,
+        episode: episode,
+        podcast_container: container)
 
-    #   assert_equal container, show_one_episode.podcast_container
-    #   assert_equal [delivery], show_one_episode.podcast_deliveries.to_a
-    #   assert_nil show_two_episode.podcast_container
-    #   assert_empty show_two_episode.podcast_deliveries
-    # end
+      assert_equal container, show_one_episode.podcast_container
+      assert_equal [delivery], show_one_episode.podcast_deliveries.to_a
+      assert_nil show_two_episode.podcast_container
+      assert_empty show_two_episode.podcast_deliveries
+    end
 
-    # it "allows a known show to read its legacy container" do
-    #   legacy_container = create_legacy_record(:apple_podcast_container,
-    #     episode: episode,
-    #     apple_show_id: nil)
+    it "allows a known show to read its legacy container" do
+      legacy_container = create_legacy_record(:apple_podcast_container,
+        episode: episode,
+        apple_show_id: nil)
 
-    #   assert_equal legacy_container, show_one_episode.podcast_container
-    # end
+      assert_equal legacy_container, show_one_episode.podcast_container
+    end
 
-    # it "rejects delivery-state access without a show id" do
-    #   showless_episode = build(:apple_episode, show: apple_show, feeder_episode: episode)
-    #   showless_episode.define_singleton_method(:apple_show_id) { nil }
-    #   legacy_container = create_legacy_record(:apple_podcast_container, episode: episode, apple_show_id: nil)
-    #   legacy_status = create_legacy_record(:apple_episode_delivery_status,
-    #     episode: episode,
-    #     apple_show_id: nil,
-    #     delivered: false)
+    it "rejects delivery-state access without a show id" do
+      showless_episode = build(:apple_episode, show: apple_show, feeder_episode: episode)
+      showless_episode.define_singleton_method(:apple_show_id) { nil }
+      legacy_container = create_legacy_record(:apple_podcast_container, episode: episode, apple_show_id: nil)
+      legacy_status = create_legacy_record(:apple_episode_delivery_status,
+        episode: episode,
+        apple_show_id: nil,
+        delivered: false)
 
-    #   assert_raises(ArgumentError) { showless_episode.podcast_container }
-    #   assert_raises(ArgumentError) { showless_episode.sync_log }
-    #   assert_raises(ArgumentError) { showless_episode.delivery_status }
-    #   assert_raises(ArgumentError) { showless_episode.delivery_statuses.to_a }
-    #   assert_raises(ArgumentError) { showless_episode.update_delivery_status(delivered: true) }
+      assert_raises(ArgumentError) { showless_episode.podcast_container }
+      assert_raises(ArgumentError) { showless_episode.sync_log }
+      assert_raises(ArgumentError) { showless_episode.delivery_status }
+      assert_raises(ArgumentError) { showless_episode.delivery_statuses.to_a }
+      assert_raises(ArgumentError) { showless_episode.update_delivery_status(delivered: true) }
 
-    #   assert_equal legacy_container, Apple::PodcastContainer.find(legacy_container.id)
-    #   refute legacy_status.reload.delivered
-    #   assert_nil legacy_status.apple_show_id
-    #   assert_equal 1, Apple::EpisodeDeliveryStatus.where(episode_id: episode.id).count
-    # end
+      assert_equal legacy_container, Apple::PodcastContainer.find(legacy_container.id)
+      refute legacy_status.reload.delivered
+      assert_nil legacy_status.apple_show_id
+      assert_equal 1, Apple::EpisodeDeliveryStatus.where(episode_id: episode.id).count
+    end
 
     it "exposes only the explicit show-scoped API" do
       assert_nil episode.media_version_id
