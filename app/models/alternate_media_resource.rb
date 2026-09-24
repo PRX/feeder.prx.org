@@ -3,20 +3,19 @@ class AlternateMediaResource < MediaResource
     bit_rate
     channels
     duration
-    episode_id
+    episode
     file_size
     frame_rate
     height
     lang
     medium
-    mime_type
     sample_rate
     segmentation
     width
   ]
 
   def self.from_uncut(uncut)
-    new(uncut.slice(*COPY_FIELDS).merge(original_url: uncut.url))
+    new(uncut.slice(*COPY_FIELDS).merge(original_url: uncut.url, mime_type: "application/x-mpegURL"))
   end
 
   def same_uncut?(uncut)

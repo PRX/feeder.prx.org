@@ -28,7 +28,7 @@
             </td>
             <td class="px-2"><%= (c.slice_start || 0.000001).to_time_summary %></td>
             <td class="px-2"><%= (c.slice_end || uncut.duration).to_time_summary %></td>
-            <td class="px-2"><%= c.duration.to_time_summary %></td>
+            <td class="px-2"><%= blank_dash(c.duration&.to_time_summary) %></td>
             <td class="px-2"><%= upload_status_badge(c) %></td>
             <td class="px-2"><%= local_time_ago(c.updated_at) %></td>
           </tr>

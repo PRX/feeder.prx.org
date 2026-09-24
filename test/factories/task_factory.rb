@@ -54,4 +54,11 @@ FactoryBot.define do
     options { {destination: "s3://test-prx-up/podcast/episode/filename.mp3"} }
     result { build(:porter_job_results) }
   end
+
+  factory :transcode_hls_task, class: Tasks::TranscodeHlsTask do
+    association :owner, factory: :alternate_media_resource
+    status { :complete }
+    job_id { "1234" }
+    result { {} }
+  end
 end

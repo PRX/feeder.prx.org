@@ -35,8 +35,7 @@ class Tasks::TranscodeHlsTask < ::Task
         BucketName: ENV["FEEDER_STORAGE_BUCKET"],
         ObjectKeyPrefix: media_resource.variant_path(""),
         Parameters: {
-          CacheControl: "max-age=86400",
-          ContentDisposition: "attachment; filename=\"#{porter_escape(media_resource.file_name)}\""
+          CacheControl: "max-age=86400"
         }
       }
     }

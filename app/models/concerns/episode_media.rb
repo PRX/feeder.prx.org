@@ -306,10 +306,6 @@ module EpisodeMedia
     end
   end
 
-  def alt_media?
-    alt_media
-  end
-
   def alt_media
     alternate_media_resource if video?
   end
