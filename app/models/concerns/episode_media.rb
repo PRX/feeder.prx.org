@@ -154,8 +154,8 @@ module EpisodeMedia
       super
     end
 
-    if uncut.present?
-      self.medium = uncut.video? ? "video" : "uncut"
+    self.medium = if uncut.present?
+      uncut.video? ? "video" : "uncut"
     end
   end
 
