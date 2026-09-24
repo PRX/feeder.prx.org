@@ -10,7 +10,7 @@ module Apple
       class_name: "Apple::DelegatedDeliveryConfig",
       foreign_key: :show_feed_binding_id,
       inverse_of: :show_feed_binding,
-      dependent: :nullify
+      dependent: :destroy
 
     alias_method :config, :delegated_delivery_config
     alias_method :config=, :delegated_delivery_config=
