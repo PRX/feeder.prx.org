@@ -29,6 +29,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_000002) do
   end
 
   create_table "apple_hls_alternate_assets", force: :cascade do |t|
+    t.string "apple_episode_id"
     t.string "apple_show_id", null: false
     t.string "content_url"
     t.datetime "created_at", null: false
