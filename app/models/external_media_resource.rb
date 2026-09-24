@@ -1,6 +1,8 @@
 class ExternalMediaResource < MediaResource
   validates :duration, numericality: {greater_than: 0}, if: :status_complete?
 
+  after_save :publish_episode!
+
   def guid
     nil
   end
@@ -23,5 +25,9 @@ class ExternalMediaResource < MediaResource
         task.owner = self
       end.start!
     end
+  end
+
+  def publish_episode!
+    episode&.publish! if status_complete? && status_previously_changed?
   end
 end

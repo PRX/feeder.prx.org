@@ -205,7 +205,8 @@ describe Apple::Episode do
     end
 
     it "exposes only the explicit show-scoped API" do
-      assert_equal episode.media_version_id, show_one_episode.media_version_id
+      assert_nil episode.media_version_id
+      assert_nil show_one_episode.media_version_id
       assert_equal episode.podcast_id, show_one_episode.podcast_id
 
       undelegated_methods = {
