@@ -112,6 +112,11 @@ module FeedApple
     config.present? && !config.marked_for_destruction? && config.show_feed_binding&.id == apple_show_feed_binding.id
   end
 
+  # Apple HLS publishing is separate from the delegated-delivery integration.
+  def publish_apple_hls?
+    public? && !!apple_show_feed_binding&.hls_config&.publishable?
+  end
+
   def publish_to_apple?
     persisted? && !!delegated_delivery_config&.publish_to_apple?
   end
