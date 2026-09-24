@@ -8,6 +8,7 @@
         </div>
         <div class="card-body pb-0">
           <%= render "episode_media/media/media", form: fields, episode: episode, media: fields.object %>
+          <%= render "episode_media/segmenter/table", episode: episode, uncut: fields.object %>
         </div>
       </div>
     </div>
@@ -17,12 +18,6 @@
         <div class="card shadow border-0">
           <div class="card-header card-header-warning d-flex justify-content-between align-items-center">
             <h2 class="card-title h5 flex-grow-1"><%= t(".title.segmenter") %></h2>
-
-            <% if episode.contents.present? %>
-              <button type="button" class="prx-btn-help" data-bs-toggle="modal" data-bs-target="#uncut-modal">
-                <span class="material-icons">info</span>
-              </button>
-            <% end %>
           </div>
           <div class="card-body pb-0">
             <%= render "episode_media/segmenter/segmenter", episode: episode, uncut: fields.object, form: fields %>
@@ -33,5 +28,3 @@
 
   <% end %>
 <% end %>
-
-<%= render "episode_media/segmenter/modal", contents: episode.contents %>

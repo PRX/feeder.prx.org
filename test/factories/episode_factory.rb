@@ -23,5 +23,21 @@ FactoryBot.define do
       contents { [association(:content, status: "complete")] }
       images { [association(:episode_image, status: "complete")] }
     end
+
+    factory :video_episode do
+      segment_count { 2 }
+      medium { "video" }
+
+      contents do
+        [
+          association(:content, status: "complete", position: 1, original_url: "s3://prx-testing/video1.mp4/preview.mp3"),
+          association(:content, status: "complete", position: 2, original_url: "s3://prx-testing/video1.mp4/preview.mp3")
+        ]
+      end
+
+      alternate_media_resource do
+        association(:alternate_media_resource, status: "complete", original_url: "s3://prx-testing/video1.mp4")
+      end
+    end
   end
 end

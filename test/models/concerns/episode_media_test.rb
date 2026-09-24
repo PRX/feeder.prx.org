@@ -61,12 +61,20 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       assert_equal episode.contents.first.original_url, episode.uncut.original_url
     end
 
-    it "sets segment count for videos" do
+    it "sets segment count for passthru and override" do
       episode.segment_count = 2
       refute episode.contents.first.marked_for_destruction?
 
-      episode.medium = "video"
+      episode.medium = "passthru"
       assert episode.contents.first.marked_for_destruction?
+      assert_equal 1, episode.segment_count
+
+      episode.segment_count = 2
+      episode.medium = "video"
+      assert_equal 2, episode.segment_count
+
+      episode.segment_count = 2
+      episode.medium = "override"
       assert_equal 1, episode.segment_count
     end
   end
@@ -406,9 +414,9 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       assert_equal "audio", ep.medium
     end
 
-    it "infers episode medium video" do
+    it "infers episode medium passthru" do
       ep.media = ["http://some.new/url.mov", "http://some.new/url.mp4"]
-      assert_equal "video", ep.medium
+      assert_equal "passthru", ep.medium
     end
 
     it "defaults to audio" do
@@ -537,11 +545,18 @@ class EpisodeMediaTest < ActiveSupport::TestCase
     end
   end
 
-  describe "#media_url" do
-    it "returns the first contents href" do
-      c1.stub(:href, "some-href") do
-        assert_equal "some-href", ep.media_url
-      end
+  describe "#ready_alt_media" do
+    let(:alt1) { build_stubbed(:alternate_media_resource, status: "processing") }
+    let(:alt2) { build_stubbed(:alternate_media_resource, status: "complete") }
+    let(:ep) { build_stubbed(:episode, medium: "video", segment_count: 2, alternate_media_resource: alt1, complete_alternate_media_resource: alt2) }
+
+    it "is only set for video episodes" do
+      assert_equal alt1, ep.alt_media
+      assert_equal alt2, ep.ready_alt_media
+
+      ep.medium = "passthru"
+      assert_nil ep.alt_media
+      assert_nil ep.ready_alt_media
     end
   end
 end

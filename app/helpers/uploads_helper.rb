@@ -39,6 +39,16 @@ module UploadsHelper
     params
   end
 
+  def upload_icon(ep = nil)
+    if ep&.audio?
+      "audio_file"
+    elsif ep&.video?
+      "video_file"
+    else
+      "attach_file"
+    end
+  end
+
   private
 
   def uploads_prefix
@@ -90,6 +100,17 @@ module UploadsHelper
     end
   end
 
+  def upload_status_badge(rec)
+    tag.span class: "badge rounded-pill prx-badge-spinner prx-badge-#{rec.status}" do
+      label = t("helpers.label.media_resource.statuses.#{rec.status}").html_safe
+      if upload_processing?(rec)
+        label + tag.span(class: "spinner-border")
+      else
+        label
+      end
+    end
+  end
+
   def upload_invalid_messages(rec)
     msgs =
       if rec.status_invalid?
@@ -126,13 +147,8 @@ module UploadsHelper
     %w[complete].include?(rec.status)
   end
 
-  def upload_status_class(rec)
-    if upload_processing?(rec)
-      "secondary"
-    elsif upload_complete?(rec)
-      "success"
-    else
-      "danger"
-    end
+  def upload_file_size_error(media)
+    size = number_to_human_size(media.max_file_size)
+    t("activerecord.errors.models.media_resource.attributes.file_size.less_than", size: size)
   end
 end

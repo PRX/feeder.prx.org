@@ -1,0 +1,57 @@
+<% if uncut.status_complete? && !uncut.marked_for_destruction? && episode.contents.present? %>
+  <div class="table-responsive mb-4" id="episode-segmenter-table">
+    <table class="table prx-person-table table-sm align-middle mb-0">
+      <thead>
+        <tr class="table-secondary">
+          <th scope="col"><%= t(".label.name") %></th>
+          <th scope="col"><%= t(".label.slice_start") %></th>
+          <th scope="col"><%= t(".label.slice_end") %></th>
+          <th scope="col"><%= t(".label.duration") %></th>
+          <th scope="col"><%= t(".label.status") %></th>
+          <th scope="col"><%= t(".label.updated_at") %></th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr class="show-if-last">
+          <td class="text-center align-middle text-muted p-4" colspan="100"><%= t(".empty") %></td>
+        </tr>
+
+        <% episode.contents.each do |c| %>
+          <tr>
+            <td class="px-2">
+              <% if c.status_complete? %>
+                <%= link_to t(".segment", position: c.position), c.url %>
+              <% else %>
+                <%= t(".segment", position: c.position) %>
+              <% end %>
+            </td>
+            <td class="px-2"><%= (c.slice_start || 0.000001).to_time_summary %></td>
+            <td class="px-2"><%= (c.slice_end || uncut.duration).to_time_summary %></td>
+            <td class="px-2"><%= blank_dash(c.duration&.to_time_summary) %></td>
+            <td class="px-2"><%= upload_status_badge(c) %></td>
+            <td class="px-2"><%= local_time_ago(c.updated_at) %></td>
+          </tr>
+        <% end %>
+
+        <% if episode.alt_media %>
+          <tr>
+            <td class="px-2">
+              <% if episode.alt_media.status_complete? %>
+                <%= link_to t(".video"), episode.alt_media.url %>
+              <% else %>
+                <%= t(".video") %>
+              <% end %>
+            </td>
+            <td class="px-2">&mdash;</td>
+            <td class="px-2">&mdash;</td>
+            <td class="px-2"><%= episode.alt_media.duration.to_time_summary %></td>
+            <td class="px-2"><%= upload_status_badge(episode.alt_media) %></span></td>
+            <td class="px-2"><%= local_time_ago(episode.alt_media.updated_at) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+<% end %>

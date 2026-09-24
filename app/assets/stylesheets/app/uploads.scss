@@ -5,6 +5,13 @@
     height: 24px;
     width: 24px;
   }
+
+  .badge {
+    .spinner-border {
+      height: 0.75rem;
+      width: 0.75rem;
+    }
+  }
 }
 
 .prx-audio-player {

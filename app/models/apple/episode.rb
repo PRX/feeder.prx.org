@@ -529,8 +529,10 @@ module Apple
       apple_id
     end
 
-    def video_content_type?
-      feeder_episode.video_content_type?
+    # TODO: we do transcode an mp3 audio version of hls-video episodes, but i'm unsure
+    # if those should be included or excluded here
+    def audio?
+      feeder_episode&.audio?
     end
 
     def podcast_container

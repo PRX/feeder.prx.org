@@ -253,4 +253,25 @@ describe FeedBuilder do
     type = podcast_transcript.attribute("type").to_s
     _(type).must_equal("text/html")
   end
+
+  describe "alternate enclosure" do
+    let(:episode) { create(:video_episode) }
+
+    it "returns alt enclosures for video episodes" do
+      feed.audio_format = nil
+      feed.set_default_episodes
+      node = rss_feed.css("item")[0]
+
+      # regular enclosure is an mp3
+      encl = node.at_css("enclosure")
+      assert_includes encl.attribute("url").value, "preview.mp3"
+      assert_equal "audio/mpeg", encl.attribute("type").value
+
+      # alt enclosure is hls
+      alt = node.at_css("podcast|alternateEnclosure")
+      src = alt.at_css("podcast|source")
+      assert_includes src.attribute("uri").value, "preview.m3u8"
+      assert_equal "application/x-mpegURL", alt.attribute("type").value
+    end
+  end
 end
