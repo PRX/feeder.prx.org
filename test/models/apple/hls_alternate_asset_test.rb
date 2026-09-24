@@ -34,12 +34,13 @@ module Apple
 
       it "updates the same row when the asset links to an Apple episode" do
         staged = upsert(resource_type: :staged_alternate_asset, response: staged_json)
-        apple_episode = Struct.new(:apple_json).new({"attributes" => {"alternateAssetContentUrl" => "https://example.com/b.m3u8"}})
+        episode_json = {"id" => "ep-1", "attributes" => {"alternateAssetContentUrl" => "https://example.com/b.m3u8"}}
 
-        linked = upsert(resource_type: :episode, apple_episode: apple_episode)
+        linked = upsert(resource_type: :episode, response: episode_json)
 
         assert_equal staged.id, linked.id
         assert linked.linked?
+        assert_equal "ep-1", linked.apple_episode_id
         assert_equal "https://example.com/b.m3u8", linked.content_url
         assert_equal 1, HlsAlternateAsset.count
       end
@@ -59,7 +60,7 @@ module Apple
       end
 
       it "marks a vanished linked episode as an error" do
-        upsert(resource_type: :episode, apple_episode: nil)
+        upsert(resource_type: :episode, response: nil)
 
         asset = upsert(resource_type: nil)
 

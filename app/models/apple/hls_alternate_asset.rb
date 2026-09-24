@@ -22,16 +22,16 @@ module Apple
     end
 
     # Records the result of an Apple lookup or write for one asset key and
-    # derives the local status. Pass the Apple resource that currently holds
-    # the alternate-asset fields:
+    # derives the local status. Pass the JSON of the Apple resource that
+    # currently holds the alternate-asset fields:
     #
     #   resource_type: :staged_alternate_asset, response: staged asset JSON
-    #   resource_type: :episode, apple_episode: refreshed local Apple::Episode
+    #   resource_type: :episode, response: Apple episode JSON
     #   resource_type: nil, when Apple returned neither resource
     #
     # An error records the failure and keeps the last known Apple state.
     # Returns nil when Apple has nothing and there is no prior row (pending).
-    def self.upsert_from_apple!(episode:, binding:, feeder_guid:, resource_type: nil, response: nil, apple_episode: nil, error: nil)
+    def self.upsert_from_apple!(episode:, binding:, feeder_guid:, resource_type: nil, response: nil, error: nil)
       if resource_type.present? && !RESOURCE_TYPES.include?(resource_type)
         raise ArgumentError, "unknown resource_type: #{resource_type.inspect}"
       end
@@ -48,7 +48,8 @@ module Apple
         asset.last_error = error.respond_to?(:message) ? error.message : error.to_s
       elsif resource_type == :episode
         asset.status = :linked
-        asset.content_url = apple_episode&.apple_json&.dig("attributes", "alternateAssetContentUrl") || asset.content_url
+        asset.apple_episode_id = response&.dig("id") || asset.apple_episode_id
+        asset.content_url = response&.dig("attributes", "alternateAssetContentUrl") || asset.content_url
         asset.last_error = nil
       elsif resource_type == :staged_alternate_asset
         asset.status = :staged
