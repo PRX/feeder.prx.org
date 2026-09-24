@@ -4,12 +4,12 @@ module Apple
   describe HlsAlternateAsset do
     let(:podcast) { create(:podcast) }
     let(:episode) { create(:episode, podcast: podcast) }
-    let(:binding) { create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast), apple_show_id: "show-1") }
+    let(:show_feed_binding) { create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast), apple_show_id: "show-1") }
     let(:guid) { "guid-1" }
     let(:staged_json) { {"id" => "staged-1", "attributes" => {"alternateAssetContentUrl" => "https://example.com/a.m3u8"}} }
 
     def upsert(**opts)
-      HlsAlternateAsset.upsert_from_apple!(episode: episode, binding: binding, feeder_guid: guid, **opts)
+      HlsAlternateAsset.upsert_from_apple!(episode: episode, show_feed_binding: show_feed_binding, feeder_guid: guid, **opts)
     end
 
     it "enforces one row per podcast, show, and GUID" do
@@ -45,29 +45,6 @@ module Apple
         assert_equal 1, HlsAlternateAsset.count
       end
 
-      it "returns nil when Apple has nothing and there is no prior row" do
-        assert_nil upsert(resource_type: nil)
-        assert_equal 0, HlsAlternateAsset.count
-      end
-
-      it "marks a vanished staged asset expired" do
-        upsert(resource_type: :staged_alternate_asset, response: staged_json)
-
-        asset = upsert(resource_type: nil)
-
-        assert asset.expired?
-        assert_equal "staged-1", asset.staged_alternate_asset_id
-      end
-
-      it "marks a vanished linked episode as an error" do
-        upsert(resource_type: :episode, response: nil)
-
-        asset = upsert(resource_type: nil)
-
-        assert asset.error?
-        assert_match(/no longer reports/, asset.last_error)
-      end
-
       it "records Apple errors and clears them on success" do
         upsert(resource_type: :staged_alternate_asset, response: staged_json)
 
@@ -83,6 +60,7 @@ module Apple
 
       it "rejects unknown resource types" do
         assert_raises(ArgumentError) { upsert(resource_type: :show) }
+        assert_raises(ArgumentError) { upsert(resource_type: nil) }
       end
     end
   end
