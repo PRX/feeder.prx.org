@@ -7,6 +7,7 @@ class CreateAppleHlsAlternateAssets < ActiveRecord::Migration[7.2]
       t.string :feeder_guid, null: false
       t.integer :status, null: false
       t.string :staged_alternate_asset_id
+      t.string :apple_episode_id
       t.string :content_url
       t.datetime :last_checked_at
       t.string :last_error
