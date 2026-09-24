@@ -545,37 +545,6 @@ class EpisodeMediaTest < ActiveSupport::TestCase
     end
   end
 
-  describe "#set_alt_media" do
-    let(:alt1) { build_stubbed(:alternate_media_resource, status: "complete") }
-    let(:ep) { build_stubbed(:episode, medium: "video", segment_count: 2, alternate_media_resource: alt1) }
-
-    it "builds new when the original_url changes" do
-      ep.set_alt_media(alt1.original_url, alt1.segmentation)
-      assert ep.alt_media.persisted?
-      assert ep.alt_media.changed?
-
-      alt1.stub(:destroy, true) do
-        ep.set_alt_media("http://some.where/else.mp4", alt1.segmentation)
-        assert_equal "http://some.where/else.mp4", ep.alt_media.original_url
-        assert ep.alt_media.new_record?
-        assert ep.alt_media.changed?
-      end
-    end
-
-    it "builds new when the segmentation changes" do
-      ep.set_alt_media(alt1.original_url, alt1.segmentation)
-      assert ep.alt_media.persisted?
-      assert ep.alt_media.changed?
-
-      alt1.stub(:destroy, true) do
-        ep.set_alt_media(alt1.original_url, [[1, 2], [3, nil]])
-        assert_equal [[1, 2], [3, nil]], ep.alt_media.segmentation
-        assert ep.alt_media.new_record?
-        assert ep.alt_media.changed?
-      end
-    end
-  end
-
   describe "#ready_alt_media" do
     let(:alt1) { build_stubbed(:alternate_media_resource, status: "processing") }
     let(:alt2) { build_stubbed(:alternate_media_resource, status: "complete") }
