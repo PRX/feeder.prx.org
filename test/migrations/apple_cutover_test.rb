@@ -11,6 +11,9 @@ class AppleCutoverMigrationTest < ActiveSupport::TestCase
     @connection.execute("CREATE SCHEMA #{@schema}")
     @connection.schema_search_path = @schema
     @connection.schema_cache.clear!
+    @connection.create_table(:apple_configs) do |t|
+      t.bigint :show_feed_binding_id
+    end
     @connection.create_table(:sync_logs) do |t|
       t.integer :integration
       t.string :feeder_type, null: false
@@ -55,13 +58,26 @@ class AppleCutoverMigrationTest < ActiveSupport::TestCase
     @connection.transaction { migrate AddAppleCutoverConstraints, :up }
     assert @connection.check_constraints(:sync_logs).all?(&:validated?)
     assert @connection.check_constraints(:integrations_episode_delivery_statuses).all?(&:validated?)
+    refute @connection.columns(:apple_configs).find { |column| column.name == "show_feed_binding_id" }.null
     refute @connection.columns(:apple_podcast_containers).find { |column| column.name == "apple_show_id" }.null
     assert_nil @connection.select_value("SELECT apple_show_id FROM integrations_episode_delivery_statuses WHERE integration = 1")
 
     @connection.transaction { migrate AddAppleCutoverConstraints, :down }
+    assert @connection.columns(:apple_configs).find { |column| column.name == "show_feed_binding_id" }.null
     @connection.execute("UPDATE sync_logs SET external_show_id = NULL")
     @connection.execute("UPDATE apple_podcast_containers SET apple_show_id = NULL")
     @connection.execute("UPDATE integrations_episode_delivery_statuses SET apple_show_id = NULL")
+  end
+
+  test "cutover reports config IDs left without bindings" do
+    @connection.execute("INSERT INTO apple_configs (id) VALUES (17), (23)")
+
+    error = assert_raises(ActiveRecord::MigrationError) do
+      @connection.transaction { migrate AddAppleCutoverConstraints, :up }
+    end
+
+    assert_includes error.message, "17, 23"
+    assert @connection.columns(:apple_configs).find { |column| column.name == "show_feed_binding_id" }.null
   end
 
   private
@@ -83,7 +99,9 @@ class AppleCutoverBackfillMigrationTest < ActiveSupport::TestCase
 
     podcast = create(:podcast)
     private_feed = create(:private_feed, podcast: podcast, apple_show_id: "show-1")
-    config = create(:delegated_delivery_config, :legacy_routing, feed: private_feed)
+    config = build(:delegated_delivery_config, :legacy_routing, feed: private_feed)
+    # Reproduce an unfinished setup saved before bindings were required.
+    config.save!(validate: false)
     podcast.update_column(:apple_key_id, nil)
     episode = create(:episode, podcast: podcast)
     sync_log = SyncLog.new(integration: :apple, feeder_type: :episodes, feeder_id: episode.id, external_id: "episode-1")
@@ -103,6 +121,7 @@ class AppleCutoverBackfillMigrationTest < ActiveSupport::TestCase
     connection = ActiveRecord::Base.connection
     assert connection.check_constraints(:sync_logs).all?(&:validated?)
     assert connection.check_constraints(:integrations_episode_delivery_statuses).all?(&:validated?)
+    refute connection.columns(:apple_configs).find { |column| column.name == "show_feed_binding_id" }.null
     refute connection.columns(:apple_podcast_containers).find { |column| column.name == "apple_show_id" }.null
   end
 end

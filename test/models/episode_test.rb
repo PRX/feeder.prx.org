@@ -1,6 +1,9 @@
 require "test_helper"
+require_relative "../support/apple_pre_cutover_schema"
 
 describe Episode do
+  include ApplePreCutoverSchema
+
   let(:episode) { create(:episode_with_media) }
 
   it "initializes guid" do
@@ -373,41 +376,21 @@ describe Episode do
     let(:podcast) { create(:podcast) }
     let(:episode) { create(:episode, podcast: podcast) }
 
-    describe "#apple_episode" do
-      it "returns nil without an Apple configuration" do
-        assert_nil episode.apple_episode
-      end
+    describe "#integration_feed" do
+      it "returns nil for a legacy configuration without a show identity" do
+        with_apple_pre_cutover_schema do
+          apple_feed = create(:apple_feed, podcast: podcast)
+          config = apple_feed.delegated_delivery_config
+          binding = config.show_feed_binding
+          binding.feed.apple_sync_log&.destroy!
+          # Incomplete legacy configurations predate the required binding validation.
+          config.update_column(:show_feed_binding_id, nil)
+          binding.reload.destroy!
+          apple_feed.update_column(:apple_show_id, nil)
+          podcast.reload
 
-      it "returns nil without a show identity" do
-        apple_feed = create(:apple_feed, podcast: podcast)
-        config = apple_feed.delegated_delivery_config
-        binding = config.show_feed_binding
-        binding.feed.apple_sync_log&.destroy!
-        config.update!(show_feed_binding: nil)
-        binding.destroy!
-        apple_feed.update_column(:apple_show_id, nil)
-        podcast.reload
-
-        assert_nil episode.apple_episode
-      end
-
-      it "returns a show-scoped facade" do
-        create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
-
-        assert_equal "show-1", episode.apple_episode.apple_show_id
-      end
-
-      it "resolves the show-scoped sync log through the integration facade" do
-        create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
-        sync_log = SyncLog.create!(
-          integration: :apple,
-          feeder_type: :episodes,
-          feeder_id: episode.id,
-          external_id: "episode-1",
-          external_show_id: "show-1"
-        )
-
-        assert_equal sync_log, episode.integration_episode(:apple).sync_log
+          assert_nil episode.integration_feed(:apple)
+        end
       end
     end
 

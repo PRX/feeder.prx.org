@@ -1,0 +1,79 @@
+<% config = feed.delegated_delivery_config || Apple::DelegatedDeliveryConfig.new %>
+<% configured = config.persisted? %>
+<% options = apple_delivery_options(Apple::ShowFeedBinding.available_for_delivery(feed)) %>
+<% selectable = options.present? %>
+
+<div class="card <%= "collapsible_card" unless configured %> shadow border-0 mt-3 mb-0">
+  <div class="card-header card-header-light">
+    <% if configured %>
+      <h2 class="card-title h5"><%= t(".title") %></h2>
+    <% else %>
+      <a data-bs-toggle="collapse" href="#apple-delegated-delivery-card" role="button"
+        aria-expanded="false" aria-controls="apple-delegated-delivery-card" class="collapsed">
+        <h2 class="card-title h5 mb-0"><%= t(".title") %></h2>
+        <span class="material-icons expanded_icon">expand_less</span>
+        <span class="material-icons collapsed_icon">expand_more</span>
+      </a>
+    <% end %>
+  </div>
+
+  <div id="apple-delegated-delivery-card" class="<%= "collapse" unless configured %>">
+    <div class="card-body">
+      <p><%= t(".description") %></p>
+
+      <% unless selectable %>
+        <div class="alert alert-info" role="status"><%= t(".no_connections") %></div>
+      <% end %>
+
+      <%= form.fields_for :delegated_delivery_config, config do |config_form| %>
+        <%= config_form.hidden_field :id if configured %>
+
+        <div class="form-floating input-group mb-3">
+          <% select_options = configured ? {} : {include_blank: t(".select_connection")} %>
+          <%= config_form.select :show_feed_binding_id,
+                options,
+                select_options,
+                disabled: !selectable,
+                required: configured && selectable %>
+          <%= config_form.label :show_feed_binding_id, t(".connection") %>
+          <%= field_help_text t(".help.connection") %>
+        </div>
+
+        <div class="form-check mb-2">
+          <%= config_form.check_box :publish_enabled, disabled: !selectable %>
+          <div class="d-flex align-items-center">
+            <%= config_form.label :publish_enabled %>
+            <%= help_text t(".help.publish_enabled") %>
+          </div>
+        </div>
+
+        <div class="form-check mb-2">
+          <%= config_form.check_box :sync_blocks_rss, disabled: !selectable %>
+          <div class="d-flex align-items-center">
+            <%= config_form.label :sync_blocks_rss %>
+            <%= help_text t(".help.sync_blocks_rss") %>
+          </div>
+        </div>
+
+        <% if configured %>
+          <div class="form-check mt-3">
+            <%= config_form.check_box :_destroy %>
+            <%= config_form.label :_destroy, t(".remove") %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="card-footer d-flex justify-content-between align-items-end">
+      <div>
+        <strong><%= t(".status") %></strong><br>
+        <% if configured %>
+          <span class="text-muted"><%= t(".last_checked_html", time: local_time_ago(config.updated_at)) %></span>
+        <% end %>
+      </div>
+      <span class="badge <%= configured ? "bg-success" : "bg-secondary" %>">
+        <%= configured ? t(".configured") : t(".not_configured") %>
+      </span>
+    </div>
+  </div>
+</div>
