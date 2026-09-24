@@ -14,6 +14,10 @@ module Apple
       api.get_paged_collection("shows/#{show_id}/episodes")
     end
 
+    def self.apple_staged_alternate_asset_json(api, show_id)
+      api.get_paged_collection("shows/#{show_id}/stagedAlternateAssets")
+    end
+
     def self.connect_existing(apple_show_id, delegated_delivery_config)
       public_feed = delegated_delivery_config.public_feed
 
@@ -70,11 +74,24 @@ module Apple
         delegated_delivery_config: delegated_delivery_config)
     end
 
-    def initialize(api:, public_feed:, private_feed:, delegated_delivery_config: nil)
+    # The Apple-crawled public feed's show, for HLS publishing. It has no
+    # delivery feed.
+    def self.from_show_feed_binding(show_feed_binding)
+      apple_key = show_feed_binding.feed.podcast.apple_key
+      raise "Missing Apple key for podcast" unless apple_key
+
+      new(api: Apple::Api.from_key(apple_key),
+        public_feed: show_feed_binding.feed,
+        private_feed: nil,
+        show_feed_binding: show_feed_binding)
+    end
+
+    def initialize(api:, public_feed:, private_feed:, delegated_delivery_config: nil, show_feed_binding: nil)
       @private_feed = private_feed
       @public_feed = public_feed
       @api = api
       @delegated_delivery_config = delegated_delivery_config
+      @show_feed_binding = show_feed_binding
     end
 
     # Gate on enclosure_ready? to prevent medialess drafts from
@@ -104,6 +121,8 @@ module Apple
       @find_episode = nil
       @apple_id_to_apple_json = nil
       @guid_to_apple_json = nil
+      @staged_alternate_asset_json = nil
+      @guid_to_staged_alternate_asset_json = nil
     end
 
     def podcast
@@ -145,6 +164,8 @@ module Apple
     end
 
     def apple_id
+      return @show_feed_binding.apple_show_id if @show_feed_binding
+
       if @delegated_delivery_config&.routing_source == :show_feed_binding
         bound_show_id = @delegated_delivery_config.apple_show_id
         return bound_show_id if bound_show_id.present?
@@ -276,6 +297,18 @@ module Apple
       # Because apple can use its own id to join to the RSS feed item,
       # if the feed item guid is set to the apple episode id
       guid_to_apple_json(guid) || apple_id_to_apple_json(guid)
+    end
+
+    def staged_alternate_asset_json
+      @staged_alternate_asset_json ||= Apple::Show.apple_staged_alternate_asset_json(api, id)
+    end
+
+    def find_staged_alternate_asset_json_by_guid(guid)
+      @guid_to_staged_alternate_asset_json ||= staged_alternate_asset_json.map do |asset_json|
+        [asset_json["attributes"]["guid"], asset_json]
+      end.to_h
+
+      @guid_to_staged_alternate_asset_json[guid]
     end
   end
 end
