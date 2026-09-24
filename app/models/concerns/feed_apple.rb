@@ -117,6 +117,11 @@ module FeedApple
     false
   end
 
+  # Apple HLS publishing is separate from the delegated-delivery integration.
+  def publish_apple_hls?
+    public? && !!apple_hls_config&.publishable?
+  end
+
   def publish_to_apple?
     persisted? && !!delegated_delivery_config&.publish_to_apple?
   end

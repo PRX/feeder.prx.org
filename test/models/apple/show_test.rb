@@ -26,6 +26,31 @@ describe Apple::Show do
     end
   end
 
+  describe ".from_show_feed_binding" do
+    let(:binding) { create(:apple_show_feed_binding, feed: public_feed, apple_show_id: "hls-show") }
+
+    before { podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id)) }
+
+    it "routes through the binding with no delivery feed" do
+      show = Apple::Show.from_show_feed_binding(binding)
+
+      assert_equal "hls-show", show.apple_id
+      assert_equal public_feed, show.public_feed
+      assert_nil show.private_feed
+      assert_equal podcast.apple_key.key_id, show.api.key_id
+    end
+
+    it "indexes the show's staged alternate assets by GUID" do
+      body = {data: [{id: "staged-1", attributes: {guid: "guid-1"}}], links: {}}.to_json
+      stub_request(:get, "https://aardvark.prx.org/shows/hls-show/stagedAlternateAssets").to_return(status: 200, body: body)
+
+      show = Apple::Show.from_show_feed_binding(binding)
+
+      assert_equal "staged-1", show.find_staged_alternate_asset_json_by_guid("guid-1")["id"]
+      assert_nil show.find_staged_alternate_asset_json_by_guid("guid-2")
+    end
+  end
+
   describe "#reload" do
     it "flushes memoized attrs" do
       apple_show.instance_variable_set(:@apple_episode_json, "foo")
