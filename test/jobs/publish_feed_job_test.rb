@@ -389,13 +389,14 @@ describe PublishFeedJob do
       assert logs.any? { |line| line["msg"] == "Apple HLS publish failed" }
     end
 
-    it "records an HLS episode failure and still publishes RSS" do
+    it "logs an HLS episode failure without failing the pipeline" do
       logs = publish_hls_feed(hls_assets: [Apple::HlsAlternateAsset.new(status: :staged), Apple::HlsAlternateAsset.new(status: :error)])
 
       assert_equal [:hls, :rss], calls
       statuses = PublishingPipelineState.where(podcast: podcast).latest_pipelines.order(id: :asc).pluck(:status)
-      assert_includes statuses, "error_integration"
+      refute_includes statuses, "error_integration"
       assert PublishingPipelineState.complete?(podcast)
+      assert_empty PublishingPipelineState.latest_failed_podcasts
       failure = logs.find { |line| line["msg"] == "Apple HLS publish had episode failures" }
       assert_equal 1, failure["failed"]
       refute logs.any? { |line| line["msg"] == "Completed Apple HLS publish" }
