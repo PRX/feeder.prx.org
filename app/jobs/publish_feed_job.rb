@@ -23,9 +23,11 @@ class PublishFeedJob < ApplicationJob
 
     PublishingPipelineState.start!(podcast)
 
-    # Publish each integration for each feed (e.g. apple, megaphone)
+    # Publish each integration for each feed (e.g. apple, megaphone), then
+    # stage Apple HLS video before any RSS is rendered
     podcast.feeds.each do |feed|
       feed.integration_types.each { |integration| publish_integration(podcast, feed, integration) }
+      publish_apple_hls(podcast, feed)
     end
 
     # After integrations, publish RSS, if appropriate
@@ -83,6 +85,31 @@ class PublishFeedJob < ApplicationJob
       # Re-raise the error if sync_blocks_rss is enabled, blocking RSS publishing
       # Otherwise, swallow the error and allow RSS publishing to proceed
       raise e if config.sync_blocks_rss
+    end
+  end
+
+  # Best-effort: HLS failures are recorded and never block RSS. Episode
+  # failures stay on their mirror rows; only a failed run marks the pipeline,
+  # since a failed pipeline is retried in full.
+  def publish_apple_hls(podcast, feed)
+    return unless feed.publish_apple_hls?
+
+    show_feed_binding = feed.apple_show_feed_binding
+    context = {feed_id: feed.id, apple_show_id: show_feed_binding.apple_show_id}
+
+    Rails.logger.tagged("apple-hls", "feed:#{feed.id}") do
+      Rails.logger.info("Starting Apple HLS publish", context)
+      assets = Apple::HlsAlternateAssetPublisher.publish!(show_feed_binding: show_feed_binding, episodes: feed.rss_episodes)
+      failed = assets.count(&:error?)
+
+      if failed.positive?
+        Rails.logger.error("Apple HLS publish had episode failures", context.merge(failed: failed))
+      else
+        Rails.logger.info("Completed Apple HLS publish", context)
+      end
+    rescue => e
+      Rails.logger.error("Apple HLS publish failed", context.merge(error: e))
+      PublishingPipelineState.error_integration!(podcast)
     end
   end
 

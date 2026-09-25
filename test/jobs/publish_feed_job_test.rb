@@ -340,6 +340,85 @@ describe PublishFeedJob do
     end
   end
 
+  describe "publishing Apple HLS" do
+    let(:podcast) { create(:podcast) }
+    let(:hls_feed) do
+      podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
+      feed = create(:public_feed, podcast: podcast)
+      show_feed_binding = create(:apple_show_feed_binding, feed: feed)
+      create(:apple_hls_config, show_feed_binding: show_feed_binding)
+      feed.reload
+    end
+    let(:calls) { [] }
+
+    def publish_hls_feed(hls_error: nil, hls_assets: [])
+      publisher = ->(show_feed_binding:, episodes:) {
+        assert_equal hls_feed.apple_show_feed_binding, show_feed_binding
+        calls << :hls
+        raise hls_error if hls_error
+        hls_assets
+      }
+      capture_json_logs do
+        podcast.stub(:feeds, [hls_feed]) do
+          Apple::HlsAlternateAssetPublisher.stub(:publish!, publisher) do
+            job.stub(:publish_rss, ->(*) { calls << :rss }) do
+              queue_item = PublishingPipelineState.start_pipeline!(podcast)
+              job.perform(podcast, queue_item)
+            end
+          end
+        end
+      end
+    end
+
+    it "stages HLS before RSS" do
+      logs = publish_hls_feed
+
+      assert_equal [:hls, :rss], calls
+      assert PublishingPipelineState.complete?(podcast)
+      start = logs.find { |line| line["msg"] == "Starting Apple HLS publish" }
+      assert_includes start["tags"], "feed:#{hls_feed.id}"
+    end
+
+    it "records an HLS failure and still publishes RSS" do
+      logs = publish_hls_feed(hls_error: StandardError.new("Apple down"))
+
+      assert_equal [:hls, :rss], calls
+      statuses = PublishingPipelineState.where(podcast: podcast).latest_pipelines.order(id: :asc).pluck(:status)
+      assert_includes statuses, "error_integration"
+      assert PublishingPipelineState.complete?(podcast)
+      assert logs.any? { |line| line["msg"] == "Apple HLS publish failed" }
+    end
+
+    it "logs an HLS episode failure without failing the pipeline" do
+      logs = publish_hls_feed(hls_assets: [Apple::HlsAlternateAsset.new(status: :staged), Apple::HlsAlternateAsset.new(status: :error)])
+
+      assert_equal [:hls, :rss], calls
+      statuses = PublishingPipelineState.where(podcast: podcast).latest_pipelines.order(id: :asc).pluck(:status)
+      refute_includes statuses, "error_integration"
+      assert PublishingPipelineState.complete?(podcast)
+      assert_empty PublishingPipelineState.latest_failed_podcasts
+      failure = logs.find { |line| line["msg"] == "Apple HLS publish had episode failures" }
+      assert_equal 1, failure["failed"]
+      refute logs.any? { |line| line["msg"] == "Completed Apple HLS publish" }
+    end
+
+    it "skips HLS when the config is disabled" do
+      hls_feed.apple_hls_config.update!(enabled: false)
+
+      publish_hls_feed
+
+      assert_equal [:rss], calls
+    end
+
+    it "skips HLS when Apple has not enabled video for the show" do
+      hls_feed.apple_hls_config.update!(video_enabled_cache: false)
+
+      publish_hls_feed
+
+      assert_equal [:rss], calls
+    end
+  end
+
   describe "publishing to apple" do
     let(:podcast) { create(:podcast) }
     let(:public_feed) { podcast.default_feed }
