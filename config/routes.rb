@@ -43,6 +43,7 @@ Rails.application.routes.draw do
     get "overview"
     resource :media, only: [:show, :update], controller: :episode_media
     get "media_status", to: "episode_media#status"
+    resource :apple_hls_status, only: :show, controller: :episode_apple_hls_statuses
     resource :player, only: :show, controller: :episode_player
     resource :transcripts, only: [:show, :update], controller: :episode_transcripts
     resource :metrics, only: [:show], controller: :episode_metrics do

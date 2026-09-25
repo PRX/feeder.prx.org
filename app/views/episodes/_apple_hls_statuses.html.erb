@@ -1,0 +1,13 @@
+<% src = episode_apple_hls_status_path(episode) if local_assigns[:poll] %>
+<%= turbo_frame_tag "apple-hls-statuses", src: src, class: "d-block col-12" do %>
+  <% feeds.each do |feed| %>
+    <% status = Apple::HlsAlternateAssetPublisher.status_for(episode, feed: feed) %>
+    <% asset = Apple::HlsAlternateAssetPublisher.asset_for(episode, feed: feed) %>
+    <%= render "episodes/integration_status",
+          label: episode_integration_label(t("episodes.apple_hls_statuses.label"), feed),
+          feed: feed,
+          status: status,
+          status_label: t("episodes.apple_hls_statuses.statuses.#{status}"),
+          updated_at: asset&.last_checked_at %>
+  <% end %>
+<% end %>

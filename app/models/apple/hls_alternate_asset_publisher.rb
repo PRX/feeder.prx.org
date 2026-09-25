@@ -7,11 +7,41 @@ module Apple
   # mirrored into Apple::HlsAlternateAsset.
   class HlsAlternateAssetPublisher
     include PodcastsHelper
+    extend PodcastsHelper
 
     attr_reader :show_feed_binding, :feed, :show
 
     def self.publish!(show_feed_binding:, episodes:)
       new(show_feed_binding: show_feed_binding).publish!(episodes)
+    end
+
+    def self.poll!(episode, show_feed_binding:)
+      new(show_feed_binding: show_feed_binding).poll!(episode)
+    end
+
+    # The producer-facing HLS status for an episode in an Apple-bound feed,
+    # read from the local mirror. Nil when the feed has no enabled HLS config.
+    def self.status_for(episode, feed:)
+      hls_config = feed.apple_hls_config
+      return unless hls_config&.enabled?
+      return :not_eligible if hls_config.not_eligible?
+
+      asset = asset_for(episode, feed: feed)
+      if asset
+        asset.status.to_sym
+      elsif episode.hls_eligible_for_apple?
+        :pending
+      else
+        :not_eligible
+      end
+    end
+
+    def self.asset_for(episode, feed:)
+      Apple::HlsAlternateAsset.find_by(
+        feeder_podcast_id: episode.podcast_id,
+        apple_show_id: feed.apple_show_feed_binding.apple_show_id,
+        feeder_guid: episode_guid(episode, feed)
+      )
     end
 
     def initialize(show_feed_binding:)
@@ -37,6 +67,22 @@ module Apple
       show.staged_alternate_asset_json if unlinked.any?
 
       eligible.map { |episode| publish_episode(episode) }
+    end
+
+    # Refreshes one episode's mirror row from Apple with GUID-filtered
+    # lookups. Never stages: an asset marked expired here is re-staged by the
+    # next RSS publish. Returns nil when Apple has neither resource and there
+    # is no prior row (pending).
+    def poll!(episode)
+      guid = episode_guid(episode, feed)
+
+      if (episode_json = show.find_apple_episode_json_by_guid_filter(guid))
+        upsert(episode, guid, resource_type: :episode, response: episode_json)
+      elsif (staged_json = show.find_staged_alternate_asset_json_by_guid_filter(guid))
+        upsert(episode, guid, resource_type: :staged_alternate_asset, response: staged_json)
+      else
+        upsert(episode, guid)
+      end
     end
 
     private
@@ -103,7 +149,7 @@ module Apple
 
       if asset&.linked?
         Rails.logger.warn("Apple HLS linked episode vanished, re-staging", context.merge(apple_episode_id: asset.apple_episode_id))
-      elsif asset&.staged?
+      elsif asset&.staged? || asset&.expired?
         Rails.logger.info("Apple HLS staged asset expired, re-staging", context.merge(staged_alternate_asset_id: asset.staged_alternate_asset_id))
       end
     end

@@ -35,6 +35,11 @@ module EpisodesHelper
       episode.updated_at
   end
 
+  # Public feeds of the episode with Apple HLS video turned on.
+  def episode_apple_hls_feeds(episode)
+    episode.feeds.select { |feed| feed.public? && feed.apple_hls_config&.enabled? }
+  end
+
   def episode_integration_label(name, feed)
     "#{name} (#{feed.label})"
   end

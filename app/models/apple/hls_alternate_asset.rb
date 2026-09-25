@@ -12,7 +12,7 @@ module Apple
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
     belongs_to :feeder_podcast, class_name: "::Podcast"
 
-    enum :status, {staged: 0, linked: 1, error: 3}
+    enum :status, {staged: 0, linked: 1, expired: 2, error: 3}
 
     validates :apple_show_id, :feeder_guid, :status, presence: true
     validates :feeder_guid, uniqueness: {scope: [:feeder_podcast_id, :apple_show_id]}
@@ -23,14 +23,21 @@ module Apple
     #
     #   resource_type: :staged_alternate_asset, response: staged asset JSON
     #   resource_type: :episode, response: Apple episode JSON
+    #   resource_type: nil, when Apple returned neither resource
     #
     # An error records the failure and keeps the last known Apple state.
+    # Returns nil when Apple has neither resource and there is no prior row
+    # (pending).
     def self.upsert_from_apple!(episode:, show_feed_binding:, feeder_guid:, resource_type: nil, response: nil, error: nil)
-      if error.nil? && !RESOURCE_TYPES.include?(resource_type)
+      if resource_type && !RESOURCE_TYPES.include?(resource_type)
         raise ArgumentError, "unknown resource_type: #{resource_type.inspect}"
       end
 
-      asset = find_or_initialize_by(feeder_podcast_id: episode.podcast_id, apple_show_id: show_feed_binding.apple_show_id, feeder_guid: feeder_guid)
+      key = {feeder_podcast_id: episode.podcast_id, apple_show_id: show_feed_binding.apple_show_id, feeder_guid: feeder_guid}
+      asset = find_by(key)
+      return nil if asset.nil? && resource_type.nil? && error.nil?
+
+      asset ||= new(key)
       asset.episode = episode
       asset.last_checked_at = Time.current
 
@@ -42,11 +49,17 @@ module Apple
         asset.apple_episode_id = response&.dig("id") || asset.apple_episode_id
         asset.content_url = response&.dig("attributes", "alternateAssetContentUrl") || asset.content_url
         asset.last_error = nil
-      else
+      elsif resource_type == :staged_alternate_asset
         asset.status = :staged
         asset.staged_alternate_asset_id = response&.dig("id") || asset.staged_alternate_asset_id
         asset.content_url = response&.dig("attributes", "alternateAssetContentUrl") || asset.content_url
         asset.last_error = nil
+      elsif asset.staged? || asset.expired?
+        asset.status = :expired
+        asset.last_error = nil
+      elsif asset.linked?
+        asset.status = :error
+        asset.last_error = "Apple no longer reports the linked episode or a staged alternate asset"
       end
 
       asset.save!
