@@ -83,7 +83,9 @@ class PublishFeedJob < ApplicationJob
     end
   end
 
-  # Best-effort: HLS failures are recorded and never block RSS.
+  # Best-effort: HLS failures are recorded and never block RSS. Episode
+  # failures stay on their mirror rows; only a failed run marks the pipeline,
+  # since a failed pipeline is retried in full.
   def publish_apple_hls(podcast, feed)
     return unless feed.publish_apple_hls?
 
@@ -97,7 +99,6 @@ class PublishFeedJob < ApplicationJob
 
       if failed.positive?
         Rails.logger.error("Apple HLS publish had episode failures", context.merge(failed: failed))
-        PublishingPipelineState.error_integration!(podcast)
       else
         Rails.logger.info("Completed Apple HLS publish", context)
       end
