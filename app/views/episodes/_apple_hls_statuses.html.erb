@@ -4,10 +4,10 @@
     <% status = Apple::HlsAlternateAssetPublisher.status_for(episode, feed: feed) %>
     <% asset = Apple::HlsAlternateAssetPublisher.asset_for(episode, feed: feed) %>
     <%= render "episodes/integration_status",
-          label: episode_integration_label(t("episodes.apple_hls_statuses.label"), feed),
+          label: episode_integration_label(t("episodes.form_status.apple_hls_status"), feed),
           feed: feed,
           status: status,
-          status_label: t("episodes.apple_hls_statuses.statuses.#{status}"),
+          status_type: "apple_hls_statuses",
           updated_at: asset&.last_checked_at %>
   <% end %>
 <% end %>
