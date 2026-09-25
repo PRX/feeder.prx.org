@@ -242,5 +242,122 @@ module Apple
       assert_not_requested :patch, /#{api_base}/
       assert mirror(episode, guid: guid).staged?
     end
+
+    it "logs and re-stages an asset a poll marked expired" do
+      create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
+        status: :expired, staged_alternate_asset_id: "staged-old")
+      stub_apple_episodes([])
+      stub_staged_assets([])
+      stub_request(:post, "#{api_base}/stagedAlternateAssets")
+        .to_return(status: 201, body: {data: staged_json(episode.item_guid, "https://dovetail.test/ep1.m3u8", id: "staged-new")}.to_json)
+
+      logs = capture_json_logs { publish(episode) }
+
+      assert mirror(episode).staged?
+      assert_equal "staged-new", mirror(episode).staged_alternate_asset_id
+      assert logs.any? { |line| line["msg"] == "Apple HLS staged asset expired, re-staging" }
+    end
+
+    describe ".poll!" do
+      def stub_filtered(resource, guid, data)
+        stub_request(:get, "#{api_base}/shows/show-1/#{resource}?filter%5Bguid%5D=#{guid}").to_return(collection(data))
+      end
+
+      def poll
+        HlsAlternateAssetPublisher.poll!(episode, show_feed_binding: show_feed_binding)
+      end
+
+      it "records a linked episode" do
+        stub_filtered("episodes", episode.item_guid, [apple_episode_json(episode.item_guid, url: "https://dovetail.test/ep1.m3u8")])
+
+        asset = poll
+
+        assert asset.linked?
+        assert_equal "ep-1", asset.apple_episode_id
+        assert_not_requested :get, /stagedAlternateAssets/
+      end
+
+      it "records a staged asset" do
+        stub_filtered("episodes", episode.item_guid, [])
+        stub_filtered("stagedAlternateAssets", episode.item_guid, [staged_json(episode.item_guid, "https://dovetail.test/ep1.m3u8")])
+
+        assert poll.staged?
+      end
+
+      it "marks a vanished staged asset expired and never stages" do
+        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid)
+        stub_filtered("episodes", episode.item_guid, [])
+        stub_filtered("stagedAlternateAssets", episode.item_guid, [])
+
+        assert poll.expired?
+        assert_not_requested :post, /#{api_base}/
+      end
+
+      it "marks a vanished linked episode as an error" do
+        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
+          status: :linked, apple_episode_id: "ep-old")
+        stub_filtered("episodes", episode.item_guid, [])
+        stub_filtered("stagedAlternateAssets", episode.item_guid, [])
+
+        assert poll.error?
+      end
+
+      it "returns nil when Apple has neither resource and there is no row" do
+        stub_filtered("episodes", episode.item_guid, [])
+        stub_filtered("stagedAlternateAssets", episode.item_guid, [])
+
+        assert_nil poll
+        assert_nil mirror(episode)
+      end
+
+      it "looks up the feed-scoped RSS GUID" do
+        feed.update!(unique_guids: true)
+        guid = "#{episode.item_guid}_#{feed.id}"
+        stub_filtered("episodes", guid, [apple_episode_json(guid)])
+
+        assert poll.linked?
+        assert mirror(episode, guid: guid)
+      end
+    end
+
+    describe ".status_for" do
+      let(:hls_config) { create(:apple_hls_config, show_feed_binding: show_feed_binding) }
+
+      def status(ep = episode)
+        HlsAlternateAssetPublisher.status_for(ep, feed: feed.reload)
+      end
+
+      it "is nil without an enabled HLS config" do
+        show_feed_binding
+        assert_nil status
+
+        hls_config.update!(enabled: false)
+        assert_nil status
+      end
+
+      it "is not eligible when Apple has not enabled video for the show" do
+        hls_config.update!(video_enabled_cache: false)
+        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid)
+
+        assert_equal :not_eligible, status
+      end
+
+      it "is pending for an eligible episode with no row" do
+        hls_config
+        assert_equal :pending, status
+      end
+
+      it "is not eligible for an ineligible episode with no row" do
+        hls_config
+        assert_equal :not_eligible, status(hls_episode(nil, eligible: false))
+      end
+
+      it "reads the mirror row status" do
+        hls_config
+        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid, status: :expired)
+
+        assert_equal :expired, status
+      end
+    end
   end
 end
