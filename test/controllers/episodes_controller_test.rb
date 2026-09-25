@@ -46,6 +46,18 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "renders Apple HLS status badges that refresh from Apple" do
+    feed = create(:public_feed, podcast: podcast)
+    episode.update!(feeds: [podcast.default_feed, feed])
+    create(:apple_hls_config, show_feed_binding: create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1"))
+
+    get edit_episode_url(episode)
+
+    assert_response :success
+    assert_select "turbo-frame#apple-hls-statuses[src=?] .prx-badge-not_eligible", episode_apple_hls_status_path(episode)
+    assert_not_requested :any, /aardvark/
+  end
+
   test "authorizes editing podcasts" do
     podcast.update(prx_account_uri: "/api/v1/accounts/456")
     get edit_episode_url(episode)

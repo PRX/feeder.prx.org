@@ -45,6 +45,40 @@ module Apple
         assert_equal 1, HlsAlternateAsset.count
       end
 
+      it "returns nil when Apple has neither resource and there is no prior row" do
+        assert_nil upsert(resource_type: nil)
+        assert_equal 0, HlsAlternateAsset.count
+      end
+
+      it "marks a vanished staged asset expired" do
+        upsert(resource_type: :staged_alternate_asset, response: staged_json)
+
+        asset = upsert(resource_type: nil)
+
+        assert asset.expired?
+        assert_equal "staged-1", asset.staged_alternate_asset_id
+        assert_equal 1, HlsAlternateAsset.count
+      end
+
+      it "marks a vanished linked episode as an error" do
+        upsert(resource_type: :episode, response: {"id" => "ep-1"})
+
+        asset = upsert(resource_type: nil)
+
+        assert asset.error?
+        assert_equal "ep-1", asset.apple_episode_id
+        assert_match(/no longer reports/, asset.last_error)
+      end
+
+      it "keeps a prior error when Apple has neither resource" do
+        upsert(error: StandardError.new("boom"))
+
+        asset = upsert(resource_type: nil)
+
+        assert asset.error?
+        assert_equal "boom", asset.last_error
+      end
+
       it "records Apple errors and clears them on success" do
         upsert(resource_type: :staged_alternate_asset, response: staged_json)
 
@@ -60,7 +94,6 @@ module Apple
 
       it "rejects unknown resource types" do
         assert_raises(ArgumentError) { upsert(resource_type: :show) }
-        assert_raises(ArgumentError) { upsert(resource_type: nil) }
       end
     end
   end
