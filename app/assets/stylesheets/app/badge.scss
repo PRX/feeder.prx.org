@@ -1,17 +1,20 @@
 .prx-badge-incomplete,
 .prx-badge-duplicate,
 .prx-badge-scheduled,
+.prx-badge-expired,
 .prx-badge-draft {
   background: $warning;
   color: $black;
 }
 
 .prx-badge-complete,
+.prx-badge-linked,
 .prx-badge-published {
   background: $success;
 }
 
 .prx-badge-new,
+.prx-badge-pending,
 .prx-badge-created {
   background: $secondary;
 }
@@ -23,12 +26,14 @@
 
 .badge.bg-info,
 .prx-badge-processing,
+.prx-badge-staged,
 .prx-badge-uploaded {
   background: $info;
   color: $black;
 }
 
 .prx-badge-disconnected,
+.prx-badge-not_eligible,
 .prx-badge-not_publishable {
   background: $gray-400;
   color: $black;
