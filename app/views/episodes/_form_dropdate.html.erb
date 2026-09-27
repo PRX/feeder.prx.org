@@ -33,11 +33,12 @@
   </div>
 
   <div class="col-md-6 mb-4 <%= "d-none" unless editing %>" data-dropdate-picker-target="editing">
-    <div class="form-floating">
+    <div class="form-floating input-group">
       <% value = episode.published_or_released_date.try(:strftime, "%-l:%M:%S %p") %>
       <% data = {dropdate_picker_target: "time"} %>
       <%= form.text_field :released_at_time, value: value, data: data %>
       <%= form.label :released_at_time %>
+      <%= field_help_text t(".help.released_at_time") %>
     </div>
   </div>
 
