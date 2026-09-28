@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = [
-    "ownShowCheckbox",
+    "routeSelect",
     "ownShowOnly",
     "mappingOnly",
     "mappingSelect",
@@ -17,21 +17,16 @@ export default class extends Controller {
   }
 
   sync() {
-    const ownShow = this.hasOwnShowCheckboxTarget && this.ownShowCheckboxTarget.checked
-    const mapped = this.hasMappingSelectTarget && this.mappingSelectTarget.value !== ""
+    // The default feed has no delivery section, so no route to choose.
+    const route = this.hasRouteSelectTarget ? this.routeSelectTarget.value : "none"
 
-    if (this.hasOwnShowCheckboxTarget) {
-      this.ownShowOnlyTargets.forEach((el) => el.classList.toggle("d-none", !ownShow))
-      this.mappingOnlyTargets.forEach((el) => el.classList.toggle("d-none", ownShow))
-    }
+    this.ownShowOnlyTargets.forEach((el) => el.classList.toggle("d-none", route !== "own"))
+    this.mappingOnlyTargets.forEach((el) => el.classList.toggle("d-none", route !== "mapped"))
+    this.deliverySettingsTargets.forEach((el) => el.classList.toggle("d-none", route === "none"))
 
     if (this.hasMappingSelectTarget) {
       this.syncMappedShow()
     }
-
-    // Publishing settings only apply once delivery has a route: a public feed
-    // mapping, or this feed's own show.
-    this.deliverySettingsTargets.forEach((el) => el.classList.toggle("d-none", !(ownShow || mapped)))
   }
 
   // The mapped show group renders alongside the mapping select, so its targets

@@ -1,7 +1,7 @@
 <% binding = feed.apple_show_feed_binding %>
 <% config = feed.delegated_delivery_config %>
 <% config = nil if config&.marked_for_destruction? %>
-<% own_show = feed.apple_own_show %>
+<% route = feed.apple_delivery_route %>
 <% invalid = feed.errors.attribute_names.any? { |name| name.to_s.start_with?("apple_", "delegated_delivery_config") } %>
 <% expanded = binding.present? || config.present? || invalid %>
 
@@ -22,14 +22,14 @@
       <% end %>
 
       <% unless feed.default? %>
-        <%= render "apple_settings_delivery", feed: feed, form: form, own_show: own_show %>
+        <%= render "apple_settings_delivery", feed: feed, form: form, route: route %>
       <% end %>
 
       <%# The connection and verify token need a saved feed. A new feed's token is in the main form.
           A private feed's token only matters for claiming its own show, so it sits with the connection. %>
       <% if feed.persisted? %>
         <% if feed.private? %>
-          <div class="<%= "d-none" unless own_show %>" data-apple-settings-target="ownShowOnly">
+          <div class="<%= "d-none" unless route == "own" %>" data-apple-settings-target="ownShowOnly">
             <%= render "apple_settings_connection", podcast: podcast, feed: feed, form: form %>
           </div>
         <% else %>

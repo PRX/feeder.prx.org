@@ -423,7 +423,7 @@ en:
         url: Episode URL
       feed:
         apple_connection: Apple Show ID
-        apple_own_show: Publish to this feed's own Apple show
+        apple_delivery_route: Apple Delivery
         apple_verify_token: Apple Podcasts Verify Token
         audio_type: Format
         audio_bitrate: Bitrate
@@ -934,15 +934,19 @@ en:
       mapped_show: Apple Show ID
       view_mapped_feed: Go to the mapped feed
       no_mappings: No public feed on this podcast has an available Apple show connection. Connect one in a public feed's Apple Settings, or publish to this feed's own Apple show.
-      no_mappings_own_show: No other public feed on this podcast has an available Apple show connection. Check "Publish to this feed's own Apple show" instead.
+      no_mappings_own_show: No other public feed on this podcast has an available Apple show connection. Choose "This feed's own Apple show" instead.
       mapped_feed: Feed mapped to Apple Subscriptions
+      routes:
+        none: No delegated delivery
+        mapped: Map to a public feed's Apple show
+        own: This feed's own Apple show
       create_feed: "+ Create a new feed"
       publishing: Publishing
       paused: Paused
       help:
         connection: Select the Apple show Apple crawls this feed for.
-        mapping: Select the public feed whose Apple show receives this feed's episodes. Leave it blank to stop delegated delivery.
-        own_show: Connect this feed to its own Apple show instead of mapping it to a public feed.
+        mapping: Select the public feed whose Apple show receives this feed's episodes.
+        route: Choose how this feed's episodes reach Apple Podcasts Connect, through a public feed's Apple show or through this feed's own.
         publish_enabled: Enable publishing this feed's episodes to Apple Podcasts Connect.
         sync_blocks_rss: Require Apple publishing to succeed before public RSS publishing continues.
     form_audio_format:
