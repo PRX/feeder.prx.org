@@ -42,9 +42,16 @@ module FeedApple
   end
 
   def save_with_apple_connection
+    return save unless public? && apple_connection_changed?
+    return false unless valid?
+
+    # Check show access before the transaction locks the feed row.
+    binding = prepare_apple_connection
+    return false unless add_apple_connection_errors(binding)
+
     saved = false
     transaction do
-      if save && save_apple_connection
+      if save && save_apple_connection(binding)
         saved = true
       else
         raise ActiveRecord::Rollback
@@ -53,17 +60,23 @@ module FeedApple
     saved
   end
 
-  private def save_apple_connection
-    return true unless public? && apple_connection_changed?
+  private def prepare_apple_connection
+    return apple_show_feed_binding if apple_connection.blank?
 
-    binding = if apple_connection.blank?
-      apple_show_feed_binding.tap(&:destroy)
-    else
-      Apple::ShowFeedBinding.connect_existing(feed: self, apple_show_id: apple_connection)
+    Apple::ShowFeedBinding.find_or_initialize_by(feed: self).tap do |binding|
+      binding.prepare_connection(apple_connection)
     end
+  end
 
+  private def save_apple_connection(binding)
+    apple_connection.blank? ? binding.destroy : binding.connect!
+    add_apple_connection_errors(binding).tap do |saved|
+      association(:apple_show_feed_binding).reset if saved
+    end
+  end
+
+  private def add_apple_connection_errors(binding)
     binding.errors.full_messages.each { |message| errors.add(:apple_connection, message) }
-    association(:apple_show_feed_binding).reset if binding.errors.empty?
     binding.errors.empty?
   end
 

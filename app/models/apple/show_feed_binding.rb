@@ -35,6 +35,13 @@ module Apple
     end
 
     def connect_existing(apple_show_id)
+      connect! if prepare_connection(apple_show_id)
+      self
+    end
+
+    # Validates the connection and reads the show from Apple. Call it
+    # outside a transaction so the Apple request holds no locks.
+    def prepare_connection(apple_show_id)
       self.apple_show_id = apple_show_id
       valid?
 
@@ -44,15 +51,16 @@ module Apple
       elsif apple_key.account_id != feed.podcast.account_id
         errors.add(:apple_key, "must belong to the feed's PRX account")
       end
-      return self if errors.any?
+      return false if errors.any?
 
-      return self unless verify_show_access
+      verify_show_access
+    end
 
+    def connect!
       transaction do
         save!
         mirror_legacy_routing if feed.default?
       end
-      self
     end
 
     private def verify_show_access
