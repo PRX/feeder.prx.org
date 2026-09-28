@@ -3,6 +3,8 @@ class FeedsController < ApplicationController
   before_action :set_podcast
   before_action :set_feeds
 
+  helper_method :apple_settings
+
   def index
     redirect_to podcast_feed_url(@podcast, @podcast.default_feed)
   end
@@ -18,7 +20,7 @@ class FeedsController < ApplicationController
     @feed = @podcast.feeds.new(private: false, slug: "")
     authorize @feed
 
-    @feed.assign_apple_delivery_defaults if apple_delivery_mapping?
+    @feed.assign_apple_delivery_defaults if apple_settings.mapping
     @feed.assign_attributes(feed_params)
     @feed.clear_attribute_changes(%i[file_name podcast_id private slug])
   end
@@ -37,7 +39,7 @@ class FeedsController < ApplicationController
     authorize @feed
 
     respond_to do |format|
-      if @feed.save
+      if apple_settings.save
         @feed.set_default_episodes unless exclude_default_episodes?
         @feed.copy_media
         @feed.podcast&.publish!
@@ -57,7 +59,7 @@ class FeedsController < ApplicationController
     authorize @feed
 
     respond_to do |format|
-      if @feed.save_with_apple_connection
+      if apple_settings.save
         @feed.copy_media
         @feed.podcast&.publish!
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: t(".success", model: "Feed") }
@@ -146,21 +148,22 @@ class FeedsController < ApplicationController
       :unique_guids,
       :import_locked,
       :apple_verify_token,
-      :apple_connection,
-      :apple_delivery_route,
       itunes_category: [],
       itunes_subcategory: [],
       feed_tokens_attributes: %i[id label token _destroy],
       feed_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
       itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
-      delegated_delivery_config_attributes: %i[id show_feed_binding_id publish_enabled sync_blocks_rss _destroy],
       megaphone_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, :token, :network_id, :network_name, :organization_id, advertising_tags: []]
     )
   end
 
-  # A new feed opened from a public feed's Apple Settings, mapped to its show.
-  def apple_delivery_mapping?
-    params.dig(:feed, :delegated_delivery_config_attributes, :show_feed_binding_id).present?
+  def apple_settings
+    @apple_settings ||= Apple::FeedSettings.new(@feed, apple_settings_params)
+  end
+
+  # A new feed opened from a public feed's Apple Settings carries its mapping.
+  def apple_settings_params
+    params.dig(:feed, :apple_settings)&.permit(*Apple::FeedSettings::ATTRIBUTES) || {}
   end
 
   def exclude_default_episodes?
