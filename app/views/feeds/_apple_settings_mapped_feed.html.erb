@@ -12,6 +12,6 @@
   </ul>
 <% else %>
   <%= link_to t("feeds.form_apple_settings.create_feed"),
-        new_podcast_feed_path(podcast, feed: {delegated_delivery_config_attributes: {show_feed_binding_id: binding.id}}),
+        new_podcast_feed_path(podcast, feed: {apple_settings: {delivery: binding.id}}),
         data: {turbo_frame: "_top"} %>
 <% end %>

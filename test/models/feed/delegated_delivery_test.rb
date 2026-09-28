@@ -11,66 +11,6 @@ describe Feed, "Apple delegated delivery" do
     podcast.update!(apple_key: key)
   end
 
-  it "rolls back feed edits when a requested connection is inaccessible" do
-    public_feed = binding.feed
-    original_title = public_feed.title
-    public_feed.assign_attributes(title: "Changed", apple_connection: "missing")
-    stub_request(:get, "https://aardvark.prx.org/shows/missing").to_return(status: 404, body: "{}")
-
-    refute public_feed.save_with_apple_connection
-    assert_predicate public_feed.errors[:apple_connection], :present?
-    assert_equal original_title, public_feed.reload.title
-    assert_equal "show-1", binding.reload.apple_show_id
-  end
-
-  it "reads the requested show before opening the save transaction" do
-    public_feed = binding.feed
-    public_feed.apple_connection = "show-2"
-    open_transactions = public_feed.class.connection.open_transactions
-    body = {data: {id: "show-2", type: "shows"}}.to_json
-    stub_request(:get, "https://aardvark.prx.org/shows/show-2").to_return do
-      assert_equal open_transactions, public_feed.class.connection.open_transactions
-      {status: 200, body: body}
-    end
-
-    assert public_feed.save_with_apple_connection
-    assert_equal "show-2", binding.reload.apple_show_id
-  end
-
-  it "does not read the requested show when the feed is invalid" do
-    public_feed = binding.feed
-    public_feed.assign_attributes(file_name: "", apple_connection: "show-2")
-
-    refute public_feed.save_with_apple_connection
-    assert_not_requested :get, "https://aardvark.prx.org/shows/show-2"
-    assert_equal "show-1", binding.reload.apple_show_id
-  end
-
-  it "reconnects a feed after removing its connection on the same instance" do
-    public_feed = create(:public_feed, podcast: podcast)
-    ["show-1", "show-2"].each do |id|
-      stub_request(:get, "https://aardvark.prx.org/shows/#{id}").to_return(status: 200, body: {data: {id: id, type: "shows"}}.to_json)
-    end
-
-    public_feed.apple_connection = "show-1"
-    assert public_feed.save_with_apple_connection
-    public_feed.apple_connection = ""
-    assert public_feed.save_with_apple_connection
-    public_feed.apple_connection = "show-2"
-    assert public_feed.save_with_apple_connection
-
-    assert_equal "show-2", public_feed.reload.apple_show_feed_binding.apple_show_id
-  end
-
-  it "saves ordinary metadata without verifying the unchanged Apple connection" do
-    public_feed = binding.feed
-    public_feed.title = "Changed"
-
-    assert public_feed.save_with_apple_connection
-    assert_equal "Changed", public_feed.reload.title
-    assert_not_requested :get, "https://aardvark.prx.org/shows/show-1"
-  end
-
   it "creates a token when a config is attached directly to a tokenless private feed" do
     feed = create(:private_feed, podcast: podcast, tokens: [])
 

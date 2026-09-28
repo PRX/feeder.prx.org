@@ -2,10 +2,8 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = [
-    "routeSelect",
+    "deliverySelect",
     "ownShowOnly",
-    "mappingOnly",
-    "mappingSelect",
     "mappedShowGroup",
     "mappedShowField",
     "mappedLink",
@@ -16,23 +14,24 @@ export default class extends Controller {
     this.sync()
   }
 
+  // The delivery select holds the config's target: blank for none, "own" for
+  // this feed's own show, or a public feed's binding id.
   sync() {
-    // The default feed has no delivery section, so no route to choose.
-    const route = this.hasRouteSelectTarget ? this.routeSelectTarget.value : "none"
+    // The default feed has no delivery section, so no delivery to choose.
+    const delivery = this.hasDeliverySelectTarget ? this.deliverySelectTarget.value : ""
 
-    this.ownShowOnlyTargets.forEach((el) => el.classList.toggle("d-none", route !== "own"))
-    this.mappingOnlyTargets.forEach((el) => el.classList.toggle("d-none", route !== "mapped"))
-    this.deliverySettingsTargets.forEach((el) => el.classList.toggle("d-none", route === "none"))
+    this.ownShowOnlyTargets.forEach((el) => el.classList.toggle("d-none", delivery !== "own"))
+    this.deliverySettingsTargets.forEach((el) => el.classList.toggle("d-none", delivery === ""))
 
-    if (this.hasMappingSelectTarget) {
+    if (this.hasDeliverySelectTarget) {
       this.syncMappedShow()
     }
   }
 
-  // The mapped show group renders alongside the mapping select, so its targets
-  // exist whenever the select does. The blank option keeps one selected.
+  // The mapped show group renders alongside the delivery select, so its targets
+  // exist whenever the select does. Only public feed options carry a show.
   syncMappedShow() {
-    const { appleShowId, feedUrl } = this.mappingSelectTarget.selectedOptions[0].dataset
+    const { appleShowId, feedUrl } = this.deliverySelectTarget.selectedOptions[0].dataset
 
     this.mappedShowGroupTarget.classList.toggle("d-none", !appleShowId)
     this.mappedShowFieldTarget.value = appleShowId || ""
