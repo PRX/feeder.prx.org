@@ -23,6 +23,29 @@ describe Feed, "Apple delegated delivery" do
     assert_equal "show-1", binding.reload.apple_show_id
   end
 
+  it "reads the requested show before opening the save transaction" do
+    public_feed = binding.feed
+    public_feed.apple_connection = "show-2"
+    open_transactions = public_feed.class.connection.open_transactions
+    body = {data: {id: "show-2", type: "shows"}}.to_json
+    stub_request(:get, "https://aardvark.prx.org/shows/show-2").to_return do
+      assert_equal open_transactions, public_feed.class.connection.open_transactions
+      {status: 200, body: body}
+    end
+
+    assert public_feed.save_with_apple_connection
+    assert_equal "show-2", binding.reload.apple_show_id
+  end
+
+  it "does not read the requested show when the feed is invalid" do
+    public_feed = binding.feed
+    public_feed.assign_attributes(file_name: "", apple_connection: "show-2")
+
+    refute public_feed.save_with_apple_connection
+    assert_not_requested :get, "https://aardvark.prx.org/shows/show-2"
+    assert_equal "show-1", binding.reload.apple_show_id
+  end
+
   it "saves ordinary metadata without verifying the unchanged Apple connection" do
     public_feed = binding.feed
     public_feed.title = "Changed"
