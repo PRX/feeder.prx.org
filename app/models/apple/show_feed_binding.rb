@@ -92,17 +92,19 @@ module Apple
       feed.association(:apple_sync_log).reset
     end
 
-    def self.connection_options(apple_key)
+    # Shows bound to other feeds are omitted, since a show connects to one feed.
+    def self.connection_options(apple_key, feed:)
       return [] unless apple_key
 
       api = Apple::Api.from_key(apple_key)
       shows = Apple::Show.apple_shows_json(api) || []
+      used_ids = where.not(feed: feed).pluck(:apple_show_id).to_set
 
       shows.filter_map do |show|
         next if show.dig("attributes", "publishingState") == "ARCHIVED"
 
         show_id = show["id"]
-        next if show_id.blank?
+        next if show_id.blank? || used_ids.include?(show_id.to_s)
 
         title = show.dig("attributes", "title").presence || show_id
         ConnectionOption.new("#{title} — #{show_id}", show_id.to_s)
