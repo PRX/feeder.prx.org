@@ -7,7 +7,7 @@ class FeedAppleConnectionsController < ApplicationController
 
     selection = params.slice(:selection).permit(:selection)
     @feed.apple_connection = selection[:selection] if selection.key?(:selection)
-    @apple_connection_options = Apple::ShowFeedBinding.connection_options(@podcast.apple_key) do
+    @apple_connection_options = Apple::ShowFeedBinding.connection_options(@podcast.apple_key, feed: @feed) do
       @apple_show_lookup_failed = true
     end
   rescue ActiveRecord::RecordNotFound => error

@@ -217,14 +217,28 @@ module Apple
         }.to_json
         stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: body)
 
-        options = ShowFeedBinding.connection_options(key)
+        options = ShowFeedBinding.connection_options(key, feed: create(:public_feed))
 
         assert_equal ["show-1"], options.map(&:value)
         assert_equal "Shared — show-1", options.first.label
       end
 
+      it "omits shows connected to other feeds, including other podcasts" do
+        key = create(:apple_key)
+        feed = create(:public_feed)
+        create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
+        create(:apple_show_feed_binding, feed: create(:public_feed, podcast: feed.podcast), apple_show_id: "show-2")
+        create(:apple_show_feed_binding, feed: create(:public_feed), apple_show_id: "show-3")
+        shows = %w[show-1 show-2 show-3 show-4].map { |id| {id: id, attributes: {title: id, publishingState: "PUBLISHED"}} }
+        stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: {data: shows, links: {}}.to_json)
+
+        options = ShowFeedBinding.connection_options(key, feed: feed)
+
+        assert_equal ["show-1", "show-4"], options.map(&:value)
+      end
+
       it "returns no options without a selected key" do
-        assert_empty ShowFeedBinding.connection_options(nil)
+        assert_empty ShowFeedBinding.connection_options(nil, feed: create(:public_feed))
       end
     end
   end
