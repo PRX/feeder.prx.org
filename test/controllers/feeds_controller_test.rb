@@ -44,11 +44,11 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     end
     assert_not_requested :get, "https://aardvark.prx.org/shows"
     assert_select "form turbo-frame#apple_connection_feed_#{feed.id}[loading='lazy'][src]" do
-      assert_select 'select[name="feed[apple_connection]"][disabled]'
-      assert_select 'input[type="hidden"][name="feed[apple_connection]"][value="show-1"]'
+      assert_select 'select[name="feed[apple_settings][connection]"][disabled]'
+      assert_select 'input[type="hidden"][name="feed[apple_settings][connection]"][value="show-1"]'
     end
 
-    patch podcast_feed_url(podcast, feed), params: {feed: {title: "Changed", apple_connection: "show-1"}}
+    patch podcast_feed_url(podcast, feed), params: {feed: {title: "Changed", apple_settings: {connection: "show-1"}}}
 
     assert_redirected_to podcast_feed_url(podcast, feed)
     assert_equal "Changed", feed.reload.title
@@ -95,13 +95,11 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".card-title", text: I18n.t("feeds.form_apple_settings.title"), count: 1 do |titles|
       assert_select titles.first.ancestors(".card").first, '.card-footer time[data-local="time-ago"]', count: 1
     end
-    assert_select 'input[type="checkbox"][name="feed[delegated_delivery_config_attributes][publish_enabled]"]'
-    assert_select 'select[name="feed[delegated_delivery_config_attributes][show_feed_binding_id]"]'
+    assert_select 'input[type="checkbox"][name="feed[apple_settings][publish_enabled]"]'
+    assert_select 'select[name="feed[apple_settings][delivery]"]'
 
     patch podcast_feed_url(podcast, apple_feed), params: {
-      feed: {
-        delegated_delivery_config_attributes: {id: config.id, publish_enabled: "0", sync_blocks_rss: "0"}
-      }
+      feed: {apple_settings: {publish_enabled: "0", sync_blocks_rss: "0"}}
     }
 
     assert_redirected_to podcast_feed_url(podcast, apple_feed)
@@ -118,11 +116,11 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
       ]
 
       patch podcast_feed_url(podcast, apple_feed), params: {
-        feed: {apple_connection: selection, display_episodes_count: 0}
+        feed: {display_episodes_count: 0, apple_settings: {connection: selection}}
       }
 
       assert_response :unprocessable_entity
-      assert_select 'input[type="hidden"][name="feed[apple_connection]"]' do |fields|
+      assert_select 'input[type="hidden"][name="feed[apple_settings][connection]"]' do |fields|
         assert_equal selection, fields.first["value"].to_s
       end
       frame_url = css_select("turbo-frame[src]").find { |frame| frame["id"] == "apple_connection_feed_#{feed.id}" }["src"]
@@ -132,7 +130,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
       Apple::ShowFeedBinding.stub(:connection_options, options) { get frame_url }
 
       assert_response :success
-      assert_select 'select[name="feed[apple_connection]"]' do
+      assert_select 'select[name="feed[apple_settings][connection]"]' do
         assert_select "option[value='show-2']"
         if selection.present?
           assert_select "option[selected][value='#{selection}']"
@@ -165,27 +163,26 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "should show feed" do
     get podcast_feed_url(podcast, feed)
     assert_response :success
-    assert_select "select[name='feed[apple_connection]']", count: 1
+    assert_select "select[name='feed[apple_settings][connection]']", count: 1
     assert_select "input[name='feed[apple_verify_token]']", count: 1
 
     get podcast_feed_url(podcast, private_feed)
     assert_response :success
     assert_select "[data-apple-settings-target='ownShowOnly'].d-none" do
-      assert_select "select[name='feed[apple_connection]']", count: 1
+      assert_select "select[name='feed[apple_settings][connection]']", count: 1
       assert_select "input[name='feed[apple_verify_token]']", count: 1
     end
     assert_select "input[name='feed[apple_verify_token]']", count: 1
-    assert_select "select[name='feed[apple_delivery_route]'] option[selected][value='none']"
-    assert_select "select[name='feed[delegated_delivery_config_attributes][show_feed_binding_id]']", count: 1
+    assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='']"
+    assert_select "select[name='feed[apple_settings][delivery]']", count: 1
   end
 
   test "shows only the connection section on the default feed" do
     get podcast_feed_url(podcast, podcast.default_feed)
 
     assert_response :success
-    assert_select "select[name='feed[apple_connection]']", count: 1
-    assert_select "select[name='feed[apple_delivery_route]']", count: 0
-    assert_select "select[name='feed[delegated_delivery_config_attributes][show_feed_binding_id]']", count: 0
+    assert_select "select[name='feed[apple_settings][connection]']", count: 1
+    assert_select "select[name='feed[apple_settings][delivery]']", count: 0
   end
 
   test "attaches delegated delivery to a normal feed" do
@@ -195,13 +192,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_difference("Apple::DelegatedDeliveryConfig.count", 1) do
       patch podcast_feed_url(podcast, private_feed), params: {
-        feed: {
-          delegated_delivery_config_attributes: {
-            show_feed_binding_id: binding.id,
-            publish_enabled: "1",
-            sync_blocks_rss: "1"
-          }
-        }
+        feed: {apple_settings: {delivery: binding.id, publish_enabled: "1", sync_blocks_rss: "1"}}
       }
     end
 
@@ -221,18 +212,15 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_url(podcast, private_feed)
 
     assert_response :success
-    assert_select 'select[name="feed[delegated_delivery_config_attributes][show_feed_binding_id]"]' do
+    assert_select 'select[name="feed[apple_settings][delivery]"]' do
       assert_select "option[value='#{binding.id}']"
       assert_select 'option[value=""]'
     end
-    assert_select 'select[name="feed[delegated_delivery_config_attributes][show_feed_binding_id]"][required]', count: 0
+    assert_select 'select[name="feed[apple_settings][delivery]"][required]', count: 0
 
     assert_no_difference "Apple::DelegatedDeliveryConfig.count" do
       patch podcast_feed_url(podcast, private_feed), params: {
-        feed: {
-          title: "Updated title",
-          delegated_delivery_config_attributes: {show_feed_binding_id: "", publish_enabled: "0", sync_blocks_rss: "0"}
-        }
+        feed: {title: "Updated title", apple_settings: {publish_enabled: "0", sync_blocks_rss: "0"}}
       }
     end
 
@@ -246,17 +234,14 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     binding = create(:apple_show_feed_binding, feed: feed)
 
     patch podcast_feed_url(podcast, private_feed), params: {
-      feed: {
-        file_name: "",
-        delegated_delivery_config_attributes: {show_feed_binding_id: binding.id, publish_enabled: "0"}
-      }
+      feed: {file_name: "", apple_settings: {delivery: binding.id, publish_enabled: "0"}}
     }
 
     assert_response :unprocessable_entity
-    assert_select 'select[name="feed[delegated_delivery_config_attributes][show_feed_binding_id]"]' do
+    assert_select 'select[name="feed[apple_settings][delivery]"]' do
       assert_select "option[selected][value='#{binding.id}']"
     end
-    assert_select 'input[type="checkbox"][name="feed[delegated_delivery_config_attributes][publish_enabled]"]:not([checked])'
+    assert_select 'input[type="checkbox"][name="feed[apple_settings][publish_enabled]"]:not([checked])'
     assert_nil private_feed.reload.delegated_delivery_config
   end
 
@@ -266,7 +251,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
 
     patch podcast_feed_url(podcast, feed), params: {
-      feed: {delegated_delivery_config_attributes: {show_feed_binding_id: binding.id, publish_enabled: "1"}}
+      feed: {apple_settings: {delivery: "own", connection: "show-1", publish_enabled: "1"}}
     }
 
     assert_redirected_to podcast_feed_url(podcast, feed)
@@ -282,18 +267,18 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_url(podcast, private_feed)
 
     assert_response :success
-    assert_select "select[name='feed[delegated_delivery_config_attributes][show_feed_binding_id]'] option[value='#{binding.id}']", count: 0
+    assert_select "select[name='feed[apple_settings][delivery]'] option[value='#{binding.id}']", count: 0
   end
 
   test "removes delegated delivery without removing the feed" do
     key = create(:apple_key, account_id: podcast.account_id)
     podcast.update!(apple_key: key)
     binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
-    config = create(:delegated_delivery_config, feed: private_feed, show_feed_binding: binding)
+    create(:delegated_delivery_config, feed: private_feed, show_feed_binding: binding)
 
     assert_difference("Apple::DelegatedDeliveryConfig.count", -1) do
       patch podcast_feed_url(podcast, private_feed), params: {
-        feed: {delegated_delivery_config_attributes: {id: config.id, _destroy: "1"}}
+        feed: {apple_settings: {delivery: ""}}
       }
     end
 
@@ -302,14 +287,14 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_nil private_feed.delegated_delivery_config
   end
 
-  test "removes delegated delivery when its route is none" do
+  test "removes delegated delivery when none is chosen" do
     apple_feed = create(:apple_feed, podcast: podcast)
     config = apple_feed.delegated_delivery_config
     binding = config.show_feed_binding
 
     assert_difference("Apple::DelegatedDeliveryConfig.count", -1) do
       patch podcast_feed_url(podcast, apple_feed), params: {
-        feed: {apple_delivery_route: "none", delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: ""}}
+        feed: {apple_settings: {delivery: ""}}
       }
     end
 
@@ -318,24 +303,25 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_predicate binding.reload, :persisted?
   end
 
-  test "requires a public feed for the mapped route" do
+  test "rejects delivery through another podcast's show" do
     apple_feed = create(:apple_feed, podcast: podcast)
     config = apple_feed.delegated_delivery_config
     binding = config.show_feed_binding
+    other_binding = create(:apple_show_feed_binding, apple_show_id: "other-show")
 
     patch podcast_feed_url(podcast, apple_feed), params: {
-      feed: {apple_delivery_route: "mapped", delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: ""}}
+      feed: {apple_settings: {delivery: other_binding.id}}
     }
 
     assert_response :unprocessable_entity
-    assert_select ".invalid-feedback", text: /needs a public feed mapping/i
+    assert_select ".invalid-feedback", text: /must be this feed's own apple show or a public feed on this podcast/i
     assert_equal binding, config.reload.show_feed_binding
   end
 
-  test "rejects an unknown delivery route" do
+  test "rejects an unknown delivery" do
     apple_feed = create(:apple_feed, podcast: podcast)
 
-    patch podcast_feed_url(podcast, apple_feed), params: {feed: {apple_delivery_route: "sideways"}}
+    patch podcast_feed_url(podcast, apple_feed), params: {feed: {apple_settings: {delivery: "sideways"}}}
 
     assert_response :unprocessable_entity
     assert_predicate apple_feed.reload.delegated_delivery_config, :present?
@@ -352,7 +338,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
 
       patch podcast_feed_url(podcast, apple_feed), params: {
-        feed: {delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: binding.id}}
+        feed: {apple_settings: {delivery: binding.id}}
       }
 
       assert_redirected_to podcast_feed_url(podcast, apple_feed)
@@ -373,7 +359,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
       assert_difference("Apple::DelegatedDeliveryConfig.count", -1) do
         patch podcast_feed_url(podcast, apple_feed), params: {
-          feed: {delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: "", _destroy: "1"}}
+          feed: {apple_settings: {delivery: ""}}
         }
       end
 
@@ -405,7 +391,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     stub_request(:get, "https://aardvark.prx.org/shows/show-1").to_return(status: 200, body: body)
 
     patch podcast_feed_url(podcast, feed), params: {
-      feed: {apple_connection: "show-1"}
+      feed: {apple_settings: {connection: "show-1"}}
     }
 
     assert_redirected_to podcast_feed_url(podcast, feed)
@@ -423,11 +409,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     stub_apple_show("show-9")
 
     patch podcast_feed_url(podcast, private_feed), params: {
-      feed: {
-        apple_delivery_route: "own",
-        apple_connection: "show-9",
-        delegated_delivery_config_attributes: {show_feed_binding_id: "", publish_enabled: "1", sync_blocks_rss: "0"}
-      }
+      feed: {apple_settings: {delivery: "own", connection: "show-9", publish_enabled: "1", sync_blocks_rss: "0"}}
     }
 
     assert_redirected_to podcast_feed_url(podcast, private_feed)
@@ -447,12 +429,12 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     stub_apple_show("show-9")
 
     patch podcast_feed_url(podcast, mapped_feed), params: {
-      feed: {apple_delivery_route: "mapped", apple_connection: "", delegated_delivery_config_attributes: {show_feed_binding_id: binding.id}}
+      feed: {apple_settings: {connection: "", delivery: binding.id}}
     }
     assert_redirected_to podcast_feed_url(podcast, mapped_feed)
 
     patch podcast_feed_url(podcast, own_show_feed), params: {
-      feed: {apple_delivery_route: "own", apple_connection: "show-9", delegated_delivery_config_attributes: {show_feed_binding_id: ""}}
+      feed: {apple_settings: {delivery: "own", connection: "show-9"}}
     }
     assert_redirected_to podcast_feed_url(podcast, own_show_feed)
 
@@ -480,13 +462,13 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_no_difference(["Apple::DelegatedDeliveryConfig.count", "Apple::ShowFeedBinding.count"]) do
       patch podcast_feed_url(podcast, private_feed), params: {
-        feed: {apple_delivery_route: "own", apple_connection: "", delegated_delivery_config_attributes: {publish_enabled: "1"}}
+        feed: {apple_settings: {delivery: "own", connection: "", publish_enabled: "1"}}
       }
     end
 
     assert_response :unprocessable_entity
     assert_select ".alert-danger", text: "must be selected to publish to this feed's own Apple show"
-    assert_select "select[name='feed[apple_delivery_route]'] option[selected][value='own']"
+    assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='own']"
   end
 
   test "explains when another feed already delivers through a public feed's own show" do
@@ -496,7 +478,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_no_difference("Apple::DelegatedDeliveryConfig.count") do
       patch podcast_feed_url(podcast, feed), params: {
-        feed: {apple_delivery_route: "own", apple_connection: "show-1", delegated_delivery_config_attributes: {show_feed_binding_id: "", publish_enabled: "1"}}
+        feed: {apple_settings: {delivery: "own", connection: "show-1", publish_enabled: "1"}}
       }
     end
 
@@ -514,7 +496,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_url(podcast, private_feed)
 
     assert_response :success
-    assert_select "select[name='feed[apple_delivery_route]'][data-confirm-field-target='field']" do |fields|
+    assert_select "select[name='feed[apple_settings][delivery]'][data-confirm-field-target='field']" do |fields|
       assert_equal I18n.t("feeds.form_apple_settings.confirm_leave_own_show"), fields.first["data-confirm-with"]
       assert_includes fields.first["data-action"].split, "apple-settings#sync"
     end
@@ -531,25 +513,21 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-apple-settings-target='ownShowOnly']:not(.d-none) input[name='feed[apple_verify_token]']", count: 1
   end
 
-  test "does not confirm the route without an own show connection" do
+  test "does not confirm the delivery without an own show connection" do
     get podcast_feed_url(podcast, private_feed)
 
     assert_response :success
-    assert_select "select[name='feed[apple_delivery_route]']", count: 1
-    assert_select "select[name='feed[apple_delivery_route]'][data-confirm-field-target]", count: 0
+    assert_select "select[name='feed[apple_settings][delivery]']", count: 1
+    assert_select "select[name='feed[apple_settings][delivery]'][data-confirm-field-target]", count: 0
   end
 
   test "removes a private feed's own show when its delivery is cleared" do
     podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
     binding = create(:apple_show_feed_binding, feed: private_feed, apple_show_id: "show-9")
-    config = create(:delegated_delivery_config, feed: private_feed, show_feed_binding: binding)
+    create(:delegated_delivery_config, feed: private_feed, show_feed_binding: binding)
 
     patch podcast_feed_url(podcast, private_feed), params: {
-      feed: {
-        apple_delivery_route: "none",
-        apple_connection: "show-9",
-        delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: ""}
-      }
+      feed: {apple_settings: {delivery: "", connection: "show-9"}}
     }
 
     assert_redirected_to podcast_feed_url(podcast, private_feed)
@@ -564,11 +542,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     config = create(:delegated_delivery_config, feed: private_feed, show_feed_binding: own_binding)
 
     patch podcast_feed_url(podcast, private_feed), params: {
-      feed: {
-        apple_delivery_route: "mapped",
-        apple_connection: "show-9",
-        delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: public_binding.id}
-      }
+      feed: {apple_settings: {connection: "show-9", delivery: public_binding.id}}
     }
 
     assert_redirected_to podcast_feed_url(podcast, private_feed)
@@ -579,13 +553,13 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "keeps a public feed's connection when its own delivery is removed" do
     podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
     binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
-    config = create(:delegated_delivery_config, feed: feed, show_feed_binding: binding)
+    create(:delegated_delivery_config, feed: feed, show_feed_binding: binding)
 
     get podcast_feed_url(podcast, feed)
-    assert_select "select[name='feed[apple_delivery_route]'] option[selected][value='own']"
+    assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='own']"
 
     patch podcast_feed_url(podcast, feed), params: {
-      feed: {apple_delivery_route: "none", apple_connection: "show-1", delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: ""}}
+      feed: {apple_settings: {delivery: "", connection: "show-1"}}
     }
 
     assert_redirected_to podcast_feed_url(podcast, feed)
@@ -600,8 +574,8 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_url(podcast, private_feed)
 
     assert_response :success
-    assert_select "select[name='feed[delegated_delivery_config_attributes][show_feed_binding_id]'] option[selected][value='#{binding.id}']", text: feed.label
-    assert_select "input[name='feed[delegated_delivery_config_attributes][apple_show_id]'][disabled][value='show-1']"
+    assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='#{binding.id}']", text: feed.label
+    assert_select "input[name='feed[apple_settings][mapped_show_id]'][disabled][value='show-1']"
     assert_select "a[href='#{podcast_feed_path(podcast, feed)}'][data-apple-settings-target='mappedLink']"
   end
 
@@ -611,10 +585,10 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     feed.update_column(:private, true)
 
     get podcast_feed_url(podcast, private_feed)
-    assert_select "select[name='feed[delegated_delivery_config_attributes][show_feed_binding_id]'] option[selected][value='#{binding.id}']"
+    assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='#{binding.id}']"
 
     patch podcast_feed_url(podcast, private_feed), params: {
-      feed: {apple_delivery_route: "mapped", delegated_delivery_config_attributes: {id: config.id, show_feed_binding_id: binding.id}}
+      feed: {apple_settings: {delivery: binding.id}}
     }
 
     assert_redirected_to podcast_feed_url(podcast, private_feed)
@@ -630,17 +604,16 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_url(podcast, private_feed)
 
     assert_response :success
-    assert_select "select[name='feed[apple_delivery_route]'] option[selected][value='mapped']"
-    assert_select "select[name='feed[delegated_delivery_config_attributes][show_feed_binding_id]'] option[selected][value='#{public_binding.id}']"
+    assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='#{public_binding.id}']"
   end
 
-  test "hides publishing settings until delivery has a route" do
+  test "hides publishing settings until a delivery is chosen" do
     get podcast_feed_url(podcast, private_feed)
 
     assert_response :success
     assert_select "[data-apple-settings-target='deliverySettings'].d-none" do
-      assert_select "input[type='checkbox'][name='feed[delegated_delivery_config_attributes][publish_enabled]']"
-      assert_select "input[type='checkbox'][name='feed[delegated_delivery_config_attributes][sync_blocks_rss]']"
+      assert_select "input[type='checkbox'][name='feed[apple_settings][publish_enabled]']"
+      assert_select "input[type='checkbox'][name='feed[apple_settings][sync_blocks_rss]']"
     end
   end
 
@@ -656,7 +629,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select "[data-apple-settings-target='deliverySettings']:not(.d-none)" do
-        assert_select "input[type='checkbox'][name='feed[delegated_delivery_config_attributes][publish_enabled]']"
+        assert_select "input[type='checkbox'][name='feed[apple_settings][publish_enabled]']"
       end
     end
   end
@@ -697,7 +670,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_url(podcast, feed)
 
     assert_response :success
-    path = new_podcast_feed_path(podcast, feed: {delegated_delivery_config_attributes: {show_feed_binding_id: binding.id}})
+    path = new_podcast_feed_path(podcast, feed: {apple_settings: {delivery: binding.id}})
     assert_select "a[href='#{path}']", text: I18n.t("feeds.form_apple_settings.create_feed")
   end
 
@@ -716,7 +689,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     podcast.default_feed.update!(display_episodes_count: 7, audio_format: {f: "mp3", b: 96, c: 1, s: 22050})
     binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
 
-    get new_podcast_feed_url(podcast, feed: {delegated_delivery_config_attributes: {show_feed_binding_id: binding.id}})
+    get new_podcast_feed_url(podcast, feed: {apple_settings: {delivery: binding.id}})
 
     assert_response :success
     assert_select "input[name='feed[label]'][value='Apple Subscriptions']"
@@ -730,11 +703,10 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_select "select[name='feed[audio_bitrate]'] option[selected][value='96']"
     assert_select "select[name='feed[audio_channel]'] option[selected][value='1']"
     assert_select "select[name='feed[audio_sample]'] option[selected][value='44100']"
-    assert_select "select[name='feed[delegated_delivery_config_attributes][show_feed_binding_id]'] option[selected][value='#{binding.id}']", text: feed.label
-    assert_select "select[name='feed[apple_delivery_route]'] option", count: 2
-    assert_select "select[name='feed[apple_delivery_route]'] option[selected][value='mapped']"
-    assert_select "select[name='feed[apple_delivery_route]'] option[value='own']", count: 0
-    assert_select "select[name='feed[apple_connection]']", count: 0
+    assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='#{binding.id}']", text: feed.label
+    assert_select "select[name='feed[apple_settings][delivery]'] option", count: 2
+    assert_select "select[name='feed[apple_settings][delivery]'] option[value='own']", count: 0
+    assert_select "select[name='feed[apple_settings][connection]']", count: 0
     assert_select "input[name='feed[apple_verify_token]']", count: 1
   end
 
@@ -742,7 +714,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     other_feed = create(:feed, podcast: create(:podcast), private: false, label: "Other Podcast Feed")
     other_binding = create(:apple_show_feed_binding, feed: other_feed, apple_show_id: "other-show")
 
-    get new_podcast_feed_url(podcast, feed: {delegated_delivery_config_attributes: {show_feed_binding_id: other_binding.id}})
+    get new_podcast_feed_url(podcast, feed: {apple_settings: {delivery: other_binding.id}})
 
     assert_response :success
     assert_select "option[value='#{other_binding.id}']", count: 0
@@ -756,7 +728,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "input[name='feed[label]'][value='Apple Subscriptions']", count: 0
-    assert_select "select[name='feed[delegated_delivery_config_attributes][show_feed_binding_id]']", count: 0
+    assert_select "select[name='feed[apple_settings][delivery]']", count: 0
   end
 
   test "creates a private feed that delivers through a public feed's show" do
@@ -764,13 +736,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_difference(["Feed.count", "Apple::DelegatedDeliveryConfig.count"]) do
       post podcast_feeds_url(podcast), params: {
-        feed: {
-          label: "Apple Subscriptions",
-          slug: FeedApple::APPLE_DELIVERY_SLUG,
-          title: "Apple Subscriptions",
-          private: true,
-          delegated_delivery_config_attributes: {show_feed_binding_id: binding.id, publish_enabled: "1", sync_blocks_rss: "0"}
-        }
+        feed: {label: "Apple Subscriptions", slug: FeedApple::APPLE_DELIVERY_SLUG, title: "Apple Subscriptions", private: true, apple_settings: {delivery: binding.id, publish_enabled: "1", sync_blocks_rss: "0"}}
       }
     end
 
@@ -784,7 +750,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
   test "does not connect without a selected podcast credential" do
     patch podcast_feed_url(podcast, feed), params: {
-      feed: {apple_connection: "show-1"}
+      feed: {apple_settings: {connection: "show-1"}}
     }
 
     assert_response :unprocessable_entity
@@ -796,7 +762,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     connected_apple_feed
     stub_request(:get, "https://aardvark.prx.org/shows/show-2").to_return(status: 403, body: "{}")
 
-    patch podcast_feed_url(podcast, feed), params: {feed: {apple_connection: "show-2"}}
+    patch podcast_feed_url(podcast, feed), params: {feed: {apple_settings: {connection: "show-2"}}}
 
     assert_response :unprocessable_entity
     assert_select '.card-body > .alert-danger[role="alert"]', text: /could not be read with the selected Apple credential/ do |alerts|
@@ -811,7 +777,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     other_feed = create(:public_feed, podcast: podcast)
     create(:apple_show_feed_binding, feed: other_feed, apple_show_id: "show-2")
 
-    patch podcast_feed_url(podcast, feed), params: {feed: {apple_connection: "show-2"}}
+    patch podcast_feed_url(podcast, feed), params: {feed: {apple_settings: {connection: "show-2"}}}
 
     assert_response :unprocessable_entity
     assert_select '.card-body > .alert-danger[role="alert"]', text: "Apple show is already connected to another feed"
@@ -823,7 +789,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     binding = create(:apple_show_feed_binding, feed: default_feed)
     sync_log = Apple::SyncLog.log!(feeder_type: :feeds, feeder_id: default_feed.id, external_id: binding.apple_show_id)
 
-    patch podcast_feed_url(podcast, default_feed), params: {feed: {apple_connection: ""}}
+    patch podcast_feed_url(podcast, default_feed), params: {feed: {apple_settings: {connection: ""}}}
 
     assert_redirected_to podcast_feed_url(podcast, default_feed)
     assert_nil default_feed.reload.apple_show_feed_binding
@@ -839,7 +805,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     binding = create(:apple_show_feed_binding, feed: feed)
     create(:delegated_delivery_config, feed: private_feed, key: key, show_feed_binding: binding)
 
-    patch podcast_feed_url(podcast, feed), params: {feed: {apple_connection: ""}}
+    patch podcast_feed_url(podcast, feed), params: {feed: {apple_settings: {connection: ""}}}
 
     assert_response :unprocessable_entity
     assert_predicate binding.reload, :persisted?
@@ -865,7 +831,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert_includes response.body, "Cannot delete a feed while delegated delivery uses its Apple connection"
-    assert_select 'select[name="feed[apple_connection]"] option[selected][value="show-1"]'
+    assert_select 'select[name="feed[apple_settings][connection]"] option[selected][value="show-1"]'
     assert_nil feed.reload.deleted_at
     assert_equal binding, config.reload.show_feed_binding
     assert_not_requested :get, "https://aardvark.prx.org/shows"
@@ -882,7 +848,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     stub_request(:get, "https://aardvark.prx.org/shows/new-show").to_return(status: 200, body: body)
 
     patch podcast_feed_url(podcast, default_feed), params: {
-      feed: {apple_connection: "new-show"}
+      feed: {apple_settings: {connection: "new-show"}}
     }
 
     assert_redirected_to podcast_feed_url(podcast, default_feed)
@@ -902,7 +868,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     body = {data: {id: "new-show", type: "shows", attributes: {title: "New show"}}}.to_json
     stub_request(:get, "https://aardvark.prx.org/shows/new-show").to_return(status: 200, body: body)
 
-    patch podcast_feed_url(podcast, default_feed), params: {feed: {apple_connection: "new-show"}}
+    patch podcast_feed_url(podcast, default_feed), params: {feed: {apple_settings: {connection: "new-show"}}}
 
     assert_redirected_to podcast_feed_url(podcast, default_feed)
     assert_equal "new-show", default_feed.reload.apple_sync_log.external_id
@@ -923,7 +889,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     stub_request(:get, "https://aardvark.prx.org/shows/new-show").to_return(status: 200, body: body)
 
     patch podcast_feed_url(podcast, default_feed), params: {
-      feed: {apple_connection: "new-show", title: "Changed title"}
+      feed: {title: "Changed title", apple_settings: {connection: "new-show"}}
     }
 
     assert_redirected_to podcast_feed_url(podcast, default_feed)

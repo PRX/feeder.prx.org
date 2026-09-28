@@ -40,7 +40,7 @@
         <% unless megaphone_feed?(feed) %>
           <%= render "form_distribution", podcast: podcast, feed: feed, form: form %>
         <% end %>
-        <%= render "form_apple_settings", podcast: podcast, feed: feed, form: form if feed.apple_connectable? && (feed.persisted? || feed.delegated_delivery_config) %>
+        <%= render "form_apple_settings", podcast: podcast, feed: feed, form: form if apple_settings.connectable? && (feed.persisted? || apple_settings.delivering?) %>
       </div>
     </div>
   </div>

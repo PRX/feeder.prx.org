@@ -1,25 +1,21 @@
 module FeedsHelper
-  def apple_connection_options(feed, options)
+  # The saved and selected shows stay selectable while Apple's list excludes them.
+  def apple_connection_options(settings, options)
     choices = options.map { |option| [option.label, option.value.to_s] }
-    [feed.apple_connection_was, feed.apple_connection].compact_blank.uniq.each do |show_id|
+    [settings.connection_was, settings.connection].compact_blank.uniq.each do |show_id|
       choices.prepend([show_id, show_id]) unless choices.any? { |_, value| value == show_id }
     end
     choices
   end
 
-  # Public feeds this feed can map its delegated delivery to. The current
-  # mapping stays selectable so a save doesn't clear it when its feed is
-  # no longer available.
-  def apple_delivery_options(feed)
-    # Dont include the bindings for this feed, use the toggle instead for
-    # delivering Delegated Delivery through this feed's binding
-    bindings = Apple::ShowFeedBinding.available_for_delivery(feed).where.not(feed_id: feed.id).to_a
-    current = feed.apple_delivery_mapping
-    bindings << current if current && bindings.exclude?(current)
-
-    bindings.map do |binding|
+  # No delivery, this feed's own show (once it's saved), then each public
+  # feed's show. Feed options carry the show and link the form displays.
+  def apple_delivery_options(settings)
+    options = [[t("feeds.form_apple_settings.deliveries.none"), ""]]
+    options << [t("feeds.form_apple_settings.deliveries.own"), Apple::FeedSettings::OWN] if settings.own_available?
+    options + settings.mapping_bindings.map do |binding|
       data = {apple_show_id: binding.apple_show_id, feed_url: podcast_feed_path(binding.feed.podcast_id, binding.feed)}
-      [binding.feed.label, binding.id, {data: data}]
+      [binding.feed.label, binding.id.to_s, {data: data}]
     end
   end
 

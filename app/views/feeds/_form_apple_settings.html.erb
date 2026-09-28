@@ -1,9 +1,9 @@
-<% binding = feed.apple_show_feed_binding %>
-<% config = feed.delegated_delivery_config %>
+<% settings = apple_settings %>
+<% binding = settings.binding %>
+<% config = settings.config %>
 <% config = nil if config&.marked_for_destruction? %>
-<% route = feed.apple_delivery_route %>
-<% invalid = feed.errors.attribute_names.any? { |name| name.to_s.start_with?("apple_", "delegated_delivery_config") } %>
-<% expanded = binding.present? || config.present? || invalid %>
+<% invalid = settings.errors.any? || feed.errors.attribute_names.any? { |name| name.to_s.start_with?("delegated_delivery_config") } %>
+<% expanded = binding.present? || config.present? || settings.delivering? || invalid %>
 
 <div class="card collapsible_card shadow border-0 mt-3 mb-0" data-controller="apple-settings">
   <div class="card-header card-header-light">
@@ -17,23 +17,25 @@
 
   <div id="apple-settings-card" class="collapse <%= "show" if expanded %>">
     <div class="card-body">
-      <% if feed.errors[:apple_connection].any? %>
-        <div class="alert alert-danger" role="alert"><%= feed.errors[:apple_connection].to_sentence %></div>
+      <% if settings.errors[:connection].any? %>
+        <div class="alert alert-danger" role="alert"><%= settings.errors[:connection].to_sentence %></div>
       <% end %>
 
-      <% unless feed.default? %>
-        <%= render "apple_settings_delivery", feed: feed, form: form, route: route %>
-      <% end %>
+      <%= form.fields_for :apple_settings, settings do |apple| %>
+        <% if settings.deliverable? %>
+          <%= render "apple_settings_delivery", feed: feed, settings: settings, apple: apple %>
+        <% end %>
 
-      <%# The connection and verify token need a saved feed. A new feed's token is in the main form.
-          A private feed's token only matters for claiming its own show, so it sits with the connection. %>
-      <% if feed.persisted? %>
-        <% if feed.private? %>
-          <div class="<%= "d-none" unless route == "own" %>" data-apple-settings-target="ownShowOnly">
-            <%= render "apple_settings_connection", podcast: podcast, feed: feed, form: form %>
-          </div>
-        <% else %>
-          <%= render "apple_settings_connection", podcast: podcast, feed: feed, form: form %>
+        <%# The connection and verify token need a saved feed. A new feed's token is in the main form.
+            A private feed's token only matters for claiming its own show, so it sits with the connection. %>
+        <% if feed.persisted? %>
+          <% if feed.private? %>
+            <div class="<%= "d-none" unless settings.route == "own" %>" data-apple-settings-target="ownShowOnly">
+              <%= render "apple_settings_connection", podcast: podcast, feed: feed, settings: settings, form: form, apple: apple %>
+            </div>
+          <% else %>
+            <%= render "apple_settings_connection", podcast: podcast, feed: feed, settings: settings, form: form, apple: apple %>
+          <% end %>
         <% end %>
       <% end %>
 
