@@ -3,6 +3,10 @@ require "active_support/concern"
 module FeedApple
   extend ActiveSupport::Concern
 
+  # How a feed's episodes reach Apple: not at all, through a public feed's
+  # Apple show, or through this feed's own.
+  APPLE_DELIVERY_ROUTES = %w[none mapped own].freeze
+
   APPLE_DELIVERY_SLUG = "apple-delegated-delivery-subscriptions"
   APPLE_DELIVERY_ZONES = ["billboard", "sonic_id"]
   APPLE_DELIVERY_AUDIO_FORMAT = {f: "mp3", b: 128, c: 2, s: 44100}.freeze
@@ -29,8 +33,9 @@ module FeedApple
 
     before_validation :build_apple_delivery_token
     validate :apple_delivery_requires_token
-    validate :apple_own_show_requires_connection
-    validate :apple_own_show_requires_available_binding
+    # Only a submitted route: reading the saved one loads Apple associations.
+    validates :apple_delivery_route, inclusion: {in: APPLE_DELIVERY_ROUTES}, unless: -> { @apple_delivery_route.nil? }
+    validate :apple_delivery_route_requirements
     validate :apple_public_dependents_block_private
     before_destroy :protect_apple_delivery_connection, prepend: true
   end
@@ -53,22 +58,27 @@ module FeedApple
     apple_connection.to_s != apple_connection_was.to_s
   end
 
-  # "Publish to this feed's own Apple show": deliver through this feed's own
-  # Apple show connection instead of mapping to a public feed's.
-  def apple_own_show
-    defined?(@apple_own_show) ? @apple_own_show : apple_own_show_was
+  def apple_delivery_route
+    @apple_delivery_route || apple_delivery_route_was
   end
 
-  def apple_own_show=(value)
-    @apple_own_show = ActiveModel::Type::Boolean.new.cast(value) || false
+  def apple_delivery_route=(value)
+    @apple_delivery_route = value.to_s.presence
   end
 
-  def apple_own_show_was
+  # A private feed's connection only serves its own show, so one without a
+  # config is still on its own route.
+  def apple_delivery_route_was
     binding = apple_show_feed_binding
-    return false unless binding
-
     config = delegated_delivery_config
-    config ? config.show_feed_binding_id == binding.id : private?
+
+    if config.nil?
+      (binding && private?) ? "own" : "none"
+    elsif binding && config.show_feed_binding_id == binding.id
+      "own"
+    else
+      "mapped"
+    end
   end
 
   # The public feed binding this feed's delivery maps to. A binding from
@@ -120,46 +130,55 @@ module FeedApple
     saved
   end
 
-  # The route chosen in the delivery section decides whether this feed has
-  # a delegated-delivery config. A blank mapping removes it, and on a
-  # private feed also removes the feed's own connection.
+  # Apply a submitted route. The mapping select sets a mapped config's
+  # binding, and a private feed's connection only serves its own route.
   private def apply_apple_delivery_route
-    return if default? || !apple_connectable?
+    return unless apple_delivery_route_submitted?
 
-    config = delegated_delivery_config
-    if apple_own_show_requested?
-      return if apple_connection.blank?
-
-      config ||= build_delegated_delivery_config
-      config.show_feed_binding = apple_connection_binding
-    elsif config && !config.marked_for_destruction?
-      own_binding = apple_show_feed_binding
-      leaving_own_show = defined?(@apple_own_show) && own_binding && config.show_feed_binding_id == own_binding.id
-      config.mark_for_destruction if config.show_feed_binding_id.nil? || leaving_own_show
+    case @apple_delivery_route
+    when "own"
+      if apple_connection.present?
+        config = delegated_delivery_config || build_delegated_delivery_config
+        config.show_feed_binding = apple_connection_binding
+      end
+    when "none"
+      delegated_delivery_config&.mark_for_destruction
     end
 
-    self.apple_connection = "" if defined?(@apple_own_show) && !@apple_own_show && private?
+    self.apple_connection = "" if private? && @apple_delivery_route != "own"
   end
 
-  private def apple_own_show_requested?
-    defined?(@apple_own_show) && @apple_own_show
+  private def apple_delivery_route_submitted?
+    APPLE_DELIVERY_ROUTES.include?(@apple_delivery_route) && !default? && apple_connectable?
   end
 
   private def reject_delegated_delivery_config?(attributes)
-    attributes["id"].blank? && attributes["show_feed_binding_id"].blank? &&
-      !(apple_own_show_requested? && apple_connection.present?)
+    return false if attributes["id"].present?
+
+    case @apple_delivery_route
+    when "none" then true
+    when "own" then apple_connection.blank?
+    else attributes["show_feed_binding_id"].blank?
+    end
   end
 
-  private def apple_own_show_requires_connection
-    return unless apple_own_show_requested? && apple_connection.blank?
+  private def apple_delivery_route_requirements
+    return unless apple_delivery_route_submitted?
 
-    errors.add(:apple_connection, "must be selected to publish to this feed's own Apple show")
+    case @apple_delivery_route
+    when "own" then apple_own_route_requirements
+    when "mapped"
+      errors.add(:apple_delivery_route, "needs a public feed mapping") unless apple_delivery_mapping
+    end
   end
 
-  # Another feed already delivers through this feed's Apple show. Report it
+  # The own route needs a show that no other feed delivers through. Report it
   # on the connection, since the mapping field is hidden for this route.
-  private def apple_own_show_requires_available_binding
-    return unless apple_own_show_requested? && apple_show_feed_binding&.persisted?
+  private def apple_own_route_requirements
+    if apple_connection.blank?
+      return errors.add(:apple_connection, "must be selected to publish to this feed's own Apple show")
+    end
+    return unless apple_show_feed_binding&.persisted?
 
     other = Apple::DelegatedDeliveryConfig.where(show_feed_binding_id: apple_show_feed_binding.id)
       .where.not(feed_id: id).includes(:feed).first
