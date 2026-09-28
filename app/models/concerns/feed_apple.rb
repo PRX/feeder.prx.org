@@ -3,10 +3,6 @@ require "active_support/concern"
 module FeedApple
   extend ActiveSupport::Concern
 
-  # How a feed's episodes reach Apple: not at all, through a public feed's
-  # Apple show, or through this feed's own.
-  APPLE_DELIVERY_ROUTES = %w[none mapped own].freeze
-
   APPLE_DELIVERY_SLUG = "apple-delegated-delivery-subscriptions"
   APPLE_DELIVERY_ZONES = ["billboard", "sonic_id"]
   APPLE_DELIVERY_AUDIO_FORMAT = {f: "mp3", b: 128, c: 2, s: 44100}.freeze
@@ -29,66 +25,12 @@ module FeedApple
 
     accepts_nested_attributes_for :delegated_delivery_config,
       allow_destroy: true,
-      reject_if: :reject_delegated_delivery_config?
+      reject_if: ->(attributes) { attributes["id"].blank? && attributes["show_feed_binding_id"].blank? }
 
     before_validation :build_apple_delivery_token
     validate :apple_delivery_requires_token
-    # Only a submitted route: reading the saved one loads Apple associations.
-    validates :apple_delivery_route, inclusion: {in: APPLE_DELIVERY_ROUTES}, unless: -> { @apple_delivery_route.nil? }
-    validate :apple_delivery_route_requirements
     validate :apple_public_dependents_block_private
     before_destroy :protect_apple_delivery_connection, prepend: true
-  end
-
-  def apple_connection
-    if defined?(@apple_connection)
-      @apple_connection
-    else
-      apple_show_feed_binding&.apple_show_id
-    end
-  end
-
-  attr_writer :apple_connection
-
-  def apple_connection_was
-    apple_show_feed_binding&.apple_show_id
-  end
-
-  def apple_connection_changed?
-    apple_connection.to_s != apple_connection_was.to_s
-  end
-
-  def apple_delivery_route
-    @apple_delivery_route || apple_delivery_route_was
-  end
-
-  def apple_delivery_route=(value)
-    @apple_delivery_route = value.to_s.presence
-  end
-
-  # A private feed's connection only serves its own show, so one without a
-  # config is still on its own route.
-  def apple_delivery_route_was
-    binding = apple_show_feed_binding
-    config = delegated_delivery_config
-
-    if config.nil?
-      (binding && private?) ? "own" : "none"
-    elsif binding && config.show_feed_binding_id == binding.id
-      "own"
-    else
-      "mapped"
-    end
-  end
-
-  # The public feed binding this feed's delivery maps to. A binding from
-  # another podcast is ignored, so a submitted id can't reveal its feed.
-  def apple_delivery_mapping
-    config = delegated_delivery_config
-    return if config.nil? || config.marked_for_destruction?
-
-    binding = config.show_feed_binding
-    binding if binding&.feed && binding.feed_id != id && binding.feed.podcast_id == podcast_id
   end
 
   # Defaults for a new private feed that delivers to Apple Subscriptions.
@@ -104,90 +46,6 @@ module FeedApple
   # Megaphone feeds deliver to Apple without an Apple show connection.
   def apple_connectable?
     !is_a?(Feeds::MegaphoneFeed)
-  end
-
-  def save_with_apple_connection
-    apply_apple_delivery_route
-    connection_changed = apple_connectable? && apple_connection_changed?
-    return save unless connection_changed
-    return false unless valid?
-
-    # Check show access before the transaction locks the feed row.
-    binding = prepare_apple_connection
-    return false unless add_apple_connection_errors(binding)
-
-    # Connect before saving so delivery can select a new binding, and
-    # disconnect after saving so delivery no longer selects it.
-    saved = false
-    transaction do
-      connect = apple_connection.present?
-      if (!connect || save_apple_connection(binding)) && save && (connect || save_apple_connection(binding))
-        saved = true
-      else
-        raise ActiveRecord::Rollback
-      end
-    end
-    saved
-  end
-
-  # Apply a submitted route. The mapping select sets a mapped config's
-  # binding, and a private feed's connection only serves its own route.
-  private def apply_apple_delivery_route
-    return unless apple_delivery_route_submitted?
-
-    case @apple_delivery_route
-    when "own"
-      if apple_connection.present?
-        config = delegated_delivery_config || build_delegated_delivery_config
-        config.show_feed_binding = apple_connection_binding
-      end
-    when "none"
-      delegated_delivery_config&.mark_for_destruction
-    end
-
-    self.apple_connection = "" if private? && @apple_delivery_route != "own"
-  end
-
-  private def apple_delivery_route_submitted?
-    APPLE_DELIVERY_ROUTES.include?(@apple_delivery_route) && !default? && apple_connectable?
-  end
-
-  private def reject_delegated_delivery_config?(attributes)
-    return false if attributes["id"].present?
-
-    case @apple_delivery_route
-    when "none" then true
-    when "own" then apple_connection.blank?
-    else attributes["show_feed_binding_id"].blank?
-    end
-  end
-
-  private def apple_delivery_route_requirements
-    return unless apple_delivery_route_submitted?
-
-    case @apple_delivery_route
-    when "own" then apple_own_route_requirements
-    when "mapped"
-      errors.add(:apple_delivery_route, "needs a public feed mapping") unless apple_delivery_mapping
-    end
-  end
-
-  # The own route needs a show that no other feed delivers through. Report it
-  # on the connection, since the mapping field is hidden for this route.
-  private def apple_own_route_requirements
-    if apple_connection.blank?
-      return errors.add(:apple_connection, "must be selected to publish to this feed's own Apple show")
-    end
-    return unless apple_show_feed_binding&.persisted?
-
-    other = Apple::DelegatedDeliveryConfig.where(show_feed_binding_id: apple_show_feed_binding.id)
-      .where.not(feed_id: id).includes(:feed).first
-    return unless other
-
-    errors.delete(:"delegated_delivery_config.show_feed_binding_id", :taken)
-    delegated_delivery_config&.errors&.delete(:show_feed_binding_id, :taken)
-    label = other.feed&.label || "another feed"
-    errors.add(:apple_connection, "is already used for delegated delivery by #{label}. Map that feed to a different public feed before publishing this feed to its own Apple show")
   end
 
   # The first free Apple Subscriptions slug, since a podcast can have one
@@ -241,38 +99,6 @@ module FeedApple
       c: APPLE_MP3_CHANNELS.include?(format[:c]) ? format[:c] : APPLE_MP3_CHANNELS.min,
       s: [APPLE_MIN_MP3_SAMPLERATE, format[:s]].compact.max
     }.with_indifferent_access
-  end
-
-  private def apple_connection_binding
-    @apple_connection_binding ||= apple_show_feed_binding || Apple::ShowFeedBinding.new(feed: self)
-  end
-
-  private def prepare_apple_connection
-    return apple_show_feed_binding if apple_connection.blank?
-
-    apple_connection_binding.tap do |binding|
-      binding.prepare_connection(apple_connection)
-    end
-  end
-
-  private def save_apple_connection(binding)
-    if apple_connection.blank?
-      binding.association(:delegated_delivery_config).reset
-      binding.destroy
-    else
-      binding.connect!
-    end
-    add_apple_connection_errors(binding).tap do |saved|
-      next unless saved
-
-      association(:apple_show_feed_binding).reset
-      @apple_connection_binding = nil
-    end
-  end
-
-  private def add_apple_connection_errors(binding)
-    binding.errors.full_messages.each { |message| errors.add(:apple_connection, message) }
-    binding.errors.empty?
   end
 
   def publish_to_apple?

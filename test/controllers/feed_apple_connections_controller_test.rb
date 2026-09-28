@@ -40,7 +40,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_apple_connection_url(podcast, private_feed)
 
     assert_response :success
-    assert_select 'select[name="feed[apple_connection]"] option[value="show-1"]'
+    assert_select 'select[name="feed[apple_settings][connection]"] option[value="show-1"]'
   end
 
   test "does not look up shows for Megaphone feeds" do
@@ -57,9 +57,9 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "turbo-frame#apple_connection_feed_#{feed.id}"
-    assert_select 'select[name="feed[apple_connection]"]:not([disabled])'
+    assert_select 'select[name="feed[apple_settings][connection]"]:not([disabled])'
     assert_select "form", count: 0
-    assert_select 'input[name="feed[apple_connection]"]', count: 0
+    assert_select 'input[name="feed[apple_settings][connection]"]', count: 0
     assert_not_requested :get, "https://aardvark.prx.org/shows"
   end
 
@@ -67,7 +67,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_apple_connection_url(podcast, locked_feed)
 
     assert_response :success
-    assert_select 'select[name="feed[apple_connection]"][disabled]'
+    assert_select 'select[name="feed[apple_settings][connection]"][disabled]'
   end
 
   test "preserves a submitted show and the saved confirmation baseline after lookup failure" do
@@ -77,7 +77,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_apple_connection_url(podcast, feed), params: {selection: "show-2"}
 
     assert_response :success
-    assert_select 'select[name="feed[apple_connection]"][data-value-was="show-1"].is-changed' do
+    assert_select 'select[name="feed[apple_settings][connection]"][data-value-was="show-1"].is-changed' do
       assert_select 'option[selected][value="show-2"]'
       assert_select 'option[value="show-1"]'
     end
@@ -99,7 +99,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select '.alert-danger[role="alert"]', count: 0
-    assert_select 'select[name="feed[apple_connection]"][data-value-was="show-1"].is-changed' do
+    assert_select 'select[name="feed[apple_settings][connection]"][data-value-was="show-1"].is-changed' do
       assert_select 'option[selected][value="show-2"]', text: "show-2"
       assert_select 'option[value="show-1"]', text: "Connected show — show-1"
       assert_select 'option[value="show-3"]', text: "Other show — show-3"
@@ -115,7 +115,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_settings.show_lookup_failed")
-    assert_select 'select[name="feed[apple_connection]"] option[selected][value="show-1"]', text: "show-1"
+    assert_select 'select[name="feed[apple_settings][connection]"] option[selected][value="show-1"]', text: "show-1"
   end
 
   test "warns and preserves the connected show when Apple credentials cannot be decrypted" do
@@ -127,7 +127,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_settings.show_lookup_failed")
-    assert_select 'select[name="feed[apple_connection]"] option[selected][value="show-1"]', text: "show-1"
+    assert_select 'select[name="feed[apple_settings][connection]"] option[selected][value="show-1"]', text: "show-1"
   end
 
   test "leaves the show unselected when lookup fails without a connection" do
@@ -138,7 +138,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_settings.show_lookup_failed")
-    assert_select 'select[name="feed[apple_connection]"] option:not([value=""])', count: 0
+    assert_select 'select[name="feed[apple_settings][connection]"] option:not([value=""])', count: 0
   end
 
   test "does not warn when Apple returns no shows" do
@@ -149,7 +149,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_settings.show_lookup_failed"), count: 0
-    assert_select 'select[name="feed[apple_connection]"] option[selected][value="show-1"]'
+    assert_select 'select[name="feed[apple_settings][connection]"] option[selected][value="show-1"]'
   end
 
   test "loads Apple shows with only the selected podcast credential" do
@@ -167,7 +167,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
-    assert_select "select[name='feed[apple_connection]'] option[value='show-1']", text: "Selected show — show-1"
+    assert_select "select[name='feed[apple_settings][connection]'] option[value='show-1']", text: "Selected show — show-1"
   end
 
   test "requires confirmation when replacing a connection used by delegated delivery" do
@@ -179,7 +179,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
-    assert_select 'select[name="feed[apple_connection]"][data-confirm-field-target="field"]' do |fields|
+    assert_select 'select[name="feed[apple_settings][connection]"][data-confirm-field-target="field"]' do |fields|
       assert_equal I18n.t("feeds.form_apple_settings.confirm_replace"), fields.first["data-confirm-with"]
       assert_equal I18n.t("feeds.form_apple_settings.confirm_remove"), fields.first["data-confirm-delete"]
     end

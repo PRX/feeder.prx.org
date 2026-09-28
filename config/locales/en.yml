@@ -345,6 +345,12 @@ en:
       apple/delegated_delivery_config:
         publish_enabled: Enable publishing to Apple Podcasts Connect
         sync_blocks_rss: Episodes must publish to Apple before the public feed
+      apple/feed_settings:
+        delivery: Apple Delivery
+        connection: Apple Show ID
+        mapped_show_id: Apple Show ID
+        publish_enabled: Enable publishing to Apple Podcasts Connect
+        sync_blocks_rss: Episodes must publish to Apple before the public feed
       megaphone/config:
         publish_enabled: Enable publishing to Megaphone
         sync_blocks_rss: Episodes must publish to Megaphone before the public feed
@@ -422,8 +428,6 @@ en:
         title: Title
         url: Episode URL
       feed:
-        apple_connection: Apple Show ID
-        apple_delivery_route: Apple Delivery
         apple_verify_token: Apple Podcasts Verify Token
         audio_type: Format
         audio_bitrate: Bitrate
@@ -930,23 +934,19 @@ en:
       confirm_replace: Are you sure you want to replace this Apple connection? Dependent delegated-delivery feeds will use the new connection.
       confirm_remove: Are you sure you want to remove this Apple connection?
       confirm_leave_own_show: Are you sure you want to stop publishing to this feed's own Apple show? Saving will remove its Apple connection. Choose a public feed mapping to keep delegated delivery.
-      mapping: Public Feed Mapping
-      mapped_show: Apple Show ID
       view_mapped_feed: Go to the mapped feed
       no_mappings: No public feed on this podcast has an available Apple show connection. Connect one in a public feed's Apple Settings, or publish to this feed's own Apple show.
       no_mappings_own_show: No other public feed on this podcast has an available Apple show connection. Choose "This feed's own Apple show" instead.
       mapped_feed: Feed mapped to Apple Subscriptions
-      routes:
+      deliveries:
         none: No delegated delivery
-        mapped: Map to a public feed's Apple show
         own: This feed's own Apple show
       create_feed: "+ Create a new feed"
       publishing: Publishing
       paused: Paused
       help:
         connection: Select the Apple show Apple crawls this feed for.
-        mapping: Select the public feed whose Apple show receives this feed's episodes.
-        route: Choose how this feed's episodes reach Apple Podcasts Connect, through a public feed's Apple show or through this feed's own.
+        delivery: Choose where this feed's episodes go in Apple Podcasts Connect, this feed's own Apple show or a public feed's.
         publish_enabled: Enable publishing this feed's episodes to Apple Podcasts Connect.
         sync_blocks_rss: Require Apple publishing to succeed before public RSS publishing continues.
     form_audio_format:
