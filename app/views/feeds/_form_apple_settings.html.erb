@@ -31,12 +31,6 @@
             A private feed's token only matters for claiming its own show, so it sits with the connection.
             A public feed's token is in its RSS whether or not it's connected, so it always shows. %>
         <% if feed.persisted? %>
-          <% if binding&.persisted? %>
-            <div class="alert alert-warning <%= "d-none" unless settings.disconnects? %>" role="status" data-apple-settings-target="disconnectOnly">
-              <%= t(".disconnect_on_save", show_id: binding.apple_show_id) %>
-            </div>
-          <% end %>
-
           <% if feed.private? %>
             <div class="<%= "d-none" unless settings.route == "own" %>" data-apple-settings-target="ownShowOnly">
               <%= render "apple_settings_connection", podcast: podcast, feed: feed, settings: settings, apple: apple %>
