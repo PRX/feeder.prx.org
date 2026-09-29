@@ -3,7 +3,7 @@ class FeedAppleConnectionsController < ApplicationController
     @podcast = Podcast.find(params[:podcast_id])
     @feed = @podcast.feeds.find(params[:feed_id])
     authorize @feed, :show?
-    return head(:not_found) unless @feed.public?
+    return head(:not_found) unless @feed.apple_connectable?
 
     selection = params.slice(:selection).permit(:selection)
     @feed.apple_connection = selection[:selection] if selection.key?(:selection)

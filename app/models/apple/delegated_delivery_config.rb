@@ -19,6 +19,7 @@ module Apple
     validates :show_feed_binding_id, uniqueness: true, allow_nil: true
     validate :key_belongs_to_podcast_account
     validate :show_feed_binding_belongs_to_podcast
+    validate :show_feed_binding_is_public_or_own
 
     before_save :mirror_podcast_key_for_rollback
     after_create :ensure_private_feed_token
@@ -123,6 +124,14 @@ module Apple
       return if feed.podcast_id == show_feed_binding.feed&.podcast_id
 
       errors.add(:show_feed_binding, "must belong to the configured feed's podcast")
+    end
+
+    # Only the owning feed delivers through a private feed's binding.
+    def show_feed_binding_is_public_or_own
+      bound_feed = show_feed_binding&.feed
+      return if bound_feed.nil? || bound_feed.public? || bound_feed == feed
+
+      errors.add(:show_feed_binding, "must belong to a public feed or this feed")
     end
 
     def mirror_podcast_key_for_rollback

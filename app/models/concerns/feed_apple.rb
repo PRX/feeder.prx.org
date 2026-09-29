@@ -17,9 +17,9 @@ module FeedApple
       allow_destroy: true,
       reject_if: ->(attributes) { attributes["id"].blank? && attributes["show_feed_binding_id"].blank? }
 
-    validate :apple_connection_requires_public_feed
     before_validation :build_apple_delivery_token
     validate :apple_delivery_requires_token
+    validate :apple_public_dependents_block_private
     before_destroy :protect_apple_delivery_connection, prepend: true
   end
 
@@ -41,8 +41,13 @@ module FeedApple
     apple_connection.to_s != apple_connection_was.to_s
   end
 
+  # Megaphone feeds deliver to Apple without an Apple show connection.
+  def apple_connectable?
+    !is_a?(Feeds::MegaphoneFeed)
+  end
+
   def save_with_apple_connection
-    return save unless public? && apple_connection_changed?
+    return save unless apple_connectable? && apple_connection_changed?
     return false unless valid?
 
     # Check show access before the transaction locks the feed row.
@@ -58,6 +63,18 @@ module FeedApple
       end
     end
     saved
+  end
+
+  # Other feeds' delivery depends on this feed's show staying public. A
+  # feed's own delivery through its own show can go private.
+  private def apple_public_dependents_block_private
+    return unless private? && private_changed? && apple_show_feed_binding
+
+    config = apple_show_feed_binding.delegated_delivery_config
+    if config && config.feed_id != id
+      label = config.feed&.label || "another feed"
+      errors.add(:private, "cannot be enabled while #{label} delivers to this feed's Apple show")
+    end
   end
 
   private def prepare_apple_connection
@@ -131,25 +148,20 @@ module FeedApple
     episodes.where("episodes.published_at IS NULL OR episodes.published_at > ?", Time.now - episode_offset_seconds.to_i)
   end
 
-  private def apple_connection_requires_public_feed
-    if private? && apple_show_feed_binding
-      errors.add(:private, "cannot be enabled while connected to an Apple show")
-    end
-  end
-
   private def build_apple_delivery_token
     return unless private? && delegated_delivery_config&.new_record? && !delegated_delivery_config.marked_for_destruction?
 
-    tokens.build(label: Apple::DelegatedDeliveryConfig::DEFAULT_TOKEN_LABEL) if active_apple_delivery_tokens.empty?
+    tokens.build(label: Apple::DelegatedDeliveryConfig::DEFAULT_TOKEN_LABEL) if active_apple_tokens.empty?
   end
 
   private def apple_delivery_requires_token
-    return unless private? && delegated_delivery_config && !delegated_delivery_config.marked_for_destruction?
+    delivering = delegated_delivery_config && !delegated_delivery_config.marked_for_destruction?
+    return if public? || !(delivering || apple_show_feed_binding)
 
-    errors.add(:tokens, "must have a token") if active_apple_delivery_tokens.empty?
+    errors.add(:tokens, "must have a token") if active_apple_tokens.empty?
   end
 
-  private def active_apple_delivery_tokens
+  def active_apple_tokens
     tokens.reject { |token| token.marked_for_destruction? || token.destroyed? }
   end
 
