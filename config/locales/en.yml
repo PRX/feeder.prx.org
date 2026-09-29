@@ -946,6 +946,7 @@ en:
       show_lookup_failed: Failed to load shows from Apple Podcasts Connect.
       confirm_replace: Are you sure you want to replace this Apple connection? Dependent delegated-delivery feeds will use the new connection.
       confirm_remove: Are you sure you want to remove this Apple connection?
+      disconnect_on_save: Saving removes this feed's Apple show connection (%{show_id}).
       confirm_leave_own_show: Are you sure you want to stop publishing to this feed's own Apple show? Saving will remove its Apple connection. Choose a public feed mapping to keep delegated delivery.
       view_mapped_feed: Go to the mapped feed
       no_mappings: No public feed on this podcast has an available Apple show connection. Connect one in a public feed's Apple Settings, or publish to this feed's own Apple show.
