@@ -580,7 +580,9 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
       text: I18n.t("feeds.form_apple_settings.disconnect_on_save", show_id: "show-2")
     assert_select "[data-apple-settings-target='connectedOnly'].d-none" do
       assert_select "select[name='feed[apple_settings][connection]']", count: 1
+      assert_select "input[name='feed[apple_verify_token]']", count: 0
     end
+    assert_select "input[name='feed[apple_verify_token]']", count: 1
   end
 
   test "keeps a public feed connected when another feed delivers to its show" do
