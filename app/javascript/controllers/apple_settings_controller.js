@@ -1,15 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = [
-    "deliverySelect",
-    "ownShowOnly",
-    "mappedOnly",
-    "connectedOnly",
-    "disconnectOnly",
-    "mappedLink",
-    "deliverySettings",
-  ]
+  static targets = ["deliverySelect", "ownShowOnly", "mappedOnly", "connectedOnly", "mappedLink", "deliverySettings"]
 
   static values = { private: Boolean, deliveryWas: String }
 
@@ -30,7 +22,6 @@ export default class extends Controller {
     this.ownShowOnlyTargets.forEach((el) => el.classList.toggle("d-none", delivery !== "own"))
     this.mappedOnlyTargets.forEach((el) => el.classList.toggle("d-none", !feedUrl))
     this.connectedOnlyTargets.forEach((el) => el.classList.toggle("d-none", disconnects))
-    this.disconnectOnlyTargets.forEach((el) => el.classList.toggle("d-none", !disconnects))
     this.deliverySettingsTargets.forEach((el) => el.classList.toggle("d-none", delivery === ""))
 
     if (this.hasMappedLinkTarget) {
