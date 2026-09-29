@@ -1,0 +1,17 @@
+<h3 class="h6 mt-3"><%= t("feeds.form_apple_settings.mapped_feed") %></h3>
+<% if config %>
+  <ul class="list-group list-group-flush mb-2">
+    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+      <%= link_to config.feed.label, podcast_feed_path(podcast, config.feed) %>
+      <% if config.publish_enabled? %>
+        <span class="badge bg-success"><%= t("feeds.form_apple_settings.publishing") %></span>
+      <% else %>
+        <span class="badge bg-secondary"><%= t("feeds.form_apple_settings.paused") %></span>
+      <% end %>
+    </li>
+  </ul>
+<% else %>
+  <%= link_to t("feeds.form_apple_settings.create_feed"),
+        new_podcast_feed_path(podcast, feed: {delegated_delivery_config_attributes: {show_feed_binding_id: binding.id}}),
+        data: {turbo_frame: "_top"} %>
+<% end %>

@@ -7,8 +7,20 @@ module FeedsHelper
     choices
   end
 
-  def apple_delivery_options(bindings)
-    bindings.map { |binding| ["#{binding.feed.label} — #{binding.apple_show_id}", binding.id] }
+  # Public feeds this feed can map its delegated delivery to. The current
+  # mapping stays selectable so a save doesn't clear it when its feed is
+  # no longer available.
+  def apple_delivery_options(feed)
+    # Dont include the bindings for this feed, use the toggle instead for
+    # delivering Delegated Delivery through this feed's binding
+    bindings = Apple::ShowFeedBinding.available_for_delivery(feed).where.not(feed_id: feed.id).to_a
+    current = feed.apple_delivery_mapping
+    bindings << current if current && bindings.exclude?(current)
+
+    bindings.map do |binding|
+      data = {apple_show_id: binding.apple_show_id, feed_url: podcast_feed_path(binding.feed.podcast_id, binding.feed)}
+      [binding.feed.label, binding.id, {data: data}]
+    end
   end
 
   def episode_offset_options
