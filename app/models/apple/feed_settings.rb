@@ -116,10 +116,6 @@ module Apple
         .where(feeds: {podcast_id: feed.podcast_id}).where.not(feed_id: feed.id).find_by(id: mapping_id)
     end
 
-    def mapped_show_id
-      mapping&.apple_show_id
-    end
-
     # Bindings this feed can map to. The current mapping stays selectable so
     # a save doesn't clear it when its feed is no longer available.
     def mapping_bindings
