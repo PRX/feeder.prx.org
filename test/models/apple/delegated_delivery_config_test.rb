@@ -101,6 +101,23 @@ describe Apple::DelegatedDeliveryConfig do
       assert_equal ["must belong to the configured feed's podcast"], config.errors[:show_feed_binding]
     end
 
+    it "allows a private feed to deliver through its own binding" do
+      delivery_feed = create(:private_feed, podcast: create(:podcast))
+      own_binding = create(:apple_show_feed_binding, feed: delivery_feed)
+
+      assert build(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: own_binding).valid?
+    end
+
+    it "rejects another private feed's binding" do
+      podcast = create(:podcast)
+      other_binding = create(:apple_show_feed_binding, feed: create(:private_feed, podcast: podcast))
+
+      config = build(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), show_feed_binding: other_binding)
+
+      refute config.valid?
+      assert_equal ["must belong to a public feed or this feed"], config.errors[:show_feed_binding]
+    end
+
     it "requires a persisted key to belong to the podcast account" do
       podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/456")
       key = create(:apple_key, account_id: 123)

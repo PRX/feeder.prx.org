@@ -28,12 +28,26 @@ module Apple
         assert_includes binding.errors[:apple_show_id], "Can't be blank"
       end
 
-      it "requires a public feed" do
+      it "allows a private feed with a token" do
         private_feed = create(:private_feed, podcast: create(:podcast))
+
+        assert build(:apple_show_feed_binding, feed: private_feed).valid?
+      end
+
+      it "requires a token on a private feed" do
+        private_feed = create(:private_feed, podcast: create(:podcast))
+        private_feed.tokens.each(&:mark_for_destruction)
         binding = build(:apple_show_feed_binding, feed: private_feed)
 
         refute binding.valid?
-        assert_includes binding.errors[:feed], "must be a public feed"
+        assert_includes binding.errors[:feed], "must have a token when private"
+      end
+
+      it "rejects a Megaphone feed" do
+        binding = build(:apple_show_feed_binding, feed: create(:megaphone_feed))
+
+        refute binding.valid?
+        assert_includes binding.errors[:feed], "cannot be a Megaphone feed"
       end
 
       it "allows only one binding per feed" do
@@ -44,6 +58,24 @@ module Apple
 
         refute binding.valid?
         assert_includes binding.errors[:feed_id], "has already been taken"
+      end
+    end
+
+    describe ".available_for_delivery" do
+      it "lists unassigned public bindings and the delivery feed's own binding" do
+        podcast = create(:podcast)
+        delivery_feed = create(:private_feed, podcast: podcast)
+        public_binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+        own_binding = create(:apple_show_feed_binding, feed: delivery_feed)
+        other_private = create(:apple_show_feed_binding, feed: create(:private_feed, podcast: podcast))
+        assigned = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+        create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), show_feed_binding: assigned)
+        create(:apple_show_feed_binding, feed: create(:public_feed))
+
+        available = ShowFeedBinding.available_for_delivery(delivery_feed).to_a
+
+        assert_equal [public_binding, own_binding].sort_by(&:id), available.sort_by(&:id)
+        refute_includes available, other_private
       end
     end
 
