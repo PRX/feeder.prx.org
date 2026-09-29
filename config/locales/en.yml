@@ -348,7 +348,6 @@ en:
       apple/feed_settings:
         delivery: Apple Delivery
         connection: Apple Show ID
-        mapped_show_id: Apple Show ID
         publish_enabled: Enable publishing to Apple Podcasts Connect
         sync_blocks_rss: Episodes must publish to Apple before the public feed
       megaphone/config:

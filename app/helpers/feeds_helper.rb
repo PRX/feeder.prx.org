@@ -9,9 +9,9 @@ module FeedsHelper
   end
 
   # No delivery, this feed's own show (once it's saved), then each public
-  # feed's show in a group. Feed options carry the show and link the form
-  # displays. Mixed grouped and plain options need prebuilt tags, so the
-  # selection is set here.
+  # feed's show in a group. Feed options carry the link the form displays.
+  # Mixed grouped and plain options need prebuilt tags, so the selection is
+  # set here.
   def apple_delivery_options(settings)
     options = [[t("feeds.form_apple_settings.deliveries.none"), ""]]
     options << [t("feeds.form_apple_settings.deliveries.own"), Apple::FeedSettings::OWN] if settings.own_available?
@@ -20,7 +20,7 @@ module FeedsHelper
 
     mappings = settings.mapping_bindings.map do |binding|
       label = t("feeds.form_apple_settings.deliveries.mapped", feed: binding.feed.label, show_id: binding.apple_show_id)
-      data = {apple_show_id: binding.apple_show_id, feed_url: podcast_feed_path(binding.feed.podcast_id, binding.feed)}
+      data = {feed_url: podcast_feed_path(binding.feed.podcast_id, binding.feed)}
       [label, binding.id.to_s, {data: data}]
     end
     tags + tag.optgroup(options_for_select(mappings, settings.delivery), label: t("feeds.form_apple_settings.deliveries.mappings"))
