@@ -17,17 +17,19 @@ module Apple
 
     validates :apple_show_id, presence: true, uniqueness: {message: "is already connected to another feed"}
     validates :feed_id, uniqueness: true
-    validate :feed_must_be_public
+    validate :feed_must_support_apple
     before_destroy :protect_delegated_delivery, prepend: true
     after_destroy :clear_feed_sync_log
 
     scope :active, -> { joins(:feed).where(feeds: {deleted_at: nil}) }
 
+    # Unassigned public-feed bindings, plus the delivery feed's own binding.
     def self.available_for_delivery(delivery_feed)
-      active.left_outer_joins(:delegated_delivery_config)
-        .where(feeds: {podcast_id: delivery_feed.podcast_id, private: false})
+      candidates = active.left_outer_joins(:delegated_delivery_config)
+        .where(feeds: {podcast_id: delivery_feed.podcast_id})
         .where(apple_configs: {feed_id: [nil, delivery_feed.id]})
-        .includes(:feed)
+
+      candidates.where(feeds: {private: false}).or(candidates.where(feed_id: delivery_feed.id)).includes(:feed)
     end
 
     def self.connect_existing(feed:, apple_show_id:)
@@ -115,9 +117,12 @@ module Apple
       []
     end
 
-    def feed_must_be_public
-      if feed && !feed.public?
-        errors.add(:feed, "must be a public feed")
+    # Apple crawls a private feed through one of its tokens.
+    def feed_must_support_apple
+      if feed.is_a?(Feeds::MegaphoneFeed)
+        errors.add(:feed, "cannot be a Megaphone feed")
+      elsif feed&.private? && feed.active_apple_tokens.empty?
+        errors.add(:feed, "must have a token when private")
       end
     end
   end
