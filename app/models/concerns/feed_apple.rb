@@ -3,6 +3,16 @@ require "active_support/concern"
 module FeedApple
   extend ActiveSupport::Concern
 
+  APPLE_DELIVERY_SLUG = "apple-delegated-delivery-subscriptions"
+  APPLE_DELIVERY_ZONES = ["billboard", "sonic_id"]
+  APPLE_DELIVERY_AUDIO_FORMAT = {f: "mp3", b: 128, c: 2, s: 44100}.freeze
+
+  # Apple's minimum mp3 settings, for mono or stereo.
+  # https://podcasters.apple.com/support/893-audio-requirements
+  APPLE_MIN_MP3_BITRATE = 64
+  APPLE_MP3_CHANNELS = [1, 2]
+  APPLE_MIN_MP3_SAMPLERATE = 44100
+
   included do
     has_one :apple_sync_log, -> { feeds.apple }, foreign_key: :feeder_id, class_name: "Apple::SyncLog"
     has_one :apple_show_feed_binding, class_name: "Apple::ShowFeedBinding", dependent: :destroy
@@ -59,6 +69,16 @@ module FeedApple
 
     config = delegated_delivery_config
     config ? config.show_feed_binding_id == binding.id : private?
+  end
+
+  # Defaults for a new private feed that delivers to Apple Subscriptions.
+  def assign_apple_delivery_defaults
+    self.slug = apple_delivery_slug if slug.blank?
+    self[:label] ||= Apple::DelegatedDeliveryConfig::DEFAULT_TOKEN_LABEL
+    self.private = true
+    self.display_episodes_count ||= podcast&.default_feed&.display_episodes_count
+    self.include_zones ||= APPLE_DELIVERY_ZONES.dup
+    self.audio_format ||= apple_delivery_audio_format
   end
 
   # Megaphone feeds deliver to Apple without an Apple show connection.
@@ -141,6 +161,18 @@ module FeedApple
     errors.add(:apple_connection, "is already used for delegated delivery by #{label}. Map that feed to a different public feed before publishing this feed to its own Apple show")
   end
 
+  # The first free Apple Subscriptions slug, since a podcast can have one
+  # delivery feed per connected public feed.
+  private def apple_delivery_slug
+    return APPLE_DELIVERY_SLUG unless podcast_id
+
+    taken = Feed.unscoped.where(podcast_id: podcast_id).where("slug LIKE ?", "#{APPLE_DELIVERY_SLUG}%").pluck(:slug)
+    candidate = APPLE_DELIVERY_SLUG
+    suffix = 1
+    candidate = "#{APPLE_DELIVERY_SLUG}-#{suffix += 1}" while taken.include?(candidate)
+    candidate
+  end
+
   # Other feeds' delivery depends on this feed's show staying public. A
   # feed's own delivery through its own show can go private.
   private def apple_public_dependents_block_private
@@ -151,6 +183,35 @@ module FeedApple
       label = config.feed&.label || "another feed"
       errors.add(:private, "cannot be enabled while #{label} delivers to this feed's Apple show")
     end
+  end
+
+  private def apple_delivery_audio_format
+    default_format = podcast&.default_feed&.audio_format
+    format = default_format if default_format && default_format[:f] == "mp3"
+    format ||= apple_delivery_episode_audio_format
+    format ? standardize_apple_audio_format(format) : APPLE_DELIVERY_AUDIO_FORMAT.dup.with_indifferent_access
+  end
+
+  private def apple_delivery_episode_audio_format
+    episodes = podcast&.episodes&.published&.includes(:contents)&.limit(10) || []
+    contents = episodes.map { |episode| episode.contents.first }.compact
+    mp3_contents = contents.select { |content| content.audio? && content.mime_type == "audio/mpeg" }
+    return if mp3_contents.empty?
+
+    {
+      b: mp3_contents.map { |content| content.bit_rate.to_i }.max,
+      c: mp3_contents.map { |content| content.channels.to_i }.max,
+      s: mp3_contents.map { |content| content.sample_rate.to_i }.max
+    }
+  end
+
+  private def standardize_apple_audio_format(format)
+    {
+      f: "mp3",
+      b: [APPLE_MIN_MP3_BITRATE, format[:b]].compact.max,
+      c: APPLE_MP3_CHANNELS.include?(format[:c]) ? format[:c] : APPLE_MP3_CHANNELS.min,
+      s: [APPLE_MIN_MP3_SAMPLERATE, format[:s]].compact.max
+    }.with_indifferent_access
   end
 
   private def apple_connection_binding
