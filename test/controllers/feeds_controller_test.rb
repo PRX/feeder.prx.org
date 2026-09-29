@@ -575,8 +575,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "select[name='feed[apple_settings][delivery]'] optgroup[label=\"Map to a public feed's Apple show\"] option[selected][value='#{binding.id}']", text: "#{feed.label} (show-1)"
-    assert_select "input[name='feed[apple_settings][mapped_show_id]'][disabled][value='show-1']"
-    assert_select "a[href='#{podcast_feed_path(podcast, feed)}'][data-apple-settings-target='mappedLink']"
+    assert_select "[data-apple-settings-target='mappedFeed']:not(.d-none) a[href='#{podcast_feed_path(podcast, feed)}'][data-apple-settings-target='mappedLink']", text: /#{I18n.t("feeds.form_apple_settings.view_mapped_feed")}/
   end
 
   test "keeps a mapping to a feed that is no longer available for delivery" do
