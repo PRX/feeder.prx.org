@@ -28,7 +28,8 @@
         <% end %>
 
         <%# The connection and verify token need a saved feed. A new feed's token is in the main form.
-            A private feed's token only matters for claiming its own show, so it sits with the connection. %>
+            A private feed's token only matters for claiming its own show, so it sits with the connection.
+            A public feed's token is in its RSS whether or not it's connected, so it always shows. %>
         <% if feed.persisted? %>
           <% if binding&.persisted? %>
             <div class="alert alert-warning <%= "d-none" unless settings.disconnects? %>" role="status" data-apple-settings-target="disconnectOnly">
@@ -38,12 +39,14 @@
 
           <% if feed.private? %>
             <div class="<%= "d-none" unless settings.route == "own" %>" data-apple-settings-target="ownShowOnly">
-              <%= render "apple_settings_connection", podcast: podcast, feed: feed, settings: settings, form: form, apple: apple %>
+              <%= render "apple_settings_connection", podcast: podcast, feed: feed, settings: settings, apple: apple %>
+              <%= render "apple_settings_verify_token", form: form %>
             </div>
           <% else %>
             <div class="<%= "d-none" if settings.disconnects? %>" data-apple-settings-target="connectedOnly">
-              <%= render "apple_settings_connection", podcast: podcast, feed: feed, settings: settings, form: form, apple: apple %>
+              <%= render "apple_settings_connection", podcast: podcast, feed: feed, settings: settings, apple: apple %>
             </div>
+            <%= render "apple_settings_verify_token", form: form %>
           <% end %>
         <% end %>
       <% end %>
