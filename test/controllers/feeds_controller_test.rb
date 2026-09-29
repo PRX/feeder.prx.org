@@ -574,7 +574,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_url(podcast, private_feed)
 
     assert_response :success
-    assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='#{binding.id}']", text: feed.label
+    assert_select "select[name='feed[apple_settings][delivery]'] optgroup[label=\"Map to a public feed's Apple show\"] option[selected][value='#{binding.id}']", text: "#{feed.label} (show-1)"
     assert_select "input[name='feed[apple_settings][mapped_show_id]'][disabled][value='show-1']"
     assert_select "a[href='#{podcast_feed_path(podcast, feed)}'][data-apple-settings-target='mappedLink']"
   end
@@ -703,7 +703,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_select "select[name='feed[audio_bitrate]'] option[selected][value='96']"
     assert_select "select[name='feed[audio_channel]'] option[selected][value='1']"
     assert_select "select[name='feed[audio_sample]'] option[selected][value='44100']"
-    assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='#{binding.id}']", text: feed.label
+    assert_select "select[name='feed[apple_settings][delivery]'] optgroup[label=\"Map to a public feed's Apple show\"] option[selected][value='#{binding.id}']", text: "#{feed.label} (show-1)"
     assert_select "select[name='feed[apple_settings][delivery]'] option", count: 2
     assert_select "select[name='feed[apple_settings][delivery]'] option[value='own']", count: 0
     assert_select "select[name='feed[apple_settings][connection]']", count: 0
