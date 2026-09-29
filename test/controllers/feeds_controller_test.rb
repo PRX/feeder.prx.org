@@ -493,6 +493,37 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_nil private_feed.reload.apple_show_feed_binding
   end
 
+  test "does not apply Apple Subscriptions defaults to an ordinary new feed" do
+    get new_podcast_feed_url(podcast)
+
+    assert_response :success
+    assert_select "input[name='feed[label]'][value='Apple Subscriptions']", count: 0
+    assert_select "select[name='feed[delegated_delivery_config_attributes][show_feed_binding_id]']", count: 0
+  end
+
+  test "creates a private feed that delivers through a public feed's show" do
+    binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
+
+    assert_difference(["Feed.count", "Apple::DelegatedDeliveryConfig.count"]) do
+      post podcast_feeds_url(podcast), params: {
+        feed: {
+          label: "Apple Subscriptions",
+          slug: FeedApple::APPLE_DELIVERY_SLUG,
+          title: "Apple Subscriptions",
+          private: true,
+          delegated_delivery_config_attributes: {show_feed_binding_id: binding.id, publish_enabled: "1", sync_blocks_rss: "0"}
+        }
+      }
+    end
+
+    new_feed = Feed.last
+    assert_redirected_to podcast_feed_url(podcast, new_feed)
+    assert_predicate new_feed, :private?
+    assert_equal binding, new_feed.delegated_delivery_config.show_feed_binding
+    assert_predicate new_feed.delegated_delivery_config, :publish_enabled?
+    assert_equal [Apple::DelegatedDeliveryConfig::DEFAULT_TOKEN_LABEL], new_feed.tokens.map(&:label)
+  end
+
   test "does not connect without a selected podcast credential" do
     patch podcast_feed_url(podcast, feed), params: {
       feed: {apple_connection: "show-1"}
