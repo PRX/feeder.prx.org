@@ -16,15 +16,14 @@
   <%= field_help_text t("feeds.form_apple_settings.help.delivery") %>
 </div>
 
-<div class="form-floating input-group mb-3 <%= "d-none" unless mapping %>" data-apple-settings-target="mappedShowGroup">
-  <%= apple.text_field :mapped_show_id, disabled: true, id: nil, data: {apple_settings_target: "mappedShowField"} %>
-  <%= apple.label :mapped_show_id %>
+<p class="small mb-3 <%= "d-none" unless mapping %>" data-apple-settings-target="mappedFeed">
   <%= link_to (mapping ? podcast_feed_path(feed.podcast, mapping.feed) : "#"),
-        class: "input-group-text prx-input-group-text", title: t("feeds.form_apple_settings.view_mapped_feed"),
+        class: "d-inline-flex align-items-center",
         data: {apple_settings_target: "mappedLink", turbo_frame: "_top"} do %>
-    <span class="material-icons text-primary">arrow_forward</span>
+    <%= t("feeds.form_apple_settings.view_mapped_feed") %>
+    <span class="material-icons fs-6 ms-1">arrow_forward</span>
   <% end %>
-</div>
+</p>
 
 <div class="<%= "d-none" unless settings.delivering? %>" data-apple-settings-target="deliverySettings">
   <div class="form-check mb-2">

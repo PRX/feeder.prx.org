@@ -1,14 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = [
-    "deliverySelect",
-    "ownShowOnly",
-    "mappedShowGroup",
-    "mappedShowField",
-    "mappedLink",
-    "deliverySettings",
-  ]
+  static targets = ["deliverySelect", "ownShowOnly", "mappedFeed", "mappedLink", "deliverySettings"]
 
   connect() {
     this.sync()
@@ -24,17 +17,16 @@ export default class extends Controller {
     this.deliverySettingsTargets.forEach((el) => el.classList.toggle("d-none", delivery === ""))
 
     if (this.hasDeliverySelectTarget) {
-      this.syncMappedShow()
+      this.syncMappedFeed()
     }
   }
 
-  // The mapped show group renders alongside the delivery select, so its targets
-  // exist whenever the select does. Only public feed options carry a show.
-  syncMappedShow() {
-    const { appleShowId, feedUrl } = this.deliverySelectTarget.selectedOptions[0].dataset
+  // The mapped feed link renders alongside the delivery select, so its targets
+  // exist whenever the select does. Only public feed options carry a feed URL.
+  syncMappedFeed() {
+    const { feedUrl } = this.deliverySelectTarget.selectedOptions[0].dataset
 
-    this.mappedShowGroupTarget.classList.toggle("d-none", !appleShowId)
-    this.mappedShowFieldTarget.value = appleShowId || ""
+    this.mappedFeedTarget.classList.toggle("d-none", !feedUrl)
     this.mappedLinkTarget.href = feedUrl || "#"
   }
 }
