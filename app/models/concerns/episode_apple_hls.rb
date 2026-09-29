@@ -20,7 +20,7 @@ module EpisodeAppleHls
   def hls_eligible_for_apple?
     return false unless video? && uncut.present?
 
-    hls = alt_media
+    hls = alternate_media_resource
     hls.present? && hls.status_complete? && hls.same_uncut?(uncut)
   end
 
