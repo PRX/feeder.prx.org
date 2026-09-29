@@ -1,0 +1,69 @@
+<% config = feed.delegated_delivery_config %>
+<% config = Apple::DelegatedDeliveryConfig.new(feed_id: feed.id) if config.nil? || config.marked_for_destruction? %>
+<% options = apple_delivery_options(feed) %>
+<% mapped_binding = feed.apple_delivery_mapping unless own_show %>
+<%# Publishing settings need a route: a public feed mapping or this feed's own show. %>
+<% routed = own_show || mapped_binding.present? %>
+
+<%= form.fields_for :delegated_delivery_config, config do |config_form| %>
+  <%= config_form.hidden_field :id if config.persisted? %>
+
+  <div class="<%= "d-none" if own_show %>" data-apple-settings-target="mappingOnly">
+    <% if options.empty? %>
+      <% no_mappings = feed.apple_show_feed_binding&.persisted? ? "no_mappings_own_show" : "no_mappings" %>
+      <div class="alert alert-info" role="status"><%= t("feeds.form_apple_settings.#{no_mappings}") %></div>
+    <% end %>
+
+    <div class="form-floating input-group mb-3">
+      <%= config_form.select :show_feed_binding_id, options, {include_blank: true, selected: mapped_binding&.id},
+            data: {apple_settings_target: "mappingSelect", action: "apple-settings#sync"} %>
+      <%= config_form.label :show_feed_binding_id, t("feeds.form_apple_settings.mapping") %>
+      <%= field_help_text t("feeds.form_apple_settings.help.mapping") %>
+    </div>
+
+    <div class="form-floating input-group mb-3 <%= "d-none" unless mapped_binding %>" data-apple-settings-target="mappedShowGroup">
+      <%= config_form.text_field :apple_show_id, value: mapped_binding&.apple_show_id, disabled: true, id: nil,
+            data: {apple_settings_target: "mappedShowField"} %>
+      <%= config_form.label :apple_show_id, t("feeds.form_apple_settings.mapped_show") %>
+      <%= link_to (mapped_binding ? podcast_feed_path(feed.podcast, mapped_binding.feed) : "#"),
+            class: "input-group-text prx-input-group-text", title: t("feeds.form_apple_settings.view_mapped_feed"),
+            data: {apple_settings_target: "mappedLink", turbo_frame: "_top"} do %>
+        <span class="material-icons text-primary">arrow_forward</span>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="<%= "d-none" unless routed %>" data-apple-settings-target="deliverySettings">
+    <div class="form-check mb-2">
+      <%= config_form.check_box :publish_enabled %>
+      <div class="d-flex align-items-center">
+        <%= config_form.label :publish_enabled %>
+        <%= help_text t("feeds.form_apple_settings.help.publish_enabled") %>
+      </div>
+    </div>
+
+    <div class="form-check mb-2">
+      <%= config_form.check_box :sync_blocks_rss %>
+      <div class="d-flex align-items-center">
+        <%= config_form.label :sync_blocks_rss %>
+        <%= help_text t("feeds.form_apple_settings.help.sync_blocks_rss") %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<%# A new feed maps to a public feed; its own show is set up once saved. %>
+<% if feed.persisted? %>
+  <% own_show_data = {apple_settings_target: "ownShowCheckbox", action: "change->apple-settings#sync"} %>
+  <%# Leaving a private feed's own show removes its Apple connection on save. %>
+  <% if own_show && feed.private? && feed.apple_show_feed_binding&.persisted? %>
+    <% own_show_data.merge!(confirm_field_target: "field", confirm_with: t("feeds.form_apple_settings.confirm_leave_own_show")) %>
+  <% end %>
+  <div class="form-check mb-3">
+    <%= form.check_box :apple_own_show, checked: own_show, data: own_show_data %>
+    <div class="d-flex align-items-center">
+      <%= form.label :apple_own_show %>
+      <%= help_text t("feeds.form_apple_settings.help.own_show") %>
+    </div>
+  </div>
+<% end %>
