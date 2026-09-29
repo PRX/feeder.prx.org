@@ -114,7 +114,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_apple_connection_url(podcast, apple_feed)
 
     assert_response :success
-    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_connection.show_lookup_failed")
+    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_settings.show_lookup_failed")
     assert_select 'select[name="feed[apple_connection]"] option[selected][value="show-1"]', text: "show-1"
   end
 
@@ -126,7 +126,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
-    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_connection.show_lookup_failed")
+    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_settings.show_lookup_failed")
     assert_select 'select[name="feed[apple_connection]"] option[selected][value="show-1"]', text: "show-1"
   end
 
@@ -137,7 +137,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_apple_connection_url(podcast, feed)
 
     assert_response :success
-    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_connection.show_lookup_failed")
+    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_settings.show_lookup_failed")
     assert_select 'select[name="feed[apple_connection]"] option:not([value=""])', count: 0
   end
 
@@ -148,7 +148,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_apple_connection_url(podcast, apple_feed)
 
     assert_response :success
-    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_connection.show_lookup_failed"), count: 0
+    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_settings.show_lookup_failed"), count: 0
     assert_select 'select[name="feed[apple_connection]"] option[selected][value="show-1"]'
   end
 
@@ -180,8 +180,8 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'select[name="feed[apple_connection]"][data-confirm-field-target="field"]' do |fields|
-      assert_equal I18n.t("feeds.form_apple_connection.confirm_replace"), fields.first["data-confirm-with"]
-      assert_equal I18n.t("feeds.form_apple_connection.confirm_remove"), fields.first["data-confirm-delete"]
+      assert_equal I18n.t("feeds.form_apple_settings.confirm_replace"), fields.first["data-confirm-with"]
+      assert_equal I18n.t("feeds.form_apple_settings.confirm_remove"), fields.first["data-confirm-delete"]
     end
   end
 end

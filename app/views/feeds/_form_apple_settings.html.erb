@@ -1,0 +1,63 @@
+<% binding = feed.apple_show_feed_binding %>
+<% config = feed.delegated_delivery_config %>
+<% config = nil if config&.marked_for_destruction? %>
+<% own_show = feed.apple_own_show %>
+<% invalid = feed.errors.attribute_names.any? { |name| name.to_s.start_with?("apple_", "delegated_delivery_config") } %>
+<% expanded = binding.present? || config.present? || invalid %>
+
+<div class="card collapsible_card shadow border-0 mt-3 mb-0" data-controller="apple-settings">
+  <div class="card-header card-header-light">
+    <a data-bs-toggle="collapse" href="#apple-settings-card" role="button"
+      aria-expanded="<%= expanded %>" aria-controls="apple-settings-card" class="<%= "collapsed" unless expanded %>">
+      <h2 class="card-title h5 mb-0"><%= t(".title") %></h2>
+      <span class="material-icons expanded_icon">expand_less</span>
+      <span class="material-icons collapsed_icon">expand_more</span>
+    </a>
+  </div>
+
+  <div id="apple-settings-card" class="collapse <%= "show" if expanded %>">
+    <div class="card-body">
+      <% if feed.errors[:apple_connection].any? %>
+        <div class="alert alert-danger" role="alert"><%= feed.errors[:apple_connection].to_sentence %></div>
+      <% end %>
+
+      <% unless feed.default? %>
+        <%= render "apple_settings_delivery", feed: feed, form: form, own_show: own_show %>
+      <% end %>
+
+      <%# The connection and verify token need a saved feed. A new feed's token is in the main form.
+          A private feed's token only matters for claiming its own show, so it sits with the connection. %>
+      <% if feed.persisted? %>
+        <% if feed.private? %>
+          <div class="<%= "d-none" unless own_show %>" data-apple-settings-target="ownShowOnly">
+            <%= render "apple_settings_connection", podcast: podcast, feed: feed, form: form %>
+          </div>
+        <% else %>
+          <%= render "apple_settings_connection", podcast: podcast, feed: feed, form: form %>
+        <% end %>
+      <% end %>
+
+      <%# A show takes one config: list the feed mapped to it, or offer to create one while it's free. %>
+      <% show_config = binding.delegated_delivery_config if binding&.persisted? %>
+      <% if feed.public? && binding&.persisted? && show_config&.feed_id != feed.id %>
+        <%= render "apple_settings_mapped_feed", podcast: podcast, binding: binding, config: show_config %>
+      <% end %>
+    </div>
+
+    <div class="card-footer d-flex justify-content-between align-items-end">
+      <div>
+        <strong><%= t(".status") %></strong>
+        <% if (checked = [binding, config].compact.find(&:persisted?)) %>
+          <br><span class="text-muted"><%= t(".last_checked_html", time: local_time_ago(checked.updated_at)) %></span>
+        <% end %>
+      </div>
+      <% if binding %>
+        <span class="badge bg-success"><%= t(".connected") %></span>
+      <% elsif config&.persisted? %>
+        <span class="badge bg-success"><%= t(".configured") %></span>
+      <% else %>
+        <span class="badge bg-secondary"><%= t(".not_connected") %></span>
+      <% end %>
+    </div>
+  </div>
+</div>
