@@ -101,6 +101,14 @@ module Apple
       own_show? ? "own" : "mapped"
     end
 
+    # Saving this delivery removes the feed's connection. A private feed's
+    # connection only serves its own show. A public feed's goes when it maps
+    # to another feed or its delivery is removed, but not when it just stays
+    # without delivery, since other feeds may deliver through its show.
+    def disconnects?
+      deliverable? && !own_show? && (feed.private? || delivery.present? || delivery_changed?)
+    end
+
     # Leaving a private feed's own show removes its connection on save.
     def confirm_leaving_own_show?
       delivery_was == OWN && feed.private? && binding.present?
@@ -175,10 +183,12 @@ module Apple
     end
 
     # Point the feed's config at the submitted binding, or remove it. The
-    # config saves with the feed. A private feed's connection only serves its
-    # own show, so any other delivery disconnects it.
+    # config saves with the feed. Read disconnects? first, since pointing the
+    # config changes the saved delivery it compares against.
     def apply_delivery
       if delivery_submitted?
+        disconnect = disconnects?
+
         if delivery.blank?
           config&.mark_for_destruction
         elsif own_show?
@@ -187,7 +197,7 @@ module Apple
           point_config_at(mapping)
         end
 
-        @submitted[:connection] = "" if feed.private? && !own_show?
+        @submitted[:connection] = "" if disconnect
       end
 
       apply_config_flags

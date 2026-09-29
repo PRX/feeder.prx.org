@@ -550,13 +550,67 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_nil private_feed.reload.apple_show_feed_binding
   end
 
-  test "keeps a public feed's connection when its own delivery is removed" do
+  test "disconnects a public feed mapped to another public feed's show" do
+    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
+    public_binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
+    other_feed = create(:feed, podcast: podcast, private: false)
+    own_binding = create(:apple_show_feed_binding, feed: other_feed, apple_show_id: "show-2")
+    config = create(:delegated_delivery_config, feed: other_feed, show_feed_binding: own_binding)
+
+    patch podcast_feed_url(podcast, other_feed), params: {
+      feed: {apple_settings: {connection: "show-2", delivery: public_binding.id}}
+    }
+
+    assert_redirected_to podcast_feed_url(podcast, other_feed)
+    assert_equal public_binding, config.reload.show_feed_binding
+    assert_nil other_feed.reload.apple_show_feed_binding
+    refute Apple::ShowFeedBinding.exists?(own_binding.id)
+  end
+
+  test "shows a mapped public feed's connection as removed on save" do
+    public_binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
+    other_feed = create(:feed, podcast: podcast, private: false)
+    create(:apple_show_feed_binding, feed: other_feed, apple_show_id: "show-2")
+    create(:delegated_delivery_config, feed: other_feed, show_feed_binding: public_binding)
+
+    get podcast_feed_url(podcast, other_feed)
+
+    assert_response :success
+    assert_select "[data-apple-settings-target='disconnectOnly']:not(.d-none)[role='status']",
+      text: I18n.t("feeds.form_apple_settings.disconnect_on_save", show_id: "show-2")
+    assert_select "[data-apple-settings-target='connectedOnly'].d-none" do
+      assert_select "select[name='feed[apple_settings][connection]']", count: 1
+    end
+  end
+
+  test "keeps a public feed connected when another feed delivers to its show" do
+    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
+    public_binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
+    other_feed = create(:feed, podcast: podcast, private: false)
+    own_binding = create(:apple_show_feed_binding, feed: other_feed, apple_show_id: "show-2")
+    create(:delegated_delivery_config, feed: private_feed, show_feed_binding: own_binding)
+
+    assert_no_difference("Apple::DelegatedDeliveryConfig.count") do
+      patch podcast_feed_url(podcast, other_feed), params: {
+        feed: {apple_settings: {connection: "show-2", delivery: public_binding.id}}
+      }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select ".card-body > .alert-danger", text: /cannot be removed while delegated-delivery feeds use it/i
+    assert_equal own_binding, other_feed.reload.apple_show_feed_binding
+    assert_nil other_feed.delegated_delivery_config
+  end
+
+  test "disconnects a public feed when its own delivery is removed" do
     podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
     binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
     create(:delegated_delivery_config, feed: feed, show_feed_binding: binding)
 
     get podcast_feed_url(podcast, feed)
     assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='own']"
+    assert_select "[data-apple-settings-target='disconnectOnly'].d-none"
+    assert_select "[data-apple-settings-delivery-was-value='own'][data-apple-settings-private-value='false']"
 
     patch podcast_feed_url(podcast, feed), params: {
       feed: {apple_settings: {delivery: "", connection: "show-1"}}
@@ -564,6 +618,24 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to podcast_feed_url(podcast, feed)
     assert_nil feed.reload.delegated_delivery_config
+    assert_nil feed.apple_show_feed_binding
+    refute Apple::ShowFeedBinding.exists?(binding.id)
+  end
+
+  test "keeps a connected public feed without delivery connected when saved" do
+    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
+    binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
+
+    get podcast_feed_url(podcast, feed)
+    assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='']"
+    assert_select "[data-apple-settings-target='disconnectOnly'].d-none"
+
+    patch podcast_feed_url(podcast, feed), params: {
+      feed: {title: "Changed", apple_settings: {delivery: "", connection: "show-1"}}
+    }
+
+    assert_redirected_to podcast_feed_url(podcast, feed)
+    assert_equal "Changed", feed.reload.title
     assert_equal binding, feed.apple_show_feed_binding
   end
 
@@ -575,7 +647,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "select[name='feed[apple_settings][delivery]'] optgroup[label=\"Map to a public feed's Apple show\"] option[selected][value='#{binding.id}']", text: "#{feed.label} (show-1)"
-    assert_select "[data-apple-settings-target='mappedFeed']:not(.d-none) a[href='#{podcast_feed_path(podcast, feed)}'][data-apple-settings-target='mappedLink']", text: /#{I18n.t("feeds.form_apple_settings.view_mapped_feed")}/
+    assert_select "[data-apple-settings-target='mappedOnly']:not(.d-none) a[href='#{podcast_feed_path(podcast, feed)}'][data-apple-settings-target='mappedLink']", text: /#{I18n.t("feeds.form_apple_settings.view_mapped_feed")}/
   end
 
   test "keeps a mapping to a feed that is no longer available for delivery" do
@@ -716,7 +788,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     get new_podcast_feed_url(podcast, feed: {apple_settings: {delivery: other_binding.id}})
 
     assert_response :success
-    assert_select "option[value='#{other_binding.id}']", count: 0
+    assert_select "select[name='feed[apple_settings][delivery]'] option[value='#{other_binding.id}']", count: 0
     assert_select "input[value='other-show']", count: 0
     assert_select "a[href='#{podcast_feed_path(other_feed.podcast, other_feed)}']", count: 0
     refute_includes response.body, "Other Podcast Feed"
