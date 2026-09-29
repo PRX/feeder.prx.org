@@ -693,7 +693,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "input[name='feed[label]'][value='Apple Subscriptions']"
-    assert_select "input[name='feed[slug]'][value='#{FeedApple::APPLE_DELIVERY_SLUG}']"
+    assert_select "input[name='feed[slug]'][value='#{Apple::DeliveryFeedDefaults::SLUG}']"
     assert_select "input[name='feed[display_episodes_count]'][value='7']"
     assert_select "input[type='checkbox'][name='feed[billboard]'][checked]"
     assert_select "input[type='checkbox'][name='feed[sonic_id]'][checked]"
@@ -736,7 +736,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_difference(["Feed.count", "Apple::DelegatedDeliveryConfig.count"]) do
       post podcast_feeds_url(podcast), params: {
-        feed: {label: "Apple Subscriptions", slug: FeedApple::APPLE_DELIVERY_SLUG, title: "Apple Subscriptions", private: true, apple_settings: {delivery: binding.id, publish_enabled: "1", sync_blocks_rss: "0"}}
+        feed: {label: "Apple Subscriptions", slug: Apple::DeliveryFeedDefaults::SLUG, title: "Apple Subscriptions", private: true, apple_settings: {delivery: binding.id, publish_enabled: "1", sync_blocks_rss: "0"}}
       }
     end
 
