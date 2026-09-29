@@ -16,7 +16,7 @@
   <%= field_help_text t("feeds.form_apple_settings.help.delivery") %>
 </div>
 
-<p class="small mb-3 <%= "d-none" unless mapping %>" data-apple-settings-target="mappedFeed">
+<p class="small mb-3 <%= "d-none" unless mapping %>" data-apple-settings-target="mappedOnly">
   <%= link_to (mapping ? podcast_feed_path(feed.podcast, mapping.feed) : "#"),
         class: "d-inline-flex align-items-center",
         data: {apple_settings_target: "mappedLink", turbo_frame: "_top"} do %>

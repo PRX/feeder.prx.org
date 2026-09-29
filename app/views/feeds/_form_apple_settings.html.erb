@@ -5,7 +5,8 @@
 <% invalid = settings.errors.any? || feed.errors.attribute_names.any? { |name| name.to_s.start_with?("delegated_delivery_config") } %>
 <% expanded = binding.present? || config.present? || settings.delivering? || invalid %>
 
-<div class="card collapsible_card shadow border-0 mt-3 mb-0" data-controller="apple-settings">
+<div class="card collapsible_card shadow border-0 mt-3 mb-0" data-controller="apple-settings"
+  data-apple-settings-private-value="<%= feed.private? %>" data-apple-settings-delivery-was-value="<%= settings.delivery_was %>">
   <div class="card-header card-header-light">
     <a data-bs-toggle="collapse" href="#apple-settings-card" role="button"
       aria-expanded="<%= expanded %>" aria-controls="apple-settings-card" class="<%= "collapsed" unless expanded %>">
@@ -29,12 +30,20 @@
         <%# The connection and verify token need a saved feed. A new feed's token is in the main form.
             A private feed's token only matters for claiming its own show, so it sits with the connection. %>
         <% if feed.persisted? %>
+          <% if binding&.persisted? %>
+            <div class="alert alert-warning <%= "d-none" unless settings.disconnects? %>" role="status" data-apple-settings-target="disconnectOnly">
+              <%= t(".disconnect_on_save", show_id: binding.apple_show_id) %>
+            </div>
+          <% end %>
+
           <% if feed.private? %>
             <div class="<%= "d-none" unless settings.route == "own" %>" data-apple-settings-target="ownShowOnly">
               <%= render "apple_settings_connection", podcast: podcast, feed: feed, settings: settings, form: form, apple: apple %>
             </div>
           <% else %>
-            <%= render "apple_settings_connection", podcast: podcast, feed: feed, settings: settings, form: form, apple: apple %>
+            <div class="<%= "d-none" if settings.disconnects? %>" data-apple-settings-target="connectedOnly">
+              <%= render "apple_settings_connection", podcast: podcast, feed: feed, settings: settings, form: form, apple: apple %>
+            </div>
           <% end %>
         <% end %>
       <% end %>
@@ -42,7 +51,9 @@
       <%# A show takes one config: list the feed mapped to it, or offer to create one while it's free. %>
       <% show_config = binding.delegated_delivery_config if binding&.persisted? %>
       <% if feed.public? && binding&.persisted? && show_config&.feed_id != feed.id %>
-        <%= render "apple_settings_mapped_feed", podcast: podcast, binding: binding, config: show_config %>
+        <div class="<%= "d-none" if settings.disconnects? %>" data-apple-settings-target="connectedOnly">
+          <%= render "apple_settings_mapped_feed", podcast: podcast, binding: binding, config: show_config %>
+        </div>
       <% end %>
     </div>
 
