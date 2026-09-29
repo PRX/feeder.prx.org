@@ -32,10 +32,21 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "does not look up shows for private feeds" do
+  test "looks up shows for private feeds" do
     podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
+    body = {data: [{id: "show-1", attributes: {title: "Members show"}}], links: {}}.to_json
+    stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: body)
 
     get podcast_feed_apple_connection_url(podcast, private_feed)
+
+    assert_response :success
+    assert_select 'select[name="feed[apple_connection]"] option[value="show-1"]'
+  end
+
+  test "does not look up shows for Megaphone feeds" do
+    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
+
+    get podcast_feed_apple_connection_url(podcast, create(:megaphone_feed, podcast: podcast))
 
     assert_response :not_found
     assert_not_requested :get, "https://aardvark.prx.org/shows"
