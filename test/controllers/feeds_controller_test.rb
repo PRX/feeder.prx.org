@@ -567,7 +567,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     refute Apple::ShowFeedBinding.exists?(own_binding.id)
   end
 
-  test "shows a mapped public feed's connection as removed on save" do
+  test "hides a mapped public feed's connection" do
     public_binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
     other_feed = create(:feed, podcast: podcast, private: false)
     create(:apple_show_feed_binding, feed: other_feed, apple_show_id: "show-2")
@@ -576,8 +576,6 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_url(podcast, other_feed)
 
     assert_response :success
-    assert_select "[data-apple-settings-target='disconnectOnly']:not(.d-none)[role='status']",
-      text: I18n.t("feeds.form_apple_settings.disconnect_on_save", show_id: "show-2")
     assert_select "[data-apple-settings-target='connectedOnly'].d-none" do
       assert_select "select[name='feed[apple_settings][connection]']", count: 1
       assert_select "input[name='feed[apple_verify_token]']", count: 0
@@ -611,7 +609,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     get podcast_feed_url(podcast, feed)
     assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='own']"
-    assert_select "[data-apple-settings-target='disconnectOnly'].d-none"
+    assert_select "[data-apple-settings-target='connectedOnly']:not(.d-none) select[name='feed[apple_settings][connection]']"
     assert_select "[data-apple-settings-delivery-was-value='own'][data-apple-settings-private-value='false']"
 
     patch podcast_feed_url(podcast, feed), params: {
@@ -630,7 +628,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     get podcast_feed_url(podcast, feed)
     assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='']"
-    assert_select "[data-apple-settings-target='disconnectOnly'].d-none"
+    assert_select "[data-apple-settings-target='connectedOnly']:not(.d-none) select[name='feed[apple_settings][connection]']"
 
     patch podcast_feed_url(podcast, feed), params: {
       feed: {title: "Changed", apple_settings: {delivery: "", connection: "show-1"}}
