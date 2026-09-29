@@ -18,6 +18,7 @@ class FeedsController < ApplicationController
     @feed = @podcast.feeds.new(private: false, slug: "")
     authorize @feed
 
+    @feed.assign_apple_delivery_defaults if apple_delivery_mapping?
     @feed.assign_attributes(feed_params)
     @feed.clear_attribute_changes(%i[file_name podcast_id private slug])
   end
@@ -155,6 +156,11 @@ class FeedsController < ApplicationController
       delegated_delivery_config_attributes: %i[id show_feed_binding_id publish_enabled sync_blocks_rss _destroy],
       megaphone_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, :token, :network_id, :network_name, :organization_id, advertising_tags: []]
     )
+  end
+
+  # A new feed opened from a public feed's Apple Settings, mapped to its show.
+  def apple_delivery_mapping?
+    params.dig(:feed, :delegated_delivery_config_attributes, :show_feed_binding_id).present?
   end
 
   def exclude_default_episodes?
