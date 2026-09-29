@@ -1,0 +1,10 @@
+<%= turbo_frame_tag dom_id(feed, :apple_connection),
+      src: podcast_feed_apple_connection_path(podcast, feed, selection: feed.apple_connection.to_s), loading: "lazy" do %>
+  <%= render "apple_connection_field", feed: feed, form: form, options: [], loading: true, lookup_failed: false %>
+<% end %>
+
+<div class="form-floating input-group mb-3">
+  <%= form.text_field :apple_verify_token %>
+  <%= form.label :apple_verify_token %>
+  <%= field_help_text t("feeds.form_main.help.apple_verify_token") %>
+</div>

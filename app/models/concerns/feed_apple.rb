@@ -71,6 +71,16 @@ module FeedApple
     config ? config.show_feed_binding_id == binding.id : private?
   end
 
+  # The public feed binding this feed's delivery maps to. A binding from
+  # another podcast is ignored, so a submitted id can't reveal its feed.
+  def apple_delivery_mapping
+    config = delegated_delivery_config
+    return if config.nil? || config.marked_for_destruction?
+
+    binding = config.show_feed_binding
+    binding if binding&.feed && binding.feed_id != id && binding.feed.podcast_id == podcast_id
+  end
+
   # Defaults for a new private feed that delivers to Apple Subscriptions.
   def assign_apple_delivery_defaults
     self.slug = apple_delivery_slug if slug.blank?

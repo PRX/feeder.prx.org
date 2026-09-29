@@ -423,7 +423,8 @@ en:
         title: Title
         url: Episode URL
       feed:
-        apple_connection: Apple show connection
+        apple_connection: Apple Show ID
+        apple_own_show: Publish to this feed's own Apple show
         apple_verify_token: Apple Podcasts Verify Token
         audio_type: Format
         audio_bitrate: Bitrate
@@ -932,32 +933,32 @@ en:
       title: Ad Zones to Include
       help:
         ad_zones: Control the types of ads that should be stitched into episodes in this feed.
-    form_apple_delegated_delivery:
-      title: Apple Delegated Delivery
-      description: Send this feed's audio to an Apple show connected through one of this podcast's public feeds.
-      connection: Public Feed Connection
-      select_connection: Select a connected public feed
-      no_connections: No public feed on this podcast has an available Apple show connection. Connect one in a public feed's Apple Settings before enabling delegated delivery.
-      remove: Remove delegated delivery from this feed
-      status: Apple Status
-      configured: Configured
-      not_configured: Not configured
-      last_checked_html: "Last checked: %{time}"
-      help:
-        connection: Select the public feed Apple crawls for this delegated-delivery feed.
-        publish_enabled: Enable publishing this feed's episodes to Apple Podcasts Connect.
-        sync_blocks_rss: Require Apple publishing to succeed before public RSS publishing continues.
-    form_apple_connection:
-      show_lookup_failed: Failed to load shows from Apple Podcasts Connect.
+    form_apple_settings:
       title: Apple Settings
-      connected: Connected
-      not_connected: Not connected
       status: Apple Status
+      connected: Connected
+      configured: Configured
+      not_connected: Not connected
       last_checked_html: "Last checked: %{time}"
+      show_lookup_failed: Failed to load shows from Apple Podcasts Connect.
       confirm_replace: Are you sure you want to replace this Apple connection? Dependent delegated-delivery feeds will use the new connection.
       confirm_remove: Are you sure you want to remove this Apple connection?
+      confirm_leave_own_show: Are you sure you want to stop publishing to this feed's own Apple show? Saving will remove its Apple connection. Choose a public feed mapping to keep delegated delivery.
+      mapping: Public Feed Mapping
+      mapped_show: Apple Show ID
+      view_mapped_feed: Go to the mapped feed
+      no_mappings: No public feed on this podcast has an available Apple show connection. Connect one in a public feed's Apple Settings, or publish to this feed's own Apple show.
+      no_mappings_own_show: No other public feed on this podcast has an available Apple show connection. Check "Publish to this feed's own Apple show" instead.
+      mapped_feed: Feed mapped to Apple Subscriptions
+      create_feed: "+ Create a new feed"
+      publishing: Publishing
+      paused: Paused
       help:
-        connection: Select the Apple show to connect to this feed. This will allow you to setup Apple's Delegated Delivery on private feeds.
+        connection: Select the Apple show Apple crawls this feed for.
+        mapping: Select the public feed whose Apple show receives this feed's episodes. Leave it blank to stop delegated delivery.
+        own_show: Connect this feed to its own Apple show instead of mapping it to a public feed.
+        publish_enabled: Enable publishing this feed's episodes to Apple Podcasts Connect.
+        sync_blocks_rss: Require Apple publishing to succeed before public RSS publishing continues.
     form_audio_format:
       title: Audio Format
       help:
