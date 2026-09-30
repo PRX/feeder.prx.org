@@ -318,6 +318,37 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_equal binding, config.reload.show_feed_binding
   end
 
+  test "rejects delivery through a private feed's show" do
+    apple_feed = create(:apple_feed, podcast: podcast)
+    config = apple_feed.delegated_delivery_config
+    binding = config.show_feed_binding
+    private_binding = create(:apple_show_feed_binding, feed: private_feed, apple_show_id: "private-show")
+
+    patch podcast_feed_url(podcast, apple_feed), params: {
+      feed: {apple_settings: {delivery: private_binding.id}}
+    }
+
+    assert_response :unprocessable_entity
+    assert_select ".invalid-feedback", text: /must be this feed's own apple show or a public feed on this podcast/i
+    assert_equal binding, config.reload.show_feed_binding
+  end
+
+  test "rejects delivery through a show another feed delivers through" do
+    apple_feed = create(:apple_feed, podcast: podcast)
+    config = apple_feed.delegated_delivery_config
+    binding = config.show_feed_binding
+    taken_binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "taken-show")
+    create(:delegated_delivery_config, feed: private_feed, show_feed_binding: taken_binding)
+
+    patch podcast_feed_url(podcast, apple_feed), params: {
+      feed: {apple_settings: {delivery: taken_binding.id}}
+    }
+
+    assert_response :unprocessable_entity
+    assert_select ".invalid-feedback", text: /must be this feed's own apple show or a public feed on this podcast/i
+    assert_equal binding, config.reload.show_feed_binding
+  end
+
   test "rejects an unknown delivery" do
     apple_feed = create(:apple_feed, podcast: podcast)
 
