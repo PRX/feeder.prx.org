@@ -79,6 +79,18 @@ module Apple
       end
     end
 
+    describe "#other_feed_config" do
+      it "finds another feed's config that delivers through the show" do
+        podcast = create(:podcast)
+        binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+        assert_nil binding.other_feed_config
+
+        config = create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), show_feed_binding: binding)
+
+        assert_equal config, binding.other_feed_config
+      end
+    end
+
     describe ".active" do
       it "excludes bindings whose feeds are soft deleted" do
         binding = create(:apple_show_feed_binding)

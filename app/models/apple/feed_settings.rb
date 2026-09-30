@@ -13,8 +13,9 @@ module Apple
   # Every attribute is optional. A missing one keeps the saved setting, so
   # a form that doesn't render a field can't clear it.
   #
-  #   settings = Apple::FeedSettings.new(feed, connection: "6813172774", delivery: "own")
-  #   settings.save # saves the feed and its Apple records together
+  # The feed saves them with its own changes:
+  #
+  #   feed.update(apple_settings: {connection: "6813172774", delivery: "own"})
   class FeedSettings
     include ActiveModel::Model
 
@@ -125,12 +126,8 @@ module Apple
     # selectable so a save doesn't clear it when its feed is no longer
     # available.
     def mappable_bindings
-      @mappable_bindings ||= begin
-        bindings = Apple::ShowFeedBinding.available_for_delivery(feed).where.not(feed_id: feed.id).to_a
-        saved = saved_mapped_binding
-        bindings << saved if saved && bindings.exclude?(saved)
-        bindings
-      end
+      @mappable_bindings ||= Apple::ShowFeedBinding.available_for_delivery(feed).where.not(feed_id: feed.id).to_a |
+        [saved_mapped_binding].compact
     end
 
     def binding
@@ -141,25 +138,31 @@ module Apple
       feed.delegated_delivery_config
     end
 
-    def save
+    # Point the feed's config at the submitted delivery before the feed
+    # validates. The config saves with the feed.
+    def apply
+      return if @applied
+
+      @applied = true
       apply_delivery
-      settings_valid = valid?
-      return false unless feed.valid? && settings_valid
+    end
 
-      return feed.save if connection_change.nil?
+    # Connect before the feed saves so its config can select a new binding.
+    # The feed calls this inside its save transaction, after validation and
+    # before any write, so an invalid feed never reads the show from Apple
+    # and a failed read leaves nothing to roll back.
+    def connect
+      return true unless connection_change == :connect
 
-      # Read the show before the transaction locks the feed row.
-      return false if connection_change == :connect && !prepare_connection
+      connection_changed(connection_binding.connect_existing(connection))
+    end
 
-      # Connect before saving so delivery can select a new binding, and
-      # disconnect after saving so delivery no longer selects it.
-      saved = false
-      feed.transaction do
-        saved = (connection_change != :connect || update_connection) && feed.save &&
-          (connection_change != :disconnect || update_connection)
-        raise ActiveRecord::Rollback unless saved
-      end
-      saved
+    # Disconnect after the feed saves so its config no longer selects the
+    # binding.
+    def disconnect
+      return true unless connection_change == :disconnect
+
+      connection_changed(binding.disconnect)
     end
 
     private
@@ -199,7 +202,7 @@ module Apple
         if delivery.blank?
           config&.mark_for_destruction
         elsif own_show?
-          point_config_at(connection_binding) if connection.present? && !own_show_taken_by
+          point_config_at(connection_binding) if connection.present? && !binding&.other_feed_config
         elsif mapped_binding
           point_config_at(mapped_binding)
         end
@@ -226,20 +229,13 @@ module Apple
       if own_show?
         if connection.blank?
           errors.add(:connection, "must be selected to publish to this feed's own Apple show")
-        elsif (other = own_show_taken_by)
+        elsif (other = binding&.other_feed_config)
           label = other.feed&.label || "another feed"
           errors.add(:connection, "is already used for delegated delivery by #{label}. Map that feed to a different public feed before publishing this feed to its own Apple show")
         end
       elsif delivery.present? && !mapped_binding
         errors.add(:delivery, "must be this feed's own Apple show or a public feed on this podcast")
       end
-    end
-
-    # Another feed already delivers through this feed's Apple show.
-    def own_show_taken_by
-      return unless binding&.persisted?
-
-      Apple::DelegatedDeliveryConfig.where(show_feed_binding_id: binding.id).where.not(feed_id: feed.id).includes(:feed).first
     end
 
     def connection_change
@@ -252,28 +248,13 @@ module Apple
       @connection_binding ||= binding || Apple::ShowFeedBinding.new(feed: feed)
     end
 
-    def prepare_connection
-      connection_binding.prepare_connection(connection)
-      copy_errors(connection_binding)
-    end
-
-    def update_connection
-      if connection_change == :connect
-        connection_binding.connect!
-      else
-        binding.association(:delegated_delivery_config).reset
-        binding.destroy
-      end
-      return false unless copy_errors(connection_binding)
+    def connection_changed(binding)
+      binding.errors.full_messages.each { |message| errors.add(:connection, message) }
+      return false if binding.errors.any?
 
       feed.association(:apple_show_feed_binding).reset
       @connection_binding = nil
       true
-    end
-
-    def copy_errors(record)
-      record.errors.full_messages.each { |message| errors.add(:connection, message) }
-      record.errors.empty?
     end
   end
 end
