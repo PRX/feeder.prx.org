@@ -150,6 +150,19 @@ describe Feed, "Apple delegated delivery" do
     refute Apple::ShowFeedBinding.exists?(connection.id)
   end
 
+  it "allows deleting a feed that delivers through its own show" do
+    connection = create(:apple_show_feed_binding, feed: delivery_feed, apple_show_id: "own-show")
+    config = create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: connection)
+    sync_log = Apple::SyncLog.log!(feeder_id: delivery_feed.id, feeder_type: :feeds, external_id: "own-show")
+
+    assert delivery_feed.reload.destroy
+    assert Feed.with_deleted.find(delivery_feed.id).deleted?
+    refute Apple::ShowFeedBinding.exists?(connection.id)
+    refute Apple::DelegatedDeliveryConfig.exists?(config.id)
+    refute Apple::SyncLog.exists?(sync_log.id)
+    assert Apple::Key.exists?(key.id)
+  end
+
   it "allows deleting the whole podcast with connected delivery feeds" do
     config = create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: binding)
 
