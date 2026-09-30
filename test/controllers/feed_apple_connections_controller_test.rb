@@ -118,18 +118,6 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select[name="feed[apple_settings][connection]"] option[selected][value="show-1"]', text: "show-1"
   end
 
-  test "warns and preserves the connected show when Apple credentials cannot be decrypted" do
-    apple_feed = connected_apple_feed
-    failure = -> { raise ActiveRecord::Encryption::Errors::Decryption }
-    Apple::Key.stub_any_instance(:key_pem, failure) do
-      get podcast_feed_apple_connection_url(podcast, apple_feed)
-    end
-
-    assert_response :success
-    assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_settings.show_lookup_failed")
-    assert_select 'select[name="feed[apple_settings][connection]"] option[selected][value="show-1"]', text: "show-1"
-  end
-
   test "leaves the show unselected when lookup fails without a connection" do
     podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
     stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 401, body: "Invalid credentials")

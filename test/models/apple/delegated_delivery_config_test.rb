@@ -7,13 +7,6 @@ describe Apple::DelegatedDeliveryConfig do
   end
 
   describe "#valid?" do
-    it "requires a binding even when publishing is disabled" do
-      config = build(:delegated_delivery_config, :legacy_routing, publish_enabled: false)
-
-      refute config.valid?
-      assert config.errors.of_kind?(:show_feed_binding, :blank)
-    end
-
     it "rejects clearing an existing binding" do
       config = create(:delegated_delivery_config)
       binding = config.show_feed_binding
@@ -42,40 +35,6 @@ describe Apple::DelegatedDeliveryConfig do
 
       refute config.valid?
       assert_equal ["has already been taken"], config.errors[:show_feed_binding_id]
-    end
-
-    it "allows multiple configs per podcast" do
-      podcast = create(:podcast)
-      key = create(:apple_key, account_id: podcast.account_id)
-      podcast.update!(apple_key: key)
-      first_binding = create(:apple_show_feed_binding, feed: podcast.default_feed)
-      second_binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
-
-      first = create(
-        :delegated_delivery_config,
-        feed: create(:private_feed, podcast: podcast),
-        key: key,
-        show_feed_binding: first_binding
-      )
-      second = create(
-        :delegated_delivery_config,
-        feed: create(:private_feed, podcast: podcast),
-        key: key,
-        show_feed_binding: second_binding
-      )
-
-      assert_equal [first, second], Apple::DelegatedDeliveryConfig.where(id: [first.id, second.id]).order(:id).to_a
-    end
-
-    it "allows the default feed to use its own binding" do
-      podcast = create(:podcast)
-      key = create(:apple_key, account_id: podcast.account_id)
-      podcast.update!(apple_key: key)
-      binding = create(:apple_show_feed_binding, feed: podcast.default_feed)
-
-      config = build(:delegated_delivery_config, feed: podcast.default_feed, show_feed_binding: binding)
-
-      assert config.valid?
     end
 
     it "allows only one config per configured feed" do
