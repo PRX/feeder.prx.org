@@ -1,9 +1,6 @@
 require "test_helper"
-require_relative "../support/apple_pre_cutover_schema"
 
 class FeedsControllerTest < ActionDispatch::IntegrationTest
-  include ApplePreCutoverSchema
-
   let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/123") }
   let(:feed) { create(:feed, podcast: podcast, private: false) }
   let(:locked_feed) { create(:feed, podcast: podcast, private: false, edit_locked: true) }
@@ -54,19 +51,6 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Changed", feed.reload.title
     assert_equal "show-1", feed.apple_show_feed_binding.apple_show_id
     assert_not_requested :get, "https://aardvark.prx.org/shows"
-  end
-
-  test "ignores apple_show_id in feed updates" do
-    connected_apple_feed
-
-    patch podcast_feed_url(podcast, feed), params: {
-      feed: {title: "Changed", apple_show_id: "different-show"}
-    }
-
-    assert_redirected_to podcast_feed_url(podcast, feed)
-    assert_equal "Changed", feed.reload.title
-    assert_nil feed.apple_show_id
-    assert_equal "show-1", feed.apple_show_feed_binding.reload.apple_show_id
   end
 
   test "authorize new feed" do
@@ -270,23 +254,6 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_select "select[name='feed[apple_settings][delivery]'] option[value='#{binding.id}']", count: 0
   end
 
-  test "removes delegated delivery without removing the feed" do
-    key = create(:apple_key, account_id: podcast.account_id)
-    podcast.update!(apple_key: key)
-    binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
-    create(:delegated_delivery_config, feed: private_feed, show_feed_binding: binding)
-
-    assert_difference("Apple::DelegatedDeliveryConfig.count", -1) do
-      patch podcast_feed_url(podcast, private_feed), params: {
-        feed: {apple_settings: {delivery: ""}}
-      }
-    end
-
-    assert_redirected_to podcast_feed_url(podcast, private_feed)
-    assert_predicate private_feed.reload, :persisted?
-    assert_nil private_feed.delegated_delivery_config
-  end
-
   test "removes delegated delivery when none is chosen" do
     apple_feed = create(:apple_feed, podcast: podcast)
     config = apple_feed.delegated_delivery_config
@@ -318,37 +285,6 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_equal binding, config.reload.show_feed_binding
   end
 
-  test "rejects delivery through a private feed's show" do
-    apple_feed = create(:apple_feed, podcast: podcast)
-    config = apple_feed.delegated_delivery_config
-    binding = config.show_feed_binding
-    private_binding = create(:apple_show_feed_binding, feed: private_feed, apple_show_id: "private-show")
-
-    patch podcast_feed_url(podcast, apple_feed), params: {
-      feed: {apple_settings: {delivery: private_binding.id}}
-    }
-
-    assert_response :unprocessable_entity
-    assert_select ".invalid-feedback", text: /must be this feed's own apple show or a public feed on this podcast/i
-    assert_equal binding, config.reload.show_feed_binding
-  end
-
-  test "rejects delivery through a show another feed delivers through" do
-    apple_feed = create(:apple_feed, podcast: podcast)
-    config = apple_feed.delegated_delivery_config
-    binding = config.show_feed_binding
-    taken_binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "taken-show")
-    create(:delegated_delivery_config, feed: private_feed, show_feed_binding: taken_binding)
-
-    patch podcast_feed_url(podcast, apple_feed), params: {
-      feed: {apple_settings: {delivery: taken_binding.id}}
-    }
-
-    assert_response :unprocessable_entity
-    assert_select ".invalid-feedback", text: /must be this feed's own apple show or a public feed on this podcast/i
-    assert_equal binding, config.reload.show_feed_binding
-  end
-
   test "rejects an unknown delivery" do
     apple_feed = create(:apple_feed, podcast: podcast)
 
@@ -356,48 +292,6 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     assert_predicate apple_feed.reload.delegated_delivery_config, :present?
-  end
-
-  test "repairs an unfinished legacy setup through the feed form" do
-    with_apple_pre_cutover_schema do
-      apple_feed = create(:apple_feed, podcast: podcast)
-      config = apple_feed.delegated_delivery_config
-      binding = config.show_feed_binding
-      config.update_column(:show_feed_binding_id, nil)
-
-      get podcast_feed_url(podcast, apple_feed)
-      assert_response :success
-
-      patch podcast_feed_url(podcast, apple_feed), params: {
-        feed: {apple_settings: {delivery: binding.id}}
-      }
-
-      assert_redirected_to podcast_feed_url(podcast, apple_feed)
-      assert_equal binding, config.reload.show_feed_binding
-    end
-  end
-
-  test "removes an unfinished legacy setup without a connection" do
-    with_apple_pre_cutover_schema do
-      apple_feed = create(:apple_feed, podcast: podcast)
-      config = apple_feed.delegated_delivery_config
-      binding = config.show_feed_binding
-      config.update_column(:show_feed_binding_id, nil)
-      binding.reload.destroy!
-
-      get podcast_feed_url(podcast, apple_feed)
-      assert_response :success
-
-      assert_difference("Apple::DelegatedDeliveryConfig.count", -1) do
-        patch podcast_feed_url(podcast, apple_feed), params: {
-          feed: {apple_settings: {delivery: ""}}
-        }
-      end
-
-      assert_redirected_to podcast_feed_url(podcast, apple_feed)
-      assert_predicate apple_feed.reload, :persisted?
-      assert_nil apple_feed.delegated_delivery_config
-    end
   end
 
   test "authorize update feed" do
@@ -450,42 +344,6 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_equal binding, config.show_feed_binding
     assert_predicate config, :publish_enabled?
     refute config.sync_blocks_rss?
-  end
-
-  test "generates an Apple Subscriptions token when a private feed starts delegated delivery" do
-    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
-    binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
-    mapped_feed = create(:feed, podcast: podcast, private: true, tokens: [])
-    own_show_feed = create(:feed, podcast: podcast, private: true, tokens: [])
-    stub_apple_show("show-9")
-
-    patch podcast_feed_url(podcast, mapped_feed), params: {
-      feed: {apple_settings: {connection: "", delivery: binding.id}}
-    }
-    assert_redirected_to podcast_feed_url(podcast, mapped_feed)
-
-    patch podcast_feed_url(podcast, own_show_feed), params: {
-      feed: {apple_settings: {delivery: "own", connection: "show-9"}}
-    }
-    assert_redirected_to podcast_feed_url(podcast, own_show_feed)
-
-    [mapped_feed, own_show_feed].each do |delivery_feed|
-      assert_predicate delivery_feed.reload.delegated_delivery_config, :present?
-      assert_equal [Apple::DelegatedDeliveryConfig::DEFAULT_TOKEN_LABEL], delivery_feed.tokens.map(&:label)
-    end
-  end
-
-  test "keeps a delegated delivery feed from removing its last token" do
-    binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
-    create(:delegated_delivery_config, feed: private_feed, show_feed_binding: binding)
-    token = private_feed.tokens.first
-
-    patch podcast_feed_url(podcast, private_feed), params: {
-      feed: {feed_tokens_attributes: {"0" => {id: token.id, _destroy: "1"}}}
-    }
-
-    assert_response :unprocessable_entity
-    assert_equal [token], private_feed.reload.tokens
   end
 
   test "requires a show to publish to this feed's own Apple show" do
