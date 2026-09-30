@@ -66,7 +66,7 @@ module FeedApple
     @apple_settings = nil
   end
 
-  # Megaphone feeds deliver to Apple without an Apple show connection.
+  # Megaphone handles its own distribution, so its feeds never connect to an Apple show here.
   def apple_connectable?
     !is_a?(Feeds::MegaphoneFeed)
   end
