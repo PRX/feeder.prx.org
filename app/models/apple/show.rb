@@ -18,6 +18,10 @@ module Apple
       api.get_paged_collection("shows/#{show_id}/stagedAlternateAssets")
     end
 
+    def self.guid_filter(guid)
+      "filter[guid]=#{ERB::Util.url_encode(guid)}"
+    end
+
     def self.connect_existing(apple_show_id, delegated_delivery_config)
       public_feed = delegated_delivery_config.public_feed
 
@@ -309,6 +313,17 @@ module Apple
       end.to_h
 
       @guid_to_staged_alternate_asset_json[guid]
+    end
+
+    # Single-GUID lookups for polling one episode without the bulk reads.
+    def find_apple_episode_json_by_guid_filter(guid)
+      api.get_paged_collection("shows/#{id}/episodes?#{self.class.guid_filter(guid)}")
+        .find { |ep_json| ep_json.dig("attributes", "guid") == guid }
+    end
+
+    def find_staged_alternate_asset_json_by_guid_filter(guid)
+      api.get_paged_collection("shows/#{id}/stagedAlternateAssets?#{self.class.guid_filter(guid)}")
+        .find { |asset_json| asset_json.dig("attributes", "guid") == guid }
     end
   end
 end
