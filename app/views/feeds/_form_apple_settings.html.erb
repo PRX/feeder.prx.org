@@ -19,7 +19,11 @@
   <div id="apple-settings-card" class="collapse <%= "show" if expanded %>">
     <div class="card-body">
       <% if settings.errors[:connection].any? %>
-        <div class="alert alert-danger" role="alert"><%= settings.errors[:connection].to_sentence %></div>
+        <div class="alert alert-danger lh-sm" role="alert"><%= settings.errors[:connection].to_sentence %></div>
+      <% end %>
+
+      <% if settings.errors[:hls_enabled].any? %>
+        <div class="alert alert-danger lh-sm" role="alert"><%= settings.errors[:hls_enabled].to_sentence %></div>
       <% end %>
 
       <%= form.fields_for :apple_settings, settings do |apple| %>
@@ -48,19 +52,23 @@
       <%# A show takes one config: list the feed mapped to it, or offer to create one while it's free. %>
       <% show_config = binding.delegated_delivery_config if binding&.persisted? %>
       <% if feed.public? && binding&.persisted? && show_config&.feed_id != feed.id %>
-        <div class="<%= "d-none" if settings.disconnects? %>" data-apple-settings-target="connectedOnly">
+        <div class="<%= "d-none" if settings.disconnects? %> mb-2" data-apple-settings-target="connectedOnly">
           <%= render "apple_settings_mapped_feed", podcast: podcast, binding: binding, config: show_config %>
         </div>
       <% end %>
     </div>
 
-    <div class="card-footer d-flex justify-content-between align-items-end">
-      <div>
-        <strong><%= t(".status") %></strong>
+    <div class="card-footer d-flex justify-content-between align-items-center">
+      <p class="status-text lh-sm">
+        <strong class="d-block mb-0"><%= t(".status") %></strong>
         <% if (checked = [binding, config].compact.find(&:persisted?)) %>
-          <br><span class="text-muted"><%= t(".last_checked_html", time: local_time_ago(checked.updated_at)) %></span>
+          <span class="text-muted"><%= t(".last_checked_html", time: local_time_ago(checked.updated_at)) %></span>
         <% end %>
-      </div>
+        <% hls_config = settings.hls_config if settings.hls_available? %>
+        <% if hls_config&.enabled? && hls_config.last_checked_at %>
+          <span class="d-block text-muted"><%= t(".hls_last_checked_html", time: local_time_ago(hls_config.last_checked_at)) %></span>
+        <% end %>
+      </p>
       <% if binding %>
         <span class="badge bg-success"><%= t(".connected") %></span>
       <% elsif config&.persisted? %>
