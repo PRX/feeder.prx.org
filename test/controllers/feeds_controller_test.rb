@@ -618,7 +618,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     get podcast_feed_url(podcast, feed)
 
     assert_response :success
-    assert_select "h3", text: I18n.t("feeds.form_apple_settings.mapped_feed")
+    assert_select "h3", text: "#{I18n.t("feeds.form_apple_settings.mapped_feed")}:"
     assert_select "a[href='#{podcast_feed_path(podcast, private_feed)}']", text: private_feed.label
     assert_select ".badge", text: I18n.t("feeds.form_apple_settings.paused")
     assert_select "a", text: I18n.t("feeds.form_apple_settings.create_feed"), count: 0

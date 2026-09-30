@@ -7,7 +7,7 @@
 
 <% if settings.mappable_bindings.empty? && !settings.delivering? %>
   <% no_mappings = (feed.persisted? && settings.binding&.persisted?) ? "no_mappings_own_show" : "no_mappings" %>
-  <div class="alert alert-info" role="status"><%= t("feeds.form_apple_settings.#{no_mappings}") %></div>
+  <div class="alert alert-info lh-sm" role="status"><%= t("feeds.form_apple_settings.#{no_mappings}") %></div>
 <% end %>
 
 <div class="form-floating input-group mb-3">
@@ -18,15 +18,15 @@
 
 <p class="small mb-3 <%= "d-none" unless mapped_binding %>" data-apple-settings-target="mappedOnly">
   <%= link_to (mapped_binding ? podcast_feed_path(feed.podcast, mapped_binding.feed) : "#"),
-        class: "d-inline-flex align-items-center",
+        class: "btn btn-sm text-primary p-0 align-items-center",
         data: {apple_settings_target: "mappedLink", turbo_frame: "_top"} do %>
     <%= t("feeds.form_apple_settings.view_mapped_feed") %>
     <span class="material-icons fs-6 ms-1">arrow_forward</span>
   <% end %>
 </p>
 
-<div class="<%= "d-none" unless settings.delivering? %>" data-apple-settings-target="deliverySettings">
-  <div class="form-check mb-2">
+<div class="<%= "d-none" unless settings.delivering? %> mb-3" data-apple-settings-target="deliverySettings">
+  <div class="form-check mb-2 lh-sm">
     <%= apple.check_box :publish_enabled %>
     <div class="d-flex align-items-center">
       <%= apple.label :publish_enabled %>
@@ -34,7 +34,7 @@
     </div>
   </div>
 
-  <div class="form-check mb-2">
+  <div class="form-check mb-2 lh-sm">
     <%= apple.check_box :sync_blocks_rss %>
     <div class="d-flex align-items-center">
       <%= apple.label :sync_blocks_rss %>
