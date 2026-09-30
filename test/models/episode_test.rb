@@ -376,8 +376,8 @@ describe Episode do
     let(:podcast) { create(:podcast) }
     let(:episode) { create(:episode, podcast: podcast) }
 
-    describe "#integration_feed" do
-      it "returns nil for a legacy configuration without a show identity" do
+    describe "#integration_feeds" do
+      it "returns no feeds for a legacy configuration without a show identity" do
         with_apple_pre_cutover_schema do
           apple_feed = create(:apple_feed, podcast: podcast)
           config = apple_feed.delegated_delivery_config
@@ -389,7 +389,7 @@ describe Episode do
           apple_feed.update_column(:apple_show_id, nil)
           podcast.reload
 
-          assert_nil episode.integration_feed(:apple)
+          assert_empty episode.integration_feeds(:apple)
         end
       end
     end
