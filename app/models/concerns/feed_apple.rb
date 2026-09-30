@@ -16,6 +16,7 @@ module FeedApple
     before_validation :build_apple_delivery_token
     validate :apple_delivery_requires_token
     validate :apple_public_dependents_block_private
+    validate :apple_unused_connection_blocks_private
     before_destroy :protect_apple_delivery_connection, prepend: true
   end
 
@@ -34,6 +35,28 @@ module FeedApple
       label = config.feed&.label || "another feed"
       errors.add(:private, "cannot be enabled while #{label} delivers to this feed's Apple show")
     end
+  end
+
+  # A connection nothing delivers through would change from a public show
+  # to this feed's own show, so it must be disconnected or delivered
+  # through first.
+  private def apple_unused_connection_blocks_private
+    return unless private? && private_changed? && apple_show_feed_binding
+
+    # Reported by apple_public_dependents_block_private.
+    dependent = apple_show_feed_binding.delegated_delivery_config
+    return if dependent && dependent.feed_id != id
+    return if delivering_through_own_apple_show?
+
+    errors.add(:private, "cannot be enabled while this feed is connected to an Apple show. Disconnect it or publish this feed to its own Apple show first")
+  end
+
+  # Read from the feed's config, which holds this save's delivery changes.
+  # Compare bindings, since a binding connected in this save isn't on the
+  # config's foreign key until the config saves.
+  private def delivering_through_own_apple_show?
+    config = delegated_delivery_config
+    config.present? && !config.marked_for_destruction? && config.show_feed_binding&.id == apple_show_feed_binding.id
   end
 
   def publish_to_apple?
