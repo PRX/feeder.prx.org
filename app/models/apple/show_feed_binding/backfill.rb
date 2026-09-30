@@ -188,7 +188,9 @@ module Apple
         changes_key_route = assigns_podcast_key || changes[:config_ids].any?
 
         unless dry_run
-          configs.each { |config| config.update!(key: key) unless config[:key_id] == key.id }
+          configs.each do |config|
+            config.update_columns(key_id: key.id, updated_at: Time.current) unless config[:key_id] == key.id
+          end
           podcast.update!(apple_key: key) unless podcast.apple_key_id == key.id
         end
 
