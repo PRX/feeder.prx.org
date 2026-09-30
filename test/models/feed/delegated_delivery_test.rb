@@ -25,7 +25,7 @@ describe Feed, "Apple delegated delivery" do
   it "creates a token when delegated delivery is attached through the feed" do
     feed = create(:private_feed, podcast: podcast, tokens: [])
 
-    assert Apple::FeedSettings.new(feed, delivery: binding.id.to_s).save
+    assert feed.update(apple_settings: {delivery: binding.id.to_s})
 
     assert_equal 1, feed.reload.tokens.size
     assert_equal Apple::DelegatedDeliveryConfig::DEFAULT_TOKEN_LABEL, feed.tokens.sole.label
@@ -76,7 +76,7 @@ describe Feed, "Apple delegated delivery" do
     token = delivery_feed.tokens.sole
 
     delivery_feed.assign_attributes(feed_tokens_attributes: [{id: token.id, _destroy: "1"}])
-    assert Apple::FeedSettings.new(delivery_feed, delivery: "").save
+    assert delivery_feed.update(apple_settings: {delivery: ""})
 
     assert_empty delivery_feed.reload.tokens
     assert_nil delivery_feed.delegated_delivery_config
@@ -108,7 +108,7 @@ describe Feed, "Apple delegated delivery" do
     config = create(:delegated_delivery_config, feed: public_feed, key: key, show_feed_binding: connection)
     public_feed.reload.assign_attributes(private: true, tokens: [FeedToken.new(label: "apple")])
 
-    refute Apple::FeedSettings.new(public_feed, delivery: "").save
+    refute public_feed.update(apple_settings: {delivery: ""})
     assert_includes public_feed.errors[:private], "cannot be enabled while this feed is connected to an Apple show. Disconnect it or publish this feed to its own Apple show first"
     refute public_feed.reload.private?
     assert Apple::ShowFeedBinding.exists?(connection.id)
@@ -198,7 +198,7 @@ describe Feed, "Apple delegated delivery" do
     create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding)
     original_count = Apple::DelegatedDeliveryConfig.count
 
-    assert Apple::FeedSettings.new(delivery_feed, delivery: "").save
+    assert delivery_feed.update(apple_settings: {delivery: ""})
 
     assert_equal original_count - 1, Apple::DelegatedDeliveryConfig.count
     assert_predicate delivery_feed.reload, :persisted?
