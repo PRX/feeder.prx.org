@@ -917,10 +917,16 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   test "does not make a connected public feed private" do
     connected_apple_feed
 
-    patch podcast_feed_url(podcast, feed), params: {feed: {private: "1"}}
+    patch podcast_feed_url(podcast, feed), params: {feed: {
+      private: "1",
+      feed_tokens_attributes: {"0" => {label: "apple", token: "apple-token"}},
+      apple_settings: {delivery: ""}
+    }}
 
     assert_response :unprocessable_entity
+    assert_select ".invalid-feedback", text: /cannot be enabled while this feed is connected to an apple show/i
     refute feed.reload.private?
+    assert_empty feed.tokens
     assert_equal "show-1", feed.apple_show_feed_binding.apple_show_id
   end
 

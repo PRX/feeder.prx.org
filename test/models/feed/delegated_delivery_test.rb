@@ -82,21 +82,37 @@ describe Feed, "Apple delegated delivery" do
     assert_nil delivery_feed.delegated_delivery_config
   end
 
-  it "allows a connected feed to become private with a token" do
+  it "keeps a connected feed without delivery public" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
 
-    assert public_feed.update(private: true, tokens: [FeedToken.new(label: "apple")])
-    assert_equal connection, public_feed.reload.apple_show_feed_binding
+    refute public_feed.update(private: true, tokens: [FeedToken.new(label: "apple")])
+    assert_includes public_feed.errors[:private], "cannot be enabled while this feed is connected to an Apple show. Disconnect it or publish this feed to its own Apple show first"
+    refute public_feed.reload.private?
+    assert_equal connection, public_feed.apple_show_feed_binding
   end
 
-  it "requires a token when a connected feed becomes private" do
+  it "requires a token when a feed delivering through its own show becomes private" do
     public_feed = create(:public_feed, podcast: podcast)
-    create(:apple_show_feed_binding, feed: public_feed)
+    connection = create(:apple_show_feed_binding, feed: public_feed)
+    create(:delegated_delivery_config, feed: public_feed, key: key, show_feed_binding: connection)
 
-    refute public_feed.update(private: true)
+    refute public_feed.reload.update(private: true)
     assert_includes public_feed.errors[:tokens], "must have a token"
     refute public_feed.reload.private?
+  end
+
+  it "keeps a connected feed public when its own delivery is removed in the same save" do
+    public_feed = create(:public_feed, podcast: podcast)
+    connection = create(:apple_show_feed_binding, feed: public_feed)
+    config = create(:delegated_delivery_config, feed: public_feed, key: key, show_feed_binding: connection)
+    public_feed.reload.assign_attributes(private: true, tokens: [FeedToken.new(label: "apple")])
+
+    refute Apple::FeedSettings.new(public_feed, delivery: "").save
+    assert_includes public_feed.errors[:private], "cannot be enabled while this feed is connected to an Apple show. Disconnect it or publish this feed to its own Apple show first"
+    refute public_feed.reload.private?
+    assert Apple::ShowFeedBinding.exists?(connection.id)
+    assert Apple::DelegatedDeliveryConfig.exists?(config.id)
   end
 
   it "keeps a connected feed public while another feed delivers to its show" do
