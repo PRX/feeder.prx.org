@@ -20,7 +20,7 @@ class FeedsController < ApplicationController
     @feed = @podcast.feeds.new(private: false, slug: "")
     authorize @feed
 
-    Apple::DeliveryFeedDefaults.new(@feed).assign if apple_settings.mapping
+    Apple::DeliveryFeedDefaults.new(@feed).assign if apple_settings.mapped_binding
     @feed.assign_attributes(feed_params)
     @feed.clear_attribute_changes(%i[file_name podcast_id private slug])
   end
