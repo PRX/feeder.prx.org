@@ -25,7 +25,7 @@ describe Feed, "Apple delegated delivery" do
   it "creates a token when delegated delivery is attached through the feed" do
     feed = create(:private_feed, podcast: podcast, tokens: [])
 
-    feed.update!(delegated_delivery_config_attributes: {show_feed_binding_id: binding.id})
+    assert Apple::FeedSettings.new(feed, delivery: binding.id.to_s).save
 
     assert_equal 1, feed.reload.tokens.size
     assert_equal Apple::DelegatedDeliveryConfig::DEFAULT_TOKEN_LABEL, feed.tokens.sole.label
@@ -72,13 +72,11 @@ describe Feed, "Apple delegated delivery" do
   end
 
   it "allows removing the last token along with delegated delivery" do
-    config = create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding)
+    create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding)
     token = delivery_feed.tokens.sole
 
-    delivery_feed.update!(
-      feed_tokens_attributes: [{id: token.id, _destroy: "1"}],
-      delegated_delivery_config_attributes: {id: config.id, _destroy: "1"}
-    )
+    delivery_feed.assign_attributes(feed_tokens_attributes: [{id: token.id, _destroy: "1"}])
+    assert Apple::FeedSettings.new(delivery_feed, delivery: "").save
 
     assert_empty delivery_feed.reload.tokens
     assert_nil delivery_feed.delegated_delivery_config
@@ -179,7 +177,7 @@ describe Feed, "Apple delegated delivery" do
     create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding)
     original_count = Apple::DelegatedDeliveryConfig.count
 
-    delivery_feed.update!(delegated_delivery_config_attributes: {id: delivery_feed.delegated_delivery_config.id, _destroy: "1"})
+    assert Apple::FeedSettings.new(delivery_feed, delivery: "").save
 
     assert_equal original_count - 1, Apple::DelegatedDeliveryConfig.count
     assert_predicate delivery_feed.reload, :persisted?
