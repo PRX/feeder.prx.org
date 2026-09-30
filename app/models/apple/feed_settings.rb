@@ -114,23 +114,21 @@ module Apple
       delivery_was == OWN && feed.private? && binding.present?
     end
 
-    # The public feed binding a delivery id names. It's looked up within the
-    # podcast, so a submitted id can't reveal another podcast's feed.
-    def mapping
-      return unless mapping_id
-
-      @mapping = nil unless @mapping&.id == mapping_id
-      @mapping ||= Apple::ShowFeedBinding.joins(:feed).includes(:feed)
-        .where(feeds: {podcast_id: feed.podcast_id}).where.not(feed_id: feed.id).find_by(id: mapping_id)
+    # The mappable binding a delivery id names. Any other id, such as another
+    # podcast's binding, a private feed's, or one another feed delivers
+    # through, finds nothing, so validation reports it on the delivery.
+    def mapped_binding
+      mappable_bindings.find { |binding| binding.id == mapped_binding_id } if mapped_binding_id
     end
 
-    # Bindings this feed can map to. The current mapping stays selectable so
-    # a save doesn't clear it when its feed is no longer available.
-    def mapping_bindings
-      @mapping_bindings ||= begin
+    # Other feeds' bindings this feed can map to. The saved mapping stays
+    # selectable so a save doesn't clear it when its feed is no longer
+    # available.
+    def mappable_bindings
+      @mappable_bindings ||= begin
         bindings = Apple::ShowFeedBinding.available_for_delivery(feed).where.not(feed_id: feed.id).to_a
-        current = mapping
-        bindings << current if current && bindings.exclude?(current)
+        saved = saved_mapped_binding
+        bindings << saved if saved && bindings.exclude?(saved)
         bindings
       end
     end
@@ -178,8 +176,17 @@ module Apple
       deliverable? && submitted?(:delivery)
     end
 
-    def mapping_id
+    def mapped_binding_id
       delivery.to_i if delivery.match?(/\A\d+\z/)
+    end
+
+    # The other feed's binding the saved config points at. Read from the
+    # database, since applying a delivery repoints the config in memory.
+    def saved_mapped_binding
+      saved_id = config&.show_feed_binding_id_in_database
+      return if saved_id.nil? || saved_id == binding&.id
+
+      Apple::ShowFeedBinding.includes(:feed).find_by(id: saved_id)
     end
 
     # Point the feed's config at the submitted binding, or remove it. The
@@ -193,8 +200,8 @@ module Apple
           config&.mark_for_destruction
         elsif own_show?
           point_config_at(connection_binding) if connection.present? && !own_show_taken_by
-        elsif mapping
-          point_config_at(mapping)
+        elsif mapped_binding
+          point_config_at(mapped_binding)
         end
 
         @submitted[:connection] = "" if disconnect
@@ -223,7 +230,7 @@ module Apple
           label = other.feed&.label || "another feed"
           errors.add(:connection, "is already used for delegated delivery by #{label}. Map that feed to a different public feed before publishing this feed to its own Apple show")
         end
-      elsif delivery.present? && !mapping
+      elsif delivery.present? && !mapped_binding
         errors.add(:delivery, "must be this feed's own Apple show or a public feed on this podcast")
       end
     end

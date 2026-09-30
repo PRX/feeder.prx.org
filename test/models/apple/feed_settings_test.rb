@@ -89,7 +89,7 @@ describe Apple::FeedSettings do
       settings = Apple::FeedSettings.new(delivery_feed.reload)
       assert_equal binding.id.to_s, settings.delivery
       assert_equal "mapped", settings.route
-      assert_equal binding, settings.mapping
+      assert_equal binding, settings.mapped_binding
     end
 
     it "treats a private feed's connection without a config as delivering to its own show" do
@@ -109,12 +109,36 @@ describe Apple::FeedSettings do
     end
   end
 
-  describe "#mapping" do
+  describe "#mapped_binding" do
     it "ignores a binding from another podcast" do
       other_binding = create(:apple_show_feed_binding, apple_show_id: "other-show")
       delivery_feed = create(:private_feed, podcast: podcast)
 
-      assert_nil Apple::FeedSettings.new(delivery_feed, delivery: other_binding.id).mapping
+      assert_nil Apple::FeedSettings.new(delivery_feed, delivery: other_binding.id).mapped_binding
+    end
+
+    it "ignores a private feed's binding" do
+      private_binding = create(:apple_show_feed_binding, feed: create(:private_feed, podcast: podcast), apple_show_id: "private-show")
+      delivery_feed = create(:private_feed, podcast: podcast)
+
+      assert_nil Apple::FeedSettings.new(delivery_feed, delivery: private_binding.id).mapped_binding
+    end
+
+    it "ignores a binding another feed delivers through" do
+      create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), show_feed_binding: binding)
+      delivery_feed = create(:private_feed, podcast: podcast)
+
+      assert_nil Apple::FeedSettings.new(delivery_feed, delivery: binding.id).mapped_binding
+    end
+
+    it "keeps the saved mapping when its feed is no longer available" do
+      delivery_feed = create(:private_feed, podcast: podcast)
+      create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding)
+      binding.feed.update_column(:private, true)
+
+      settings = Apple::FeedSettings.new(delivery_feed.reload, delivery: binding.id)
+      assert_equal binding, settings.mapped_binding
+      assert_includes settings.mappable_bindings, binding
     end
   end
 end
