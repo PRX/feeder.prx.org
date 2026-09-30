@@ -953,7 +953,6 @@ en:
       deliveries:
         none: No delegated delivery
         own: This feed's own Apple show
-        mappings: Map to a public feed's Apple show
         mapped: "%{feed} (%{show_id})"
       create_feed: "+ Create a new feed"
       publishing: Publishing
