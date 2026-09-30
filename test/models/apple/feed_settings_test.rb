@@ -13,29 +13,27 @@ describe Apple::FeedSettings do
     stub_request(:get, "https://aardvark.prx.org/shows/#{id}").to_return(status: status, body: {data: {id: id, type: "shows"}}.to_json)
   end
 
-  describe "#save" do
+  describe "saving with the feed" do
     it "rolls back feed edits when a requested connection is inaccessible" do
       public_feed = binding.feed
       original_title = public_feed.title
       public_feed.title = "Changed"
       stub_show("missing", status: 404)
-      settings = Apple::FeedSettings.new(public_feed, connection: "missing")
-
-      refute settings.save
-      assert_predicate settings.errors[:connection], :present?
+      refute public_feed.update(apple_settings: {connection: "missing"})
+      assert_predicate public_feed.apple_settings.errors[:connection], :present?
       assert_equal original_title, public_feed.reload.title
       assert_equal "show-1", binding.reload.apple_show_id
     end
 
-    it "reads the requested show before opening the save transaction" do
+    it "reads the requested show before the feed row is written" do
       public_feed = binding.feed
-      open_transactions = public_feed.class.connection.open_transactions
+      public_feed.title = "Changed"
       stub_request(:get, "https://aardvark.prx.org/shows/show-2").to_return do
-        assert_equal open_transactions, public_feed.class.connection.open_transactions
+        refute_equal "Changed", Feed.where(id: public_feed.id).pick(:title)
         {status: 200, body: {data: {id: "show-2", type: "shows"}}.to_json}
       end
 
-      assert Apple::FeedSettings.new(public_feed, connection: "show-2").save
+      assert public_feed.update(apple_settings: {connection: "show-2"})
       assert_equal "show-2", binding.reload.apple_show_id
     end
 
@@ -43,7 +41,7 @@ describe Apple::FeedSettings do
       public_feed = binding.feed
       public_feed.file_name = ""
 
-      refute Apple::FeedSettings.new(public_feed, connection: "show-2").save
+      refute public_feed.update(apple_settings: {connection: "show-2"})
       assert_not_requested :get, "https://aardvark.prx.org/shows/show-2"
       assert_equal "show-1", binding.reload.apple_show_id
     end
@@ -53,9 +51,9 @@ describe Apple::FeedSettings do
       stub_show("show-1")
       stub_show("show-2")
 
-      assert Apple::FeedSettings.new(public_feed, connection: "show-1").save
-      assert Apple::FeedSettings.new(public_feed, connection: "").save
-      assert Apple::FeedSettings.new(public_feed, connection: "show-2").save
+      assert public_feed.update(apple_settings: {connection: "show-1"})
+      assert public_feed.update(apple_settings: {connection: ""})
+      assert public_feed.update(apple_settings: {connection: "show-2"})
 
       assert_equal "show-2", public_feed.reload.apple_show_feed_binding.apple_show_id
     end
@@ -64,7 +62,7 @@ describe Apple::FeedSettings do
       public_feed = binding.feed
       public_feed.title = "Changed"
 
-      assert Apple::FeedSettings.new(public_feed, connection: "show-1").save
+      assert public_feed.update(apple_settings: {connection: "show-1"})
       assert_equal "Changed", public_feed.reload.title
       assert_not_requested :get, "https://aardvark.prx.org/shows/show-1"
     end
@@ -73,9 +71,22 @@ describe Apple::FeedSettings do
       delivery_feed = create(:private_feed, podcast: podcast)
       config = create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding, publish_enabled: true)
 
-      assert Apple::FeedSettings.new(delivery_feed).save
+      assert delivery_feed.update(apple_settings: {})
       assert_equal binding, config.reload.show_feed_binding
       assert_predicate config, :publish_enabled?
+    end
+
+    it "drops unsaved settings when the feed reloads" do
+      delivery_feed = create(:private_feed, podcast: podcast)
+      create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding)
+      delivery_feed.file_name = ""
+
+      refute delivery_feed.update(apple_settings: {delivery: ""})
+      delivery_feed.reload
+
+      assert_equal binding.id.to_s, delivery_feed.apple_settings.delivery
+      assert delivery_feed.save
+      assert_predicate delivery_feed.reload.delegated_delivery_config, :present?
     end
   end
 

@@ -3,8 +3,6 @@ class FeedsController < ApplicationController
   before_action :set_podcast
   before_action :set_feeds
 
-  helper_method :apple_settings
-
   def index
     redirect_to podcast_feed_url(@podcast, @podcast.default_feed)
   end
@@ -20,8 +18,8 @@ class FeedsController < ApplicationController
     @feed = @podcast.feeds.new(private: false, slug: "")
     authorize @feed
 
-    Apple::DeliveryFeedDefaults.new(@feed).assign if apple_settings.mapped_binding
     @feed.assign_attributes(feed_params)
+    Apple::DeliveryFeedDefaults.new(@feed).assign if @feed.apple_settings.mapped_binding
     @feed.clear_attribute_changes(%i[file_name podcast_id private slug])
   end
 
@@ -39,7 +37,7 @@ class FeedsController < ApplicationController
     authorize @feed
 
     respond_to do |format|
-      if apple_settings.save
+      if @feed.save
         @feed.set_default_episodes unless exclude_default_episodes?
         @feed.copy_media
         @feed.podcast&.publish!
@@ -59,7 +57,7 @@ class FeedsController < ApplicationController
     authorize @feed
 
     respond_to do |format|
-      if apple_settings.save
+      if @feed.save
         @feed.copy_media
         @feed.podcast&.publish!
         format.html { redirect_to podcast_feed_path(@podcast, @feed), notice: t(".success", model: "Feed") }
@@ -114,7 +112,7 @@ class FeedsController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def feed_params
-    params.fetch(:feed, {}).permit(:slug).merge(nilified_feed_params)
+    params.fetch(:feed, {}).permit(:slug, apple_settings: Apple::FeedSettings::ATTRIBUTES).merge(nilified_feed_params)
   end
 
   def nilified_feed_params
@@ -155,15 +153,6 @@ class FeedsController < ApplicationController
       itunes_images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
       megaphone_config_attributes: [:id, :publish_enabled, :sync_blocks_rss, :token, :network_id, :network_name, :organization_id, advertising_tags: []]
     )
-  end
-
-  def apple_settings
-    @apple_settings ||= Apple::FeedSettings.new(@feed, apple_settings_params)
-  end
-
-  # A new feed opened from a public feed's Apple Settings carries its mapping.
-  def apple_settings_params
-    params.dig(:feed, :apple_settings)&.permit(*Apple::FeedSettings::ATTRIBUTES) || {}
   end
 
   def exclude_default_episodes?

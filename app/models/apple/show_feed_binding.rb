@@ -65,6 +65,22 @@ module Apple
       end
     end
 
+    # Another feed's saved config that delivers through this show. Read from
+    # the database, since this feed's own config may point here unsaved.
+    def other_feed_config
+      return unless persisted?
+
+      Apple::DelegatedDeliveryConfig.where(show_feed_binding_id: id).where.not(feed_id: feed_id).includes(:feed).first
+    end
+
+    # Reload the config first, since the feed's save may have just removed
+    # or repointed it.
+    def disconnect
+      association(:delegated_delivery_config).reset
+      destroy
+      self
+    end
+
     private def verify_show_access
       Apple::Show.get_show(Apple::Api.from_key(feed.podcast.apple_key), apple_show_id)
       true

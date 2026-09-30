@@ -13,11 +13,57 @@ module FeedApple
       validate: true,
       inverse_of: :feed
 
+    before_validation :apply_apple_settings
     before_validation :build_apple_delivery_token
+    validate :apple_settings_must_be_valid
     validate :apple_delivery_requires_token
     validate :apple_public_dependents_block_private
     validate :apple_unused_connection_blocks_private
+    before_save :connect_apple_show
+    after_save :disconnect_apple_show
     before_destroy :protect_apple_delivery_connection, prepend: true
+  end
+
+  # The feed form's Apple settings, saved with the feed.
+  def apple_settings
+    @apple_settings ||= Apple::FeedSettings.new(self)
+  end
+
+  def apple_settings=(attributes)
+    @apple_settings = Apple::FeedSettings.new(self, attributes || {})
+  end
+
+  # Reloading drops unsaved settings, since they cache the feed's records.
+  def reload(*)
+    @apple_settings = nil
+    super
+  end
+
+  # Settings are only applied once assigned, so other saves skip them.
+  private def apply_apple_settings
+    @apple_settings&.apply
+  end
+
+  private def apple_settings_must_be_valid
+    errors.add(:apple_settings, :invalid) if @apple_settings&.invalid?
+  end
+
+  private def connect_apple_show
+    return if @apple_settings.nil? || @apple_settings.connect
+
+    errors.add(:apple_settings, :invalid)
+    throw :abort
+  end
+
+  # A later save of this feed starts from the saved settings.
+  private def disconnect_apple_show
+    return unless @apple_settings
+
+    unless @apple_settings.disconnect
+      errors.add(:apple_settings, :invalid)
+      raise ActiveRecord::RecordInvalid, self
+    end
+    @apple_settings = nil
   end
 
   # Megaphone feeds deliver to Apple without an Apple show connection.
