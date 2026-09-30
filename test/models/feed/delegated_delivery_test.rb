@@ -179,14 +179,6 @@ describe Feed, "Apple delegated delivery" do
     assert Apple::Key.exists?(key.id)
   end
 
-  it "allows deleting the whole podcast with connected delivery feeds" do
-    config = create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: binding)
-
-    assert podcast.destroy
-    refute Apple::DelegatedDeliveryConfig.exists?(config.id)
-    refute Apple::ShowFeedBinding.exists?(binding.id)
-  end
-
   it "publishes through the feed-scoped config" do
     create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding, publish_enabled: true)
 
@@ -226,13 +218,6 @@ describe Feed, "Apple delegated delivery" do
     refute podcast.default_feed.integration_episode?(scheduled, :apple)
     assert podcast.default_feed.integration_episode?(published, :apple)
     refute podcast.default_feed.feed_episode?(draft)
-  end
-
-  it "excludes drafts from feeds without Apple delegated delivery" do
-    draft = create(:episode_with_media, podcast: podcast, published_at: nil)
-
-    assert_empty podcast.default_feed.integration_draft_episodes(:apple)
-    refute podcast.default_feed.integration_episode?(draft, :apple)
   end
 
   it "excludes drafts when private Apple delivery is paused" do

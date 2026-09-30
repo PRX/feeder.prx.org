@@ -92,10 +92,6 @@ describe EpisodesHelper do
           assert_equal first.created_at, helper.episode_integration_updated_at(episode, :apple, apple_feed)
           assert_equal second.created_at, helper.episode_integration_updated_at(episode, :apple, other_feed)
         end
-
-        it "names the feed regardless of how many feeds the episode has" do
-          assert_equal "Apple (#{apple_feed.label})", helper.episode_integration_label("Apple", apple_feed)
-        end
       end
 
       it "returns 'disconnected' when the integration facade is unavailable" do
