@@ -142,6 +142,11 @@ class Feed < ApplicationRecord
     Episode.from(episodes.published_by(by).limit(count), :episodes)
   end
 
+  # The episodes rendered into this feed's RSS.
+  def rss_episodes
+    feed_episodes.includes(:contents, :persons, :ready_image, :transcript, :uncut, podcast: :delegated_delivery_configs, media_versions: :media_resources).feed_ready
+  end
+
   def feed_episode_ids
     feed_episodes.pluck(:id)
   end

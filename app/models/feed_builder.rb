@@ -8,7 +8,7 @@ class FeedBuilder
   def initialize(podcast, feed = nil)
     @podcast = podcast
     @feed = feed || podcast.default_feed
-    @episodes = @feed.feed_episodes.includes(:contents, :persons, :ready_image, :transcript, :uncut, podcast: :delegated_delivery_configs, media_versions: :media_resources).feed_ready
+    @episodes = @feed.rss_episodes
     @feed_image = @feed.ready_feed_image || @podcast.ready_feed_image
     @itunes_image = @feed.ready_itunes_image || @podcast.ready_itunes_image
     @itunes_categories = @feed.itunes_categories.present? ? @feed.itunes_categories : podcast.default_feed.itunes_categories
