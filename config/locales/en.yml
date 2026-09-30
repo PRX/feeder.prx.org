@@ -448,7 +448,6 @@ en:
         itunes_subcategory: Apple Podcasts Sub-Category
         label: Label
         labels:
-          apple: Apple Subscriptions
           default: Default RSS Feed
           megaphone: Megaphone Integration
         new_feed_url: New Feed URL
