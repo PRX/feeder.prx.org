@@ -104,9 +104,12 @@ module FeedApple
     tokens.reject { |token| token.marked_for_destruction? || token.destroyed? }
   end
 
+  # A feed's own delivery through its own show goes with it.
   private def protect_apple_delivery_connection
     return if destroyed_by_association
-    return unless apple_show_feed_binding&.delegated_delivery_config
+
+    config = apple_show_feed_binding&.delegated_delivery_config
+    return if config.nil? || config.feed_id == id
 
     errors.add(:base, "Cannot delete a feed while delegated delivery uses its Apple connection")
     throw :abort
