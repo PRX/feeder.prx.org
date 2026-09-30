@@ -70,7 +70,7 @@ describe EpisodesHelper do
           create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-1", uploaded: true, delivered: true)
           create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-2", uploaded: true, delivered: false)
 
-          assert_nil episode.integration_feed(:apple)
+          assert_equal [apple_feed, other_feed], episode.integration_feeds(:apple)
           assert_equal({apple_feed => "complete", other_feed => "processing"}, helper.episode_integration_statuses(episode, :apple))
         end
 
@@ -78,7 +78,7 @@ describe EpisodesHelper do
           other_config.update!(publish_enabled: false)
           create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-1", uploaded: true, delivered: true)
 
-          assert_equal apple_feed, episode.integration_feed(:apple)
+          assert_equal [apple_feed], episode.integration_feeds(:apple)
           assert_equal({apple_feed => "complete"}, helper.episode_integration_statuses(episode, :apple))
 
           episode.feeds = [other_feed]

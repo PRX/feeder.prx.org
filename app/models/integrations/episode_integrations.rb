@@ -11,10 +11,6 @@ module Integrations::EpisodeIntegrations
     podcast.publish_to_integration?(integration)
   end
 
-  def integration_feed_episode?(integration)
-    integration_feeds(integration).any?
-  end
-
   # Enabled integration feeds this episode is actually delivered through. A
   # podcast can have several, so membership is resolved per episode.
   def integration_feeds(integration)
@@ -23,10 +19,5 @@ module Integrations::EpisodeIntegrations
         feed.publish_integration?(integration) &&
         feed.integration_episode?(self, integration)
     end
-  end
-
-  def integration_feed(integration)
-    feeds = integration_feeds(integration)
-    feeds.one? ? feeds.first : nil
   end
 end

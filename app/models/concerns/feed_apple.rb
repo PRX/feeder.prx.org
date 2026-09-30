@@ -13,10 +13,6 @@ module FeedApple
       validate: true,
       inverse_of: :feed
 
-    accepts_nested_attributes_for :delegated_delivery_config,
-      allow_destroy: true,
-      reject_if: ->(attributes) { attributes["id"].blank? && attributes["show_feed_binding_id"].blank? }
-
     before_validation :build_apple_delivery_token
     validate :apple_delivery_requires_token
     validate :apple_public_dependents_block_private
