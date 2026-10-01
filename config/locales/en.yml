@@ -1385,6 +1385,8 @@ en:
         empty: Add an account credential below before connecting this podcast to Apple.
         save: Save Credential
         unsaved_confirm: You have an unsaved Apple credential selection.
+        locked_title: Warning
+        locked_html: A locked feed uses this podcast's Apple credential. To change it, please <a href="https://help.prx.org/hc/en-us">contact PRX support.</a>
         confirm_change:
           one: This podcast has one connected Apple show. Changing credentials will affect that connection.
           other: This podcast has %{count} connected Apple shows. Changing credentials will affect those connections.
