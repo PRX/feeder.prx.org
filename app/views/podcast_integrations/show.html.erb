@@ -12,6 +12,13 @@
       <div class="card-body">
         <p><%= t(".podcast_credential.description") %></p>
 
+        <% if @podcast.apple_key_locked? %>
+          <div class="alert alert-danger lh-sm" role="alert">
+            <b><%= t(".podcast_credential.locked_title") %></b>
+            <%= t(".podcast_credential.locked_html") %>
+          </div>
+        <% end %>
+
         <% if @podcast.errors[:apple_key].any? %>
           <div class="alert alert-danger" role="alert"><%= @podcast.errors[:apple_key].to_sentence %></div>
         <% end %>
@@ -22,6 +29,7 @@
                unsaved_changed_value: false,
                unsaved_confirm_value: t(".podcast_credential.unsaved_confirm")
              } %>
+          <% can_update_key = policy(@podcast).update_apple_key? %>
           <%= form_with(model: @podcast, url: podcast_integrations_path(@podcast), method: :patch, data: form_data) do |form| %>
             <% select_data = {} %>
             <% if @connected_apple_show_ids.any? %>
@@ -34,12 +42,12 @@
 
             <div class="form-floating input-group mb-3">
               <% options = @apple_keys.map { |key| ["#{t(".apple_credentials.key_label", key_id: key.key_id.to_s.last(4))} · #{t(".apple_credentials.provider_label", provider_id: key.provider_id.to_s.last(4))}", key.id] } %>
-              <%= form.select :apple_key_id, options, {include_blank: t(".podcast_credential.none")}, data: select_data %>
+              <%= form.select :apple_key_id, options, {include_blank: t(".podcast_credential.none")}, disabled: !can_update_key, data: select_data %>
               <%= form.label :apple_key_id, t(".podcast_credential.label") %>
               <%= field_help_text t(".podcast_credential.help") %>
             </div>
 
-            <% if policy(@podcast).update? %>
+            <% if can_update_key %>
               <%= form.submit t(".podcast_credential.save"), class: "btn btn-primary" %>
             <% end %>
           <% end %>

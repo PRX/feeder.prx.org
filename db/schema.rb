@@ -20,12 +20,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_000001) do
     t.bigint "feed_id", null: false
     t.bigint "key_id"
     t.boolean "publish_enabled", default: false, null: false
-    t.bigint "show_feed_binding_id"
+    t.bigint "show_feed_binding_id", null: false
     t.boolean "sync_blocks_rss", default: false, null: false
     t.datetime "updated_at", null: false
-    t.index ["feed_id"], name: "index_apple_configs_on_feed_id"
+    t.index ["feed_id"], name: "index_apple_configs_on_feed_id", unique: true
     t.index ["key_id"], name: "index_apple_configs_on_key_id"
-    t.index ["show_feed_binding_id"], name: "index_apple_configs_on_show_feed_binding_id"
+    t.index ["show_feed_binding_id"], name: "index_apple_configs_on_show_feed_binding_id", unique: true
   end
 
   create_table "apple_keys", force: :cascade do |t|
@@ -84,6 +84,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_000001) do
     t.datetime "created_at", null: false
     t.bigint "feed_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["apple_show_id"], name: "index_apple_show_feed_bindings_on_apple_show_id", unique: true
     t.index ["feed_id"], name: "index_apple_show_feed_bindings_on_feed_id", unique: true
   end
 

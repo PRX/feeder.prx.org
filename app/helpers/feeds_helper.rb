@@ -1,10 +1,28 @@
 module FeedsHelper
-  def episode_offset_options
-    I18n.t("feeds.helper.episode_offset_options").invert.to_a
+  # The saved and selected shows stay selectable while Apple's list excludes them.
+  def apple_connection_options(settings, options)
+    choices = options.map { |option| [option.label, option.value.to_s] }
+    [settings.connection_was, settings.connection].compact_blank.uniq.each do |show_id|
+      choices.prepend([show_id, show_id]) unless choices.any? { |_, value| value == show_id }
+    end
+    choices
   end
 
-  def apple_episode_offset_options
-    I18n.t("feeds.helper.apple_episode_offset_options").invert.to_a
+  # No delivery, this feed's own show (once it's saved), then each public
+  # feed's show. Feed options carry the link the form displays.
+  def apple_delivery_options(settings)
+    options = [[t("feeds.form_apple_settings.deliveries.none"), ""]]
+    options << [t("feeds.form_apple_settings.deliveries.own"), Apple::FeedSettings::OWN] if settings.own_available?
+    settings.mappable_bindings.each do |binding|
+      label = t("feeds.form_apple_settings.deliveries.mapped", feed: binding.feed.label, show_id: binding.apple_show_id)
+      data = {feed_url: podcast_feed_path(binding.feed.podcast_id, binding.feed)}
+      options << [label, binding.id.to_s, {data: data}]
+    end
+    options
+  end
+
+  def episode_offset_options
+    I18n.t("feeds.helper.episode_offset_options").invert.to_a
   end
 
   def audio_format_options
@@ -71,10 +89,6 @@ module FeedsHelper
     else
       podcast_feed_path feed.podcast, feed, uploads_retry_params(form)
     end
-  end
-
-  def apple_feed?(feed)
-    feed.type == "Feeds::AppleSubscription"
   end
 
   def megaphone_feed?(feed)

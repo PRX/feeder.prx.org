@@ -8,7 +8,7 @@ class PodcastIntegrationsController < ApplicationController
   end
 
   def update
-    authorize @podcast, :update?
+    authorize @podcast, :update_apple_key?
     load_apple_credentials
 
     submitted_key_id = podcast_integration_params[:apple_key_id].presence

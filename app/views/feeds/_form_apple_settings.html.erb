@@ -1,0 +1,73 @@
+<% settings = feed.apple_settings %>
+<% binding = settings.binding %>
+<% config = settings.config %>
+<% config = nil if config&.marked_for_destruction? %>
+<% invalid = settings.errors.any? || feed.errors.attribute_names.any? { |name| name.to_s.start_with?("delegated_delivery_config") } %>
+<% expanded = binding.present? || config.present? || settings.delivering? || invalid %>
+
+<div class="card collapsible_card shadow border-0 mt-3 mb-0" data-controller="apple-settings"
+  data-apple-settings-private-value="<%= feed.private? %>" data-apple-settings-delivery-was-value="<%= settings.delivery_was %>">
+  <div class="card-header card-header-light">
+    <a data-bs-toggle="collapse" href="#apple-settings-card" role="button"
+      aria-expanded="<%= expanded %>" aria-controls="apple-settings-card" class="<%= "collapsed" unless expanded %>">
+      <h2 class="card-title h5 mb-0"><%= t(".title") %></h2>
+      <span class="material-icons expanded_icon">expand_less</span>
+      <span class="material-icons collapsed_icon">expand_more</span>
+    </a>
+  </div>
+
+  <div id="apple-settings-card" class="collapse <%= "show" if expanded %>">
+    <div class="card-body">
+      <% if settings.errors[:connection].any? %>
+        <div class="alert alert-danger lh-sm" role="alert"><%= settings.errors[:connection].to_sentence %></div>
+      <% end %>
+
+      <%= form.fields_for :apple_settings, settings do |apple| %>
+        <% if settings.deliverable? %>
+          <%= render "apple_settings_delivery", feed: feed, settings: settings, apple: apple %>
+        <% end %>
+
+        <%# The connection and verify token need a saved feed. A new feed's token is in the main form.
+            A private feed's token only matters for claiming its own show, so it sits with the connection.
+            A public feed's token is in its RSS whether or not it's connected, so it always shows. %>
+        <% if feed.persisted? %>
+          <% if feed.private? %>
+            <div class="<%= "d-none" unless settings.route == "own" %>" data-apple-settings-target="ownShowOnly">
+              <%= render "apple_settings_connection", podcast: podcast, feed: feed, settings: settings, apple: apple %>
+              <%= render "apple_settings_verify_token", form: form %>
+            </div>
+          <% else %>
+            <div class="<%= "d-none" if settings.disconnects? %>" data-apple-settings-target="connectedOnly">
+              <%= render "apple_settings_connection", podcast: podcast, feed: feed, settings: settings, apple: apple %>
+            </div>
+            <%= render "apple_settings_verify_token", form: form %>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%# A show takes one config: list the feed mapped to it, or offer to create one while it's free. %>
+      <% show_config = binding.delegated_delivery_config if binding&.persisted? %>
+      <% if feed.public? && binding&.persisted? && show_config&.feed_id != feed.id %>
+        <div class="<%= "d-none" if settings.disconnects? %> mb-2" data-apple-settings-target="connectedOnly">
+          <%= render "apple_settings_mapped_feed", podcast: podcast, binding: binding, config: show_config %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="card-footer d-flex justify-content-between align-items-center">
+      <p class="status-text lh-sm">
+        <strong class="d-block mb-0"><%= t(".status") %></strong>
+        <% if (checked = [binding, config].compact.find(&:persisted?)) %>
+          <span class="text-muted"><%= t(".last_checked_html", time: local_time_ago(checked.updated_at)) %></span>
+        <% end %>
+      </p>
+      <% if binding %>
+        <span class="badge bg-success"><%= t(".connected") %></span>
+      <% elsif config&.persisted? %>
+        <span class="badge bg-success"><%= t(".configured") %></span>
+      <% else %>
+        <span class="badge bg-secondary"><%= t(".not_connected") %></span>
+      <% end %>
+    </div>
+  </div>
+</div>
