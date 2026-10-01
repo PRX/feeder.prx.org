@@ -15,6 +15,10 @@ class PodcastPolicy < ApplicationPolicy
     authorized?(:podcast_edit)
   end
 
+  def update_apple_key?
+    update? && !resource.apple_key_locked?
+  end
+
   def destroy?
     if authorized?(:podcast_delete)
       # must be new-ish OR have 0 published episodes
