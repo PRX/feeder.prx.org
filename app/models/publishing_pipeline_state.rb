@@ -4,8 +4,9 @@ class PublishingPipelineState < ApplicationRecord
   UNIQUE_STATUSES = TERMINAL_STATUSES + [:created, :started]
 
   # Raised when a worker's pipeline was expired or replaced; the worker must
-  # stop without writing any more state
-  class LostOwnershipError < StandardError; end
+  # stop without writing any more state. Not a StandardError, so ordinary
+  # `rescue => e` handlers let it through and only explicit rescues catch it.
+  class LostOwnershipError < Exception; end # standard:disable Lint/InheritException
 
   # How long a pipeline can go without a heartbeat before the reaper treats its
   # worker as dead. Running workers beat on every transition and wait-loop tick.

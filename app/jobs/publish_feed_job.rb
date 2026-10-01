@@ -43,8 +43,6 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.complete!(podcast, pub_item)
   # Top-level error handling, capping the entire pipeline's error status
   # All of the intermediate errors are handled in the publish_integration and publish_rss
-  rescue PublishingPipelineState::LostOwnershipError
-    raise
   rescue Apple::RetryPublishingError
     # Terminal state: retry
     PublishingPipelineState.retry!(podcast, pub_item)
@@ -63,8 +61,6 @@ class PublishFeedJob < ApplicationJob
     res = feed.publish_integration!(&heartbeat)
     PublishingPipelineState.publish_integration!(podcast, pub_item)
     res
-  rescue PublishingPipelineState::LostOwnershipError
-    raise
   rescue Apple::AssetStateTimeoutError => e
     # Apple timeout errors indicate the async publishing job is still in progress
     # We always mark the integration as errored in the pipeline state
@@ -96,8 +92,6 @@ class PublishFeedJob < ApplicationJob
     after_publish_rss(podcast, feed, rss_builder.episodes)
     PublishingPipelineState.publish_rss!(podcast, pub_item)
     rss_builder
-  rescue PublishingPipelineState::LostOwnershipError
-    raise
   rescue => e
     PublishingPipelineState.error_rss!(podcast, pub_item)
     raise e
