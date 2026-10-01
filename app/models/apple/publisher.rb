@@ -59,24 +59,28 @@ module Apple
     # The optional block is the publish job's heartbeat (see heartbeat!)
     def publish!(&heartbeat)
       @heartbeat = heartbeat
-      show.sync!
+      with_heartbeat { show.sync! }
       raise "Missing Show!" unless show.apple_id.present?
 
-      sync_drafting_episode_states!
+      with_heartbeat { sync_drafting_episode_states! }
 
       # Archive deleted or unpublished episodes.
       # These episodes are no longer in the private feed.
-      poll_episodes!(episodes_to_archive)
-      archive!(episodes_to_archive)
+      with_heartbeat do
+        poll_episodes!(episodes_to_archive)
+        archive!(episodes_to_archive)
+      end
 
       # Un-archive episodes that are re-published.
       # These episodes are in the private feed.
       # Unarchived episodes are converted to "DRAFTING" state.
-      poll_episodes!(episodes_to_unarchive)
-      unarchive!(episodes_to_unarchive)
+      with_heartbeat do
+        poll_episodes!(episodes_to_unarchive)
+        unarchive!(episodes_to_unarchive)
+      end
 
       # Calculate the episodes_to_sync based on the current state of the private feed
-      upload_and_process!(episodes_to_sync)
+      with_heartbeat { upload_and_process!(episodes_to_sync) }
 
       # success
       Apple::SyncLog.log!(
@@ -116,33 +120,33 @@ module Apple
 
     def upload_and_process!(eps)
       Rails.logger.tagged("Apple::Publisher#upload_and_process!") do
-        # Rescheduling an existing upload pauses its wait until release is due again.
-        clear_asset_wait!(eps.reject(&:offset_published?))
-        check_for_stuck_episodes(eps)
+        with_heartbeat do
+          # Rescheduling an existing upload pauses its wait until release is due again.
+          clear_asset_wait!(eps.reject(&:offset_published?))
+          check_for_stuck_episodes(eps)
 
-        # Applies to drafts and published episodes alike. Skipped episodes are
-        # retried on the next run: media completion re-enqueues the pipeline.
-        eps, skipped = eps.partition { |ep| ep.feeder_episode.enclosure_ready?(true) }
-        skipped.each do |ep|
-          Rails.logger.warn("Episode needs ready enclosure. Skipping", {episode_id: ep.feeder_id})
+          # Applies to drafts and published episodes alike. Skipped episodes are
+          # retried on the next run: media completion re-enqueues the pipeline.
+          eps, skipped = eps.partition { |ep| ep.feeder_episode.enclosure_ready?(true) }
+          skipped.each do |ep|
+            Rails.logger.warn("Episode needs ready enclosure. Skipping", {episode_id: ep.feeder_id})
+          end
+
+          # Sync episode metadata (create/update on Apple) for eligible episodes
+          sync_episodes!(eps)
         end
-
-        # Sync episode metadata (create/update on Apple) for eligible episodes
-        sync_episodes!(eps)
 
         eps
           .filter(&:needs_upload?)
           .each_slice(PUBLISH_CHUNK_LEN) do |batch|
-          heartbeat!
-          upload_media!(batch)
+          with_heartbeat { upload_media!(batch) }
         end
 
         eps
           .filter(&:needs_delivery_processing?)
           .filter(&:offset_published?)
           .each_slice(PUBLISH_CHUNK_LEN) do |batch|
-          heartbeat!
-          process_delivery!(batch)
+          with_heartbeat { process_delivery!(batch) }
         end
 
         raise_delivery_processing_errors(eps)
@@ -279,10 +283,12 @@ module Apple
 
     def reset_delivery_state_for_draft_candidates!(eps)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
-        eps.each do |ep|
-          Rails.logger.info("Resetting delivery state for draft candidate", {episode_id: ep.feeder_id,
-                                                                             publishing_state: ep.publishing_state})
-          ep.mark_as_not_delivered!
+        with_heartbeat do
+          eps.each do |ep|
+            Rails.logger.info("Resetting delivery state for draft candidate", {episode_id: ep.feeder_id,
+                                                                               publishing_state: ep.publishing_state})
+            ep.mark_as_not_delivered!
+          end
         end
       end
     end
@@ -290,8 +296,10 @@ module Apple
     def archive!(eps = episodes_to_archive)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |chunked_eps|
-          res = Apple::Episode.archive(api, show, chunked_eps)
-          Rails.logger.info("Archived #{res.length} episodes.")
+          with_heartbeat do
+            res = Apple::Episode.archive(api, show, chunked_eps)
+            Rails.logger.info("Archived #{res.length} episodes.")
+          end
         end
       end
     end
@@ -299,8 +307,10 @@ module Apple
     def unarchive!(eps = episodes_to_unarchive)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |chunked_eps|
-          res = Apple::Episode.unarchive(api, show, chunked_eps)
-          Rails.logger.info("Un-Archived #{res.length} episodes.")
+          with_heartbeat do
+            res = Apple::Episode.unarchive(api, show, chunked_eps)
+            Rails.logger.info("Un-Archived #{res.length} episodes.")
+          end
         end
       end
     end
@@ -452,7 +462,7 @@ module Apple
 
     def poll_episodes!(eps)
       Rails.logger.tagged("##{__method__}") do
-        res = Apple::Episode.poll_episode_state(api, show, eps)
+        res = with_heartbeat { Apple::Episode.poll_episode_state(api, show, eps) }
 
         Rails.logger.info("Polling remote / local episode state", {local_count: eps.length,
                                                                     remote_count: res.length})
@@ -467,7 +477,7 @@ module Apple
         poll_episodes!(eps)
 
         create_apple_episodes = eps.select(&:apple_new?)
-        Apple::Episode.create_episodes(api, create_apple_episodes)
+        with_heartbeat { Apple::Episode.create_episodes(api, create_apple_episodes) }
         Rails.logger.info("Created remote episodes", {count: create_apple_episodes.length})
 
         # NOTE: We don't attempt to update the remote state of published episodes.
@@ -479,7 +489,7 @@ module Apple
         # However, if the episode is drafting state,
         # then we can try to update the episode attributes
         draft_apple_episodes = eps.select(&:drafting?)
-        Apple::Episode.update_episodes(api, draft_apple_episodes)
+        with_heartbeat { Apple::Episode.update_episodes(api, draft_apple_episodes) }
         Rails.logger.info("Updated remote episodes", {count: draft_apple_episodes.length})
 
         show.reload
@@ -661,6 +671,11 @@ module Apple
 
     private
 
+    def with_heartbeat
+      heartbeat!
+      yield.tap { heartbeat! }
+    end
+
     def episodes_with_draft_upload_candidates
       feed_eps = show.episodes
       feed_episode_ids = Set.new(feed_eps.map(&:feeder_id))
@@ -704,7 +719,7 @@ module Apple
       waiting_acc = []
 
       waiting_eps.each_slice(PUBLISH_CHUNK_LEN) do |batch|
-        ready, waiting = Apple::Episode.probe_asset_state(api, batch)
+        ready, waiting = with_heartbeat { Apple::Episode.probe_asset_state(api, batch) }
         ready_acc.concat(ready)
         waiting_acc.concat(waiting)
       end

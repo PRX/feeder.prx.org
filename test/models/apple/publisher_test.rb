@@ -262,6 +262,33 @@ describe Apple::Publisher do
       end
     end
 
+    it "heartbeats around metadata calls without splitting episode sets" do
+      episodes = (1..52).map { |id| OpenStruct.new(feeder_id: id, apple_new?: true, drafting?: true) }
+      beats = 0
+      calls = []
+      poll = ->(_api, _show, batch) {
+        calls << [:poll, batch.map(&:feeder_id), beats]
+        batch
+      }
+      create = ->(_api, batch) { calls << [:create, batch.map(&:feeder_id), beats] }
+      update = ->(_api, batch) { calls << [:update, batch.map(&:feeder_id), beats] }
+
+      apple_publisher.stub(:heartbeat!, -> { beats += 1 }) do
+        Apple::Episode.stub(:poll_episode_state, poll) do
+          Apple::Episode.stub(:create_episodes, create) do
+            Apple::Episode.stub(:update_episodes, update) do
+              apple_publisher.sync_episodes!(episodes)
+            end
+          end
+        end
+      end
+
+      assert_equal [:poll, :create, :update], calls.map(&:first)
+      calls.each { |_, ids, _| assert_equal (1..52).to_a, ids }
+      calls.each_cons(2) { |previous, following| assert_operator following.last, :>, previous.last }
+      assert_operator beats, :>, calls.last.last
+    end
+
     it "should update draft episodes" do
       apple_publisher.stub(:poll_episodes!, []) do
         draft_ep = OpenStruct.new(drafting?: true, apple_new?: false)
@@ -1623,11 +1650,49 @@ describe Apple::Publisher do
         assert_equal "stop the publish", error.message
       end
 
-      assert_equal 1, beats
+      assert_equal 2, beats
 
       # The block doesn't outlive the publish
       apple_publisher.heartbeat!
-      assert_equal 1, beats
+      assert_equal 2, beats
+    end
+
+    it "stops after show setup loses ownership before doing draft work" do
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
+      expire = -> { PublishingPipelineState.expire!(podcast) }
+
+      apple_publisher.show.stub(:sync!, expire) do
+        apple_publisher.stub(:sync_drafting_episode_states!, -> { flunk "draft work after ownership loss" }) do
+          assert_raises(PublishingPipelineState::LostOwnershipError) do
+            apple_publisher.publish! { PublishingPipelineState.heartbeat!(podcast, pqi) }
+          end
+        end
+      end
+
+      assert_equal ["created", "expired"], pqi.publishing_pipeline_states.order(:id).pluck(:status)
+      assert_nil apple_publisher.heartbeat!
+    end
+
+    [:archive, :unarchive].each do |operation|
+      it "stops #{operation} after ownership is lost during the first batch" do
+        episodes = (1..30).map { |id| OpenStruct.new(feeder_id: id) }
+        processed = []
+        heartbeat = -> { raise PublishingPipelineState::LostOwnershipError unless processed.empty? }
+        apply = ->(_api, _show, batch) {
+          processed.concat(batch.map(&:feeder_id))
+          []
+        }
+
+        apple_publisher.stub(:heartbeat!, heartbeat) do
+          Apple::Episode.stub(operation, apply) do
+            assert_raises(PublishingPipelineState::LostOwnershipError) do
+              apple_publisher.public_send(:"#{operation}!", episodes)
+            end
+          end
+        end
+
+        assert_equal (1..25).to_a, processed
+      end
     end
   end
 
@@ -1668,7 +1733,7 @@ describe Apple::Publisher do
         end
       end
 
-      it "beats before each upload and delivery batch" do
+      it "beats around setup and each upload and delivery batch" do
         calls = []
 
         with_batches(episode) do
@@ -1683,7 +1748,7 @@ describe Apple::Publisher do
           end
         end
 
-        assert_equal [:beat, :upload, :beat, :delivery], calls
+        assert_equal [:beat, :beat, :beat, :upload, :beat, :beat, :delivery, :beat], calls
       end
 
       it "beats between the source metadata wait and uploading" do
