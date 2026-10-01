@@ -154,9 +154,10 @@ class Feeds::AppleSubscription < Feed
     :apple
   end
 
-  def publish_integration!
+  # The optional block is the publish job's heartbeat
+  def publish_integration!(&heartbeat)
     if publish_integration?
-      delegated_delivery_config.build_publisher.publish!
+      delegated_delivery_config.build_publisher.publish!(&heartbeat)
     end
   end
 

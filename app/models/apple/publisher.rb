@@ -22,6 +22,13 @@ module Apple
       public_feed.podcast
     end
 
+    # Calls the publish job's heartbeat block, given to publish!. It proves the
+    # worker is alive and raises LostOwnershipError once its pipeline was
+    # expired. Does nothing outside publish!.
+    def heartbeat!
+      @heartbeat&.call
+    end
+
     def poll_all_episodes!
       poll_episodes!(show.podcast_episodes)
     end
@@ -49,7 +56,9 @@ module Apple
       end
     end
 
-    def publish!
+    # The optional block is the publish job's heartbeat (see heartbeat!)
+    def publish!(&heartbeat)
+      @heartbeat = heartbeat
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
 
@@ -76,6 +85,8 @@ module Apple
         external_id: show.apple_id,
         api_response: {success: true}
       )
+    ensure
+      @heartbeat = nil
     end
 
     def sync_drafting_episode_states!
@@ -122,7 +133,7 @@ module Apple
         eps
           .filter(&:needs_upload?)
           .each_slice(PUBLISH_CHUNK_LEN) do |batch|
-          PublishingContext.heartbeat!
+          heartbeat!
           upload_media!(batch)
         end
 
@@ -130,7 +141,7 @@ module Apple
           .filter(&:needs_delivery_processing?)
           .filter(&:offset_published?)
           .each_slice(PUBLISH_CHUNK_LEN) do |batch|
-          PublishingContext.heartbeat!
+          heartbeat!
           process_delivery!(batch)
         end
 
@@ -151,7 +162,7 @@ module Apple
         media_infos = wait_for_versioned_source_metadata(eps)
 
         # The short source metadata wait doesn't beat per tick, so beat before uploading
-        PublishingContext.heartbeat!
+        heartbeat!
 
         episodes_with_source_metadata = media_infos.map(&:episode)
         unless Set.new(episodes_with_source_metadata) == Set.new(eps)
@@ -215,7 +226,7 @@ module Apple
           wait_timeout: wait_timeout,
           wait_interval: wait_interval) do |waiting_eps|
           # Prove the worker is alive, and abort if its pipeline was expired
-          PublishingContext.heartbeat!
+          heartbeat!
 
           ready_episodes, still_waiting_episodes = partition_episodes_by_readiness(waiting_eps)
 
@@ -382,7 +393,7 @@ module Apple
         # Called on each delivery wait tick
         stuck_check = ->(still_waiting_pdfs) {
           # Prove the worker is alive, and abort if its pipeline was expired
-          PublishingContext.heartbeat!
+          heartbeat!
 
           still_waiting_eps = still_waiting_pdfs.map { |pdf| feeder_id_to_apple_ep[pdf.episode_id] }.compact.uniq
           check_for_stuck_episodes(still_waiting_eps)

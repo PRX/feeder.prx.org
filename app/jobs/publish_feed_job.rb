@@ -19,9 +19,7 @@ class PublishFeedJob < ApplicationJob
     return :null if null_publishing_item?(podcast, pub_item)
     return :mismatched if mismatched_publishing_item?(podcast, pub_item)
 
-    PublishingContext.set(podcast: podcast, publishing_queue_item: pub_item) do
-      publish_pipeline(podcast, pub_item)
-    end
+    publish_pipeline(podcast, pub_item)
   # Ownership can be lost anywhere in the pipeline, including the terminal
   # writes below, so this rescue wraps them all
   rescue PublishingPipelineState::LostOwnershipError => e
@@ -59,8 +57,10 @@ class PublishFeedJob < ApplicationJob
 
   def publish_integration(podcast, pub_item, feed)
     return unless feed.publish_integration?
-    PublishingContext.heartbeat!
-    res = feed.publish_integration!
+    # The integration calls this at its checkpoints to prove liveness
+    heartbeat = -> { PublishingPipelineState.heartbeat!(podcast, pub_item) }
+    heartbeat.call
+    res = feed.publish_integration!(&heartbeat)
     PublishingPipelineState.publish_integration!(podcast, pub_item)
     res
   rescue PublishingPipelineState::LostOwnershipError
@@ -91,7 +91,7 @@ class PublishFeedJob < ApplicationJob
   end
 
   def publish_rss(podcast, pub_item, feed)
-    PublishingContext.heartbeat!
+    PublishingPipelineState.heartbeat!(podcast, pub_item)
     rss_builder = save_file(podcast, feed)
     after_publish_rss(podcast, feed, rss_builder.episodes)
     PublishingPipelineState.publish_rss!(podcast, pub_item)

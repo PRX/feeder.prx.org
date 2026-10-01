@@ -380,6 +380,22 @@ describe Feeds::AppleSubscription do
     end
   end
 
+  describe "#publish_integration!" do
+    it "passes the heartbeat block through to the Apple publisher" do
+      beats = 0
+      apple_publisher = Object.new
+      apple_publisher.define_singleton_method(:publish!) { |&heartbeat| heartbeat.call }
+
+      apple_feed.stub(:publish_integration?, true) do
+        apple_feed.delegated_delivery_config.stub(:build_publisher, apple_publisher) do
+          apple_feed.publish_integration! { beats += 1 }
+        end
+      end
+
+      assert_equal 1, beats
+    end
+  end
+
   describe "#publish_to_apple?" do
     it "returns true if the feed has apple credentials" do
       apple_feed.save!

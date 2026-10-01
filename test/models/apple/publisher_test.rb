@@ -941,7 +941,7 @@ describe Apple::Publisher do
         [false, []]
       }
 
-      PublishingContext.stub(:heartbeat!, -> { beats += 1 }) do
+      apple_publisher.stub(:heartbeat!, -> { beats += 1 }) do
         apple_publisher.stub(:check_for_stuck_episodes, nil) do
           Apple::PodcastDeliveryFile.stub(:wait_for_delivery, wait_stub) do
             Apple::PodcastDeliveryFile.stub(:wait_for_processing, wait_stub) do
@@ -963,7 +963,7 @@ describe Apple::Publisher do
         flunk "kept waiting after losing ownership"
       }
 
-      PublishingContext.stub(:heartbeat!, -> { raise PublishingPipelineState::LostOwnershipError }) do
+      apple_publisher.stub(:heartbeat!, -> { raise PublishingPipelineState::LostOwnershipError }) do
         apple_publisher.stub(:check_for_stuck_episodes, ->(*) { flunk "stuck check after losing ownership" }) do
           Apple::PodcastDeliveryFile.stub(:wait_for_delivery, wait_stub) do
             assert_raises(PublishingPipelineState::LostOwnershipError) do
@@ -1188,7 +1188,7 @@ describe Apple::Publisher do
         [false, []]
       }
 
-      PublishingContext.stub(:heartbeat!, -> { calls << :beat }) do
+      apple_publisher.stub(:heartbeat!, -> { calls << :beat }) do
         Apple::ApiWaiting.stub(:wait_for, wait_for_stub) do
           apple_publisher.stub(:partition_episodes_by_readiness, ->(eps) {
             calls << :poll
@@ -1210,7 +1210,7 @@ describe Apple::Publisher do
         flunk "kept waiting after losing ownership"
       }
 
-      PublishingContext.stub(:heartbeat!, -> { raise PublishingPipelineState::LostOwnershipError }) do
+      apple_publisher.stub(:heartbeat!, -> { raise PublishingPipelineState::LostOwnershipError }) do
         Apple::ApiWaiting.stub(:wait_for, wait_for_stub) do
           apple_publisher.stub(:partition_episodes_by_readiness, ->(*) { flunk "polled after losing ownership" }) do
             assert_raises(PublishingPipelineState::LostOwnershipError) do
@@ -1605,6 +1605,32 @@ describe Apple::Publisher do
     end
   end
 
+  describe "#heartbeat!" do
+    it "does nothing without a heartbeat block" do
+      assert_nil apple_publisher.heartbeat!
+    end
+
+    it "calls the block given to publish! while it runs" do
+      beats = 0
+      # Beat from the first step of publish!, then stop the publish there
+      sync = -> {
+        apple_publisher.heartbeat!
+        raise "stop the publish"
+      }
+
+      apple_publisher.show.stub(:sync!, sync) do
+        error = assert_raises(RuntimeError) { apple_publisher.publish! { beats += 1 } }
+        assert_equal "stop the publish", error.message
+      end
+
+      assert_equal 1, beats
+
+      # The block doesn't outlive the publish
+      apple_publisher.heartbeat!
+      assert_equal 1, beats
+    end
+  end
+
   describe "#upload_and_process!" do
     let(:episode) { build(:uploaded_apple_episode, show: apple_publisher.show) }
 
@@ -1646,7 +1672,7 @@ describe Apple::Publisher do
         calls = []
 
         with_batches(episode) do
-          PublishingContext.stub(:heartbeat!, -> { calls << :beat }) do
+          apple_publisher.stub(:heartbeat!, -> { calls << :beat }) do
             apple_publisher.stub(:upload_media!, ->(*) { calls << :upload }) do
               apple_publisher.stub(:process_delivery!, ->(*) { calls << :delivery }) do
                 apple_publisher.stub(:raise_delivery_processing_errors, nil) do
@@ -1672,7 +1698,7 @@ describe Apple::Publisher do
         end
         apple_publisher.define_singleton_method(:execute_upload_operations!) { |_infos| calls << :upload }
 
-        PublishingContext.stub(:heartbeat!, -> { calls << :beat }) do
+        apple_publisher.stub(:heartbeat!, -> { calls << :beat }) do
           apple_publisher.upload_media!([episode])
         end
 
@@ -1681,7 +1707,7 @@ describe Apple::Publisher do
 
       it "stops before the next batch once ownership is lost" do
         with_batches(episode) do
-          PublishingContext.stub(:heartbeat!, -> { raise PublishingPipelineState::LostOwnershipError }) do
+          apple_publisher.stub(:heartbeat!, -> { raise PublishingPipelineState::LostOwnershipError }) do
             apple_publisher.stub(:upload_media!, ->(*) { flunk "uploaded after losing ownership" }) do
               assert_raises(PublishingPipelineState::LostOwnershipError) do
                 apple_publisher.upload_and_process!([episode])

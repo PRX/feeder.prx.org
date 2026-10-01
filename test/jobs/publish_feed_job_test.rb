@@ -249,11 +249,14 @@ describe PublishFeedJob do
         pqi = PublishingPipelineState.start_pipeline!(podcast)
         calls = []
 
-        beat = -> { calls << [:beat, PublishingContext.publishing_queue_item] }
-        integration = -> { calls << [:integration] }
+        beat = ->(_podcast, item) { calls << [:beat, item] }
+        integration = ->(&heartbeat) {
+          calls << [:integration]
+          heartbeat.call
+        }
         rss = ->(*) { calls << [:rss] && FeedBuilder.new(podcast, private_feed) }
 
-        PublishingContext.stub(:heartbeat!, beat) do
+        PublishingPipelineState.stub(:heartbeat!, beat) do
           private_feed.stub(:publish_integration!, integration) do
             podcast.stub(:feeds, [private_feed]) do
               job.stub(:save_file, rss) do
@@ -263,10 +266,10 @@ describe PublishFeedJob do
           end
         end
 
-        assert_equal [[:beat, pqi], [:integration], [:beat, pqi], [:rss]], calls
+        # before the integration, from inside it via the block, before rss
+        assert_equal [[:beat, pqi], [:integration], [:beat, pqi], [:beat, pqi], [:rss]], calls
         assert_equal "complete", pqi.reload.last_pipeline_state
         refute_nil pqi.heartbeat_at
-        assert_nil PublishingContext.publishing_queue_item
       end
 
       it "aborts when a wait-loop heartbeat finds its pipeline expired" do
@@ -276,10 +279,10 @@ describe PublishFeedJob do
 
         # The reaper expires the pipeline and a retry starts a new one while
         # the old worker waits on Apple, beating each tick like the publisher
-        waiting = -> {
+        waiting = ->(&heartbeat) {
           Apple::ApiWaiting.wait_for([:ep], wait_interval: 0.seconds) do |remaining|
             ticks += 1
-            PublishingContext.heartbeat!
+            heartbeat.call
             PublishingPipelineState.expire!(podcast)
             new_pqi = PublishingPipelineState.start_pipeline!(podcast)
             remaining
