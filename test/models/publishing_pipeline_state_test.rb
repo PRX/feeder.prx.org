@@ -180,28 +180,69 @@ describe PublishingPipelineState do
   end
 
   describe ".expired_pipelines" do
-    it "returns expired publishing pipelines" do
+    let(:stale) { PublishingPipelineState::HEARTBEAT_STALE_AFTER }
+
+    it "returns pipelines whose heartbeat has gone stale" do
       pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
       pa2 = PublishingPipelineState.start!(podcast, pa1.publishing_queue_item)
 
       assert_equal [pa1, pa2].sort, PublishingPipelineState.unfinished_pipelines.sort
       assert PublishingPipelineState.expired_pipelines.empty?
-
       refute PublishingPipelineState.expired?(podcast)
 
-      # it gets partially through the pipeline
-      pa2.update_column(:created_at, 29.minutes.ago)
+      # the worker goes quiet, but not for long enough
+      travel stale - 1.minute
       assert PublishingPipelineState.expired_pipelines.empty?
       refute PublishingPipelineState.expired?(podcast)
 
-      # and times out
-      pa2.update_column(:created_at, 30.minutes.ago)
+      # and then its heartbeat goes stale
+      travel 1.minute + 1.second
       assert_equal [pa1, pa2].sort, PublishingPipelineState.expired_pipelines.sort
       assert PublishingPipelineState.expired?(podcast)
+    end
 
-      pa2.update_column(:created_at, 2.hours.ago)
-      assert_equal [pa1, pa2].sort, PublishingPipelineState.expired_pipelines.sort
+    it "keeps long running pipelines with a fresh heartbeat" do
+      pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
+      pqi = pa1.publishing_queue_item
+      PublishingPipelineState.start!(podcast, pqi)
+
+      # a long delivery keeps beating, well past the pipeline's start
+      8.times do
+        travel stale - 1.minute
+        PublishingPipelineState.heartbeat!(podcast, pqi)
+      end
+      assert_operator pa1.created_at, :<, 1.hour.ago
+      assert PublishingPipelineState.expired_pipelines.empty?
+      refute PublishingPipelineState.expired?(podcast)
+
+      travel stale + 1.second
       assert PublishingPipelineState.expired?(podcast)
+    end
+
+    it "ages pipelines without a heartbeat from their created state" do
+      pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
+      assert_nil pa1.publishing_queue_item.heartbeat_at
+
+      travel stale - 1.minute
+      assert PublishingPipelineState.expired_pipelines.empty?
+      refute PublishingPipelineState.expired?(podcast)
+
+      travel 1.minute + 1.second
+      assert_equal [pa1], PublishingPipelineState.expired_pipelines.to_a
+      assert PublishingPipelineState.expired?(podcast)
+    end
+
+    it "never returns finished pipelines" do
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.start!(podcast, pqi)
+      PublishingPipelineState.complete!(podcast, pqi)
+
+      pqi2 = PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.error!(podcast, pqi2)
+
+      travel 1.day
+      assert PublishingPipelineState.expired_pipelines.empty?
+      refute PublishingPipelineState.expired?(podcast)
     end
 
     it "shows expired pipelines with multiple and combinations of podcasts" do
@@ -214,17 +255,20 @@ describe PublishingPipelineState do
       refute PublishingPipelineState.expired?(podcast2)
 
       # they are both expired
-      pa1.update_column(:created_at, 30.minutes.ago)
-      pa2.update_column(:created_at, 30.minutes.ago)
+      travel stale + 1.second
       assert_equal [pa1, pa2].sort, PublishingPipelineState.expired_pipelines.sort
       assert PublishingPipelineState.expired?(podcast)
       assert PublishingPipelineState.expired?(podcast2)
 
       # just one is expired
-      pa1.update_column(:created_at, Time.now)
+      pa3 = PublishingPipelineState.start!(podcast, pa1.publishing_queue_item)
       assert_equal [pa2].sort, PublishingPipelineState.expired_pipelines.sort
       refute PublishingPipelineState.expired?(podcast)
       assert PublishingPipelineState.expired?(podcast2)
+
+      # all of a stale pipeline's states are returned
+      travel stale + 1.second
+      assert_equal [pa1, pa2, pa3].sort, PublishingPipelineState.expired_pipelines.sort
     end
   end
 
@@ -234,8 +278,7 @@ describe PublishingPipelineState do
       pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
       pa2 = PublishingPipelineState.create!(podcast: podcast2, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast2))
 
-      pa1.update_column(:created_at, 30.minutes.ago)
-      pa2.update_column(:created_at, 30.minutes.ago)
+      travel PublishingPipelineState::HEARTBEAT_STALE_AFTER + 1.second
 
       assert_equal [pa1, pa2].sort, PublishingPipelineState.expired_pipelines.sort
       PublishingPipelineState.expire_pipelines!
@@ -252,10 +295,45 @@ describe PublishingPipelineState do
       refute PublishingPipelineState.expired?(podcast2)
     end
 
+    it "leaves pipelines with a fresh heartbeat running" do
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.start!(podcast, pqi)
+
+      travel 1.hour
+      PublishingPipelineState.heartbeat!(podcast, pqi)
+      PublishingPipelineState.expire_pipelines!
+
+      assert_equal ["created", "started"], pqi.publishing_pipeline_states.order(:id).pluck(:status)
+      assert_equal pqi, PublishingQueueItem.current_unfinished_item(podcast)
+    end
+
+    it "does not expire a pipeline that beat after it was selected" do
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.start!(podcast, pqi)
+      travel PublishingPipelineState::HEARTBEAT_STALE_AFTER + 1.second
+      assert PublishingPipelineState.expired?(podcast)
+
+      PublishingPipelineState.heartbeat!(podcast, pqi)
+      assert_nil PublishingPipelineState.expire_if_stale!(podcast)
+      refute pqi.publishing_pipeline_states.expired.exists?
+    end
+
+    it "does not expire a replacement pipeline" do
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.start!(podcast, pqi)
+      travel PublishingPipelineState::HEARTBEAT_STALE_AFTER + 1.second
+      assert PublishingPipelineState.expired?(podcast)
+
+      PublishingPipelineState.complete!(podcast, pqi)
+      pqi2 = PublishingPipelineState.start_pipeline!(podcast)
+      assert_nil PublishingPipelineState.expire_if_stale!(podcast)
+      refute pqi2.publishing_pipeline_states.expired.exists?
+    end
+
     it "cleans up pipelines for deleted podcasts" do
       podcast = create(:podcast)
       pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
-      pa1.update_column(:created_at, 30.minutes.ago)
+      travel PublishingPipelineState::HEARTBEAT_STALE_AFTER + 1.second
 
       assert_equal [pa1].sort, PublishingPipelineState.expired_pipelines.sort
 

@@ -7,18 +7,21 @@ class PublishingPipelineState < ApplicationRecord
   # stop without writing any more state
   class LostOwnershipError < StandardError; end
 
-  # Handle the max timout for a publishing pipeline: Pub RSS job + Pub Apple job + a few extra minutes of flight
-  TIMEOUT = 30.minutes.freeze
+  # How long a pipeline can go without a heartbeat before the reaper treats its
+  # worker as dead. Running workers beat on every transition and wait-loop tick.
+  HEARTBEAT_STALE_AFTER = 10.minutes.freeze
 
   scope :unfinished_pipelines, -> { where(publishing_queue_item_id: PublishingQueueItem.all_unfinished_items) }
   scope :running_pipelines, -> { unfinished_pipelines }
 
+  # A pipeline with no heartbeat yet (job not started) ages from its created state
   scope :expired_pipelines, -> {
-                              pq_items = PublishingQueueItem
-                                .where(id: unfinished_pipelines.where("publishing_pipeline_states.created_at < ?", TIMEOUT.ago)
-                              .select(:publishing_queue_item_id))
+                              stale_items = unfinished_pipelines.created
+                                .joins(:publishing_queue_item)
+                                .where("COALESCE(publishing_queue_items.heartbeat_at, publishing_pipeline_states.created_at) < ?", HEARTBEAT_STALE_AFTER.ago)
+                                .select(:publishing_queue_item_id)
 
-                              where(publishing_queue_item: pq_items)
+                              where(publishing_queue_item_id: stale_items)
                             }
   scope :latest_failed_pipelines, -> {
                                     # Grab the latest attempted Publishing Item AND the latest failed Pub Item.
@@ -192,8 +195,16 @@ class PublishingPipelineState < ApplicationRecord
   def self.expire_pipelines!
     Podcast.with_deleted.where(id: expired_pipelines.select(:podcast_id)).each do |podcast|
       Rails.logger.tagged("PublishingPipeLineState.expire_pipelines!", "Podcast:#{podcast.id}") do
-        expire!(podcast)
+        expire_if_stale!(podcast)
       end
+    end
+  end
+
+  # Recheck under the lock: the worker may have beat, or the pipeline been
+  # replaced, since the reaper selected it
+  def self.expire_if_stale!(podcast)
+    podcast.with_publish_lock do
+      expire!(podcast) if expired?(podcast)
     end
   end
 
