@@ -30,18 +30,6 @@ describe Apple::ApiWaiting do
       assert_equal remaining, []
     end
 
-    it "beats the publishing heartbeat on each poll tick" do
-      beats = 0
-
-      PublishingContext.stub(:heartbeat!, -> { beats += 1 }) do
-        Apple::ApiWaiting.wait_for([1, 2, 3], wait_interval: 0.seconds) do |remaining|
-          remaining.drop(1)
-        end
-      end
-
-      assert_equal 3, beats
-    end
-
     it "times out" do
       (timed_out, remaining) = Apple::ApiWaiting.wait_for(["a", "b", "c"], wait_interval: 0.seconds, wait_timeout: 0.seconds) do |remaining|
         remaining

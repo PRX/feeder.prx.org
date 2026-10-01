@@ -149,6 +149,10 @@ module Apple
         sync_podcast_containers!(eps)
 
         media_infos = wait_for_versioned_source_metadata(eps)
+
+        # The short source metadata wait doesn't beat per tick, so beat before uploading
+        PublishingContext.heartbeat!
+
         episodes_with_source_metadata = media_infos.map(&:episode)
         unless Set.new(episodes_with_source_metadata) == Set.new(eps)
           raise "Source metadata response did not match requested episodes"
@@ -210,6 +214,9 @@ module Apple
         (timed_out, final_waiting) = Apple::ApiWaiting.wait_for(remaining_eps,
           wait_timeout: wait_timeout,
           wait_interval: wait_interval) do |waiting_eps|
+          # Prove the worker is alive, and abort if its pipeline was expired
+          PublishingContext.heartbeat!
+
           ready_episodes, still_waiting_episodes = partition_episodes_by_readiness(waiting_eps)
 
           if ready_episodes.any?
@@ -372,7 +379,11 @@ module Apple
         # Build a lookup from feeder episode ID to Apple::Episode
         feeder_id_to_apple_ep = eps.index_by(&:feeder_id)
 
+        # Called on each delivery wait tick
         stuck_check = ->(still_waiting_pdfs) {
+          # Prove the worker is alive, and abort if its pipeline was expired
+          PublishingContext.heartbeat!
+
           still_waiting_eps = still_waiting_pdfs.map { |pdf| feeder_id_to_apple_ep[pdf.episode_id] }.compact.uniq
           check_for_stuck_episodes(still_waiting_eps)
         }

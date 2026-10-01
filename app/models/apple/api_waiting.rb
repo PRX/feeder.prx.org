@@ -37,9 +37,6 @@ module Apple
 
         sleep(wait_interval)
 
-        # Prove the worker is alive, and abort if its pipeline was expired
-        PublishingContext.heartbeat!
-
         waited = current_time - t_beg
 
         if (current_time - last_log_time) >= LOG_INTERVAL

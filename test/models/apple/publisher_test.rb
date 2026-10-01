@@ -933,6 +933,47 @@ describe Apple::Publisher do
   end
 
   describe "#wait_for_upload_processing" do
+    it "beats on each delivery and processing wait tick" do
+      episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+      beats = 0
+      wait_stub = ->(_api, pdfs, &block) {
+        2.times { block.call(pdfs) }
+        [false, []]
+      }
+
+      PublishingContext.stub(:heartbeat!, -> { beats += 1 }) do
+        apple_publisher.stub(:check_for_stuck_episodes, nil) do
+          Apple::PodcastDeliveryFile.stub(:wait_for_delivery, wait_stub) do
+            Apple::PodcastDeliveryFile.stub(:wait_for_processing, wait_stub) do
+              Apple::PodcastContainer.stub(:poll_podcast_container_state, nil) do
+                apple_publisher.wait_for_upload_processing([episode])
+              end
+            end
+          end
+        end
+      end
+
+      assert_equal 4, beats
+    end
+
+    it "stops the delivery wait once ownership is lost" do
+      episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+      wait_stub = ->(_api, pdfs, &block) {
+        block.call(pdfs)
+        flunk "kept waiting after losing ownership"
+      }
+
+      PublishingContext.stub(:heartbeat!, -> { raise PublishingPipelineState::LostOwnershipError }) do
+        apple_publisher.stub(:check_for_stuck_episodes, ->(*) { flunk "stuck check after losing ownership" }) do
+          Apple::PodcastDeliveryFile.stub(:wait_for_delivery, wait_stub) do
+            assert_raises(PublishingPipelineState::LostOwnershipError) do
+              apple_publisher.wait_for_upload_processing([episode])
+            end
+          end
+        end
+      end
+    end
+
     it "should poll the podcast container state" do
       mock = Minitest::Mock.new
       mock.expect(:call, [], [apple_publisher.api, []])
@@ -1136,6 +1177,46 @@ describe Apple::Publisher do
       Apple::ApiWaiting.stub(:wait_for, wait_for_stub) do
         assert_raises(Apple::AssetStateTimeoutError) do
           apple_publisher.wait_for_asset_state(episodes)
+        end
+      end
+    end
+
+    it "beats on each wait tick before polling Apple" do
+      calls = []
+      wait_for_stub = ->(remaining, **_opts, &block) {
+        2.times { block.call(remaining) }
+        [false, []]
+      }
+
+      PublishingContext.stub(:heartbeat!, -> { calls << :beat }) do
+        Apple::ApiWaiting.stub(:wait_for, wait_for_stub) do
+          apple_publisher.stub(:partition_episodes_by_readiness, ->(eps) {
+            calls << :poll
+            [[], eps]
+          }) do
+            apple_publisher.stub(:check_for_stuck_episodes, nil) do
+              apple_publisher.wait_for_asset_state(episodes)
+            end
+          end
+        end
+      end
+
+      assert_equal [:beat, :poll, :beat, :poll], calls
+    end
+
+    it "stops waiting once ownership is lost" do
+      wait_for_stub = ->(remaining, **_opts, &block) {
+        block.call(remaining)
+        flunk "kept waiting after losing ownership"
+      }
+
+      PublishingContext.stub(:heartbeat!, -> { raise PublishingPipelineState::LostOwnershipError }) do
+        Apple::ApiWaiting.stub(:wait_for, wait_for_stub) do
+          apple_publisher.stub(:partition_episodes_by_readiness, ->(*) { flunk "polled after losing ownership" }) do
+            assert_raises(PublishingPipelineState::LostOwnershipError) do
+              apple_publisher.wait_for_asset_state(episodes)
+            end
+          end
         end
       end
     end
@@ -1577,6 +1658,25 @@ describe Apple::Publisher do
         end
 
         assert_equal [:beat, :upload, :beat, :delivery], calls
+      end
+
+      it "beats between the source metadata wait and uploading" do
+        calls = []
+        media_info = OpenStruct.new(episode: episode)
+        steps = %i[prepare_for_delivery! sync_podcast_containers! sync_podcast_deliveries! sync_podcast_delivery_files!
+          mark_delivery_files_uploaded! update_audio_container_reference! mark_as_uploaded! increment_asset_wait! clear_asset_wait!]
+        steps.each { |step| apple_publisher.define_singleton_method(step) { |*| } }
+        apple_publisher.define_singleton_method(:wait_for_versioned_source_metadata) do |_eps|
+          calls << :metadata
+          [media_info]
+        end
+        apple_publisher.define_singleton_method(:execute_upload_operations!) { |_infos| calls << :upload }
+
+        PublishingContext.stub(:heartbeat!, -> { calls << :beat }) do
+          apple_publisher.upload_media!([episode])
+        end
+
+        assert_equal [:metadata, :beat, :upload], calls
       end
 
       it "stops before the next batch once ownership is lost" do

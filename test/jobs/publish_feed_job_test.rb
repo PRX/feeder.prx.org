@@ -269,16 +269,17 @@ describe PublishFeedJob do
         assert_nil PublishingContext.publishing_queue_item
       end
 
-      it "aborts from inside an apple wait loop once its pipeline was expired" do
+      it "aborts when a wait-loop heartbeat finds its pipeline expired" do
         old_pqi = PublishingPipelineState.start_pipeline!(podcast)
         new_pqi = nil
         ticks = 0
 
         # The reaper expires the pipeline and a retry starts a new one while
-        # the old worker waits on Apple
+        # the old worker waits on Apple, beating each tick like the publisher
         waiting = -> {
           Apple::ApiWaiting.wait_for([:ep], wait_interval: 0.seconds) do |remaining|
             ticks += 1
+            PublishingContext.heartbeat!
             PublishingPipelineState.expire!(podcast)
             new_pqi = PublishingPipelineState.start_pipeline!(podcast)
             remaining
@@ -294,7 +295,7 @@ describe PublishFeedJob do
           end
         end
 
-        assert_equal 1, ticks
+        assert_equal 2, ticks
         assert_equal ["created", "started", "expired"], old_pqi.publishing_pipeline_states.order(:id).pluck(:status)
         assert_equal ["created"], new_pqi.publishing_pipeline_states.pluck(:status)
         assert_nil new_pqi.reload.heartbeat_at
