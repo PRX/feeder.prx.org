@@ -131,6 +131,12 @@ class Podcast < ApplicationRecord
     end
   end
 
+  # A locked feed's Apple connection or delivery depends on this
+  # podcast's credential.
+  def apple_key_locked?
+    feeds.where(edit_locked: true).apple_connected.exists?
+  end
+
   def apple_key_belongs_to_account
     if apple_key && apple_key.account_id != account_id
       errors.add(:apple_key, "must belong to the podcast's PRX account")

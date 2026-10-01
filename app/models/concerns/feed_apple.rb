@@ -22,6 +22,9 @@ module FeedApple
     before_save :connect_apple_show
     after_save :disconnect_apple_show
     before_destroy :protect_apple_delivery_connection, prepend: true
+
+    # Feeds connected to an Apple show or delivering to one.
+    scope :apple_connected, -> { where(id: Apple::ShowFeedBinding.select(:feed_id)).or(where(id: Apple::DelegatedDeliveryConfig.select(:feed_id))) }
   end
 
   # The feed form's Apple settings, saved with the feed.
