@@ -122,6 +122,7 @@ module Apple
         eps
           .filter(&:needs_upload?)
           .each_slice(PUBLISH_CHUNK_LEN) do |batch|
+          PublishingContext.heartbeat!
           upload_media!(batch)
         end
 
@@ -129,6 +130,7 @@ module Apple
           .filter(&:needs_delivery_processing?)
           .filter(&:offset_published?)
           .each_slice(PUBLISH_CHUNK_LEN) do |batch|
+          PublishingContext.heartbeat!
           process_delivery!(batch)
         end
 

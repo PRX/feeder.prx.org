@@ -217,7 +217,7 @@ describe PublishingQueueItem do
         {"id" => pod1_pqi2.id, "podcast_id" => podcast.id, "last_pipeline_state" => nil, "status" => nil},
         {"id" => pod1_pqi3.id, "podcast_id" => podcast.id, "last_pipeline_state" => "started", "status" => 1},
         {"id" => pod2_pqi1.id, "podcast_id" => podcast2.id, "last_pipeline_state" => "created", "status" => 0}
-      ], PublishingQueueItem.delivery_status.order(podcast_id: :asc, created_at: :asc).as_json(except: [:created_at, :updated_at, :job_id])
+      ], PublishingQueueItem.delivery_status.order(podcast_id: :asc, created_at: :asc).as_json(except: [:created_at, :updated_at, :job_id, :heartbeat_at])
     end
   end
 end

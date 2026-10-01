@@ -1550,6 +1550,48 @@ describe Apple::Publisher do
       assert_equal :stuck_check, calls.first
     end
 
+    describe "heartbeats" do
+      def with_batches(episode, &block)
+        episode.stub(:needs_upload?, true) do
+          episode.stub(:needs_delivery_processing?, true) do
+            episode.stub(:offset_published?, true) do
+              episode.feeder_episode.stub(:enclosure_ready?, true, &block)
+            end
+          end
+        end
+      end
+
+      it "beats before each upload and delivery batch" do
+        calls = []
+
+        with_batches(episode) do
+          PublishingContext.stub(:heartbeat!, -> { calls << :beat }) do
+            apple_publisher.stub(:upload_media!, ->(*) { calls << :upload }) do
+              apple_publisher.stub(:process_delivery!, ->(*) { calls << :delivery }) do
+                apple_publisher.stub(:raise_delivery_processing_errors, nil) do
+                  apple_publisher.upload_and_process!([episode])
+                end
+              end
+            end
+          end
+        end
+
+        assert_equal [:beat, :upload, :beat, :delivery], calls
+      end
+
+      it "stops before the next batch once ownership is lost" do
+        with_batches(episode) do
+          PublishingContext.stub(:heartbeat!, -> { raise PublishingPipelineState::LostOwnershipError }) do
+            apple_publisher.stub(:upload_media!, ->(*) { flunk "uploaded after losing ownership" }) do
+              assert_raises(PublishingPipelineState::LostOwnershipError) do
+                apple_publisher.upload_and_process!([episode])
+              end
+            end
+          end
+        end
+      end
+    end
+
     it "raises for already stuck episodes before upload or delivery work starts" do
       episode.delivery_statuses.destroy_all
       create(:apple_episode_delivery_status,

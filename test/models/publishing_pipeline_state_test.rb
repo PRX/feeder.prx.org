@@ -109,6 +109,42 @@ describe PublishingPipelineState do
     end
   end
 
+  describe "heartbeat" do
+    it "stamps the owner's queue item" do
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
+      assert_nil pqi.reload.heartbeat_at
+
+      assert_no_difference "PublishingPipelineState.count" do
+        PublishingPipelineState.heartbeat!(podcast, pqi)
+      end
+      first = pqi.reload.heartbeat_at
+      refute_nil first
+
+      # Each beat renews the stamp
+      travel 1.minute
+      PublishingPipelineState.heartbeat!(podcast, pqi)
+      assert_operator pqi.reload.heartbeat_at, :>, first
+    end
+
+    it "raises and stamps nothing when the item is not the current item" do
+      old_pqi = PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.expire!(podcast)
+      new_pqi = PublishingPipelineState.start_pipeline!(podcast)
+
+      assert_raises(PublishingPipelineState::LostOwnershipError) { PublishingPipelineState.heartbeat!(podcast, old_pqi) }
+      assert_nil old_pqi.reload.heartbeat_at
+      assert_nil new_pqi.reload.heartbeat_at
+    end
+
+    it "is stamped by state transitions" do
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
+      assert_nil pqi.reload.heartbeat_at
+
+      assert PublishingPipelineState.start!(podcast, pqi).started?
+      refute_nil pqi.reload.heartbeat_at
+    end
+  end
+
   describe ".expire!" do
     it "expires the current item without an owner" do
       pqi = PublishingPipelineState.start_pipeline!(podcast)

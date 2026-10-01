@@ -238,8 +238,20 @@ class PublishingPipelineState < ApplicationRecord
   def self.state_transition(podcast, to_state, pub_item)
     podcast.with_publish_lock do
       assert_owner!(podcast, pub_item)
-      create_state!(podcast, to_state, pub_item)
+      create_state!(podcast, to_state, pub_item).tap { stamp_heartbeat!(pub_item) }
     end
+  end
+
+  # Worker liveness: stamped on the queue item, so pipeline states stay append-only
+  def self.heartbeat!(podcast, pub_item)
+    podcast.with_publish_lock do
+      assert_owner!(podcast, pub_item)
+      stamp_heartbeat!(pub_item)
+    end
+  end
+
+  def self.stamp_heartbeat!(pqi)
+    pqi.update_column(:heartbeat_at, Time.now)
   end
 
   def self.create_state!(podcast, to_state, pqi)
@@ -255,5 +267,5 @@ class PublishingPipelineState < ApplicationRecord
     self.class.where(publishing_queue_item: publishing_queue_item).where(status: self.class.terminal_status_codes).exists?
   end
 
-  private_class_method :state_transition, :create_state!
+  private_class_method :state_transition, :create_state!, :stamp_heartbeat!
 end
