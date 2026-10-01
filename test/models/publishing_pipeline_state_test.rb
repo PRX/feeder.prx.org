@@ -64,10 +64,61 @@ describe PublishingPipelineState do
       refute PublishingPipelineState.last.complete?
 
       assert_difference "PublishingPipelineState.count", 1 do
-        res = PublishingPipelineState.complete!(podcast)
+        res = PublishingPipelineState.complete!(podcast, pqi)
         assert_equal res.class, PublishingPipelineState
         assert res.complete?
       end
+    end
+  end
+
+  describe "ownership" do
+    it "allows the worker for the current item to transition" do
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
+
+      assert_nil PublishingPipelineState.assert_owner!(podcast, pqi)
+      assert PublishingPipelineState.start!(podcast, pqi).started?
+    end
+
+    it "raises and writes no state when the item is not the current item" do
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
+      other = PublishingQueueItem.create!(podcast: podcast)
+
+      assert_no_difference "PublishingPipelineState.count" do
+        assert_raises(PublishingPipelineState::LostOwnershipError) { PublishingPipelineState.assert_owner!(podcast, other) }
+        assert_raises(PublishingPipelineState::LostOwnershipError) { PublishingPipelineState.complete!(podcast, other) }
+        assert_raises(PublishingPipelineState::LostOwnershipError) { PublishingPipelineState.error!(podcast, nil) }
+      end
+      assert_equal "created", pqi.reload.last_pipeline_state
+    end
+
+    it "keeps an expired worker from writing onto the newer pipeline" do
+      old_pqi = PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.start!(podcast, old_pqi)
+
+      # the reaper expires it, and a retry starts a new pipeline
+      PublishingPipelineState.expire!(podcast)
+      new_pqi = PublishingPipelineState.start_pipeline!(podcast)
+      assert_equal new_pqi, PublishingQueueItem.current_unfinished_item(podcast)
+
+      [:start!, :publish_rss!, :error_rss!, :publish_integration!, :error_integration!, :complete!, :error!, :retry!].each do |transition|
+        assert_raises(PublishingPipelineState::LostOwnershipError) { PublishingPipelineState.send(transition, podcast, old_pqi) }
+      end
+
+      assert_equal ["created"], new_pqi.publishing_pipeline_states.pluck(:status)
+      assert_equal ["created", "started", "expired"], old_pqi.publishing_pipeline_states.order(:id).pluck(:status)
+    end
+  end
+
+  describe ".expire!" do
+    it "expires the current item without an owner" do
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
+
+      assert PublishingPipelineState.expire!(podcast).expired?
+      assert_equal "expired", pqi.reload.last_pipeline_state
+    end
+
+    it "does nothing when there is no running pipeline" do
+      assert_nil PublishingPipelineState.expire!(podcast)
     end
   end
 
@@ -95,7 +146,7 @@ describe PublishingPipelineState do
   describe ".expired_pipelines" do
     it "returns expired publishing pipelines" do
       pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
-      pa2 = PublishingPipelineState.start!(podcast)
+      pa2 = PublishingPipelineState.start!(podcast, pa1.publishing_queue_item)
 
       assert_equal [pa1, pa2].sort, PublishingPipelineState.unfinished_pipelines.sort
       assert PublishingPipelineState.expired_pipelines.empty?
@@ -191,8 +242,8 @@ describe PublishingPipelineState do
       # Create a publishing queue item and associated pipeline state
       pqi1 = PublishingQueueItem.ensure_queued!(podcast)
       _s1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi1)
-      PublishingPipelineState.error_integration!(podcast)
-      PublishingPipelineState.complete!(podcast)
+      PublishingPipelineState.error_integration!(podcast, pqi1)
+      PublishingPipelineState.complete!(podcast, pqi1)
 
       # Verify that the intermediate error is included in the latest failed pipelines
       assert_equal [podcast], PublishingPipelineState.latest_failed_podcasts
@@ -201,7 +252,7 @@ describe PublishingPipelineState do
       # Create another publishing queue item and associated pipeline state
       pqi2 = PublishingQueueItem.ensure_queued!(podcast)
       _s2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi2)
-      PublishingPipelineState.error!(podcast)
+      PublishingPipelineState.error!(podcast, pqi2)
 
       # Verify that the terminal error is included in the latest failed pipelines
       assert_equal [podcast], PublishingPipelineState.latest_failed_podcasts
@@ -210,7 +261,7 @@ describe PublishingPipelineState do
       # Verify that a successful pipeline is not included in the latest failed pipelines
       pqi3 = PublishingQueueItem.ensure_queued!(podcast)
       _s3 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi3)
-      PublishingPipelineState.complete!(podcast)
+      PublishingPipelineState.complete!(podcast, pqi3)
 
       assert_equal [].sort, PublishingPipelineState.latest_failed_pipelines.where(podcast: podcast)
       assert ["created", "complete"], PublishingPipelineState.latest_pipelines.where(podcast: podcast).pluck(:status)
@@ -219,11 +270,11 @@ describe PublishingPipelineState do
 
   describe ".retry_failed_pipelines!" do
     it "should retry failed pipelines" do
-      PublishingPipelineState.start_pipeline!(podcast)
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
       assert_equal ["created"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
 
       # it fails
-      PublishingPipelineState.error!(podcast)
+      PublishingPipelineState.error!(podcast, pqi)
       assert_equal ["created", "error"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
 
       # it retries
@@ -232,14 +283,14 @@ describe PublishingPipelineState do
     end
 
     it "retries pipelines with intermediate error_integration and non-error terminal status" do
-      PublishingPipelineState.start_pipeline!(podcast)
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
       assert_equal ["created"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
 
       # it fails
-      PublishingPipelineState.error_integration!(podcast)
+      PublishingPipelineState.error_integration!(podcast, pqi)
       assert_equal ["created", "error_integration"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
 
-      PublishingPipelineState.complete!(podcast)
+      PublishingPipelineState.complete!(podcast, pqi)
       assert_equal ["created", "error_integration", "complete"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
 
       # it retries
@@ -249,13 +300,13 @@ describe PublishingPipelineState do
 
     it "ignores previously errored pipelines back in the queue" do
       # A failed pipeline
-      PublishingPipelineState.start_pipeline!(podcast)
-      PublishingPipelineState.error!(podcast)
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.error!(podcast, pqi)
       assert_equal ["created", "error"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
 
       # A new pipeline
-      PublishingPipelineState.start_pipeline!(podcast)
-      PublishingPipelineState.publish_rss!(podcast)
+      pqi2 = PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.publish_rss!(podcast, pqi2)
       assert_equal ["created", "published_rss"], PublishingPipelineState.latest_pipeline(podcast).order(:id).map(&:status)
       publishing_item = PublishingPipelineState.latest_pipeline(podcast).map(&:publishing_queue_item_id).uniq
 
@@ -407,7 +458,6 @@ describe PublishingPipelineState do
             end
           end
         end
-        PublishingPipelineState.complete!(podcast)
         assert_equal(
           ["complete", "published_rss", "published_rss", "published_rss", "published_integration", "started", "created"],
           PublishingPipelineState.order(id: :desc).pluck(:status)
