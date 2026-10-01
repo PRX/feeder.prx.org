@@ -29,6 +29,24 @@ describe Podcast do
     assert key.reload.destroy
   end
 
+  describe "#apple_key_locked?" do
+    it "is locked only by a locked feed connected to Apple" do
+      create(:feed, podcast: podcast, edit_locked: true)
+      feed = create(:public_feed, podcast: podcast)
+      create(:apple_show_feed_binding, feed: feed)
+      refute podcast.apple_key_locked?
+
+      feed.update_column(:edit_locked, true)
+      assert podcast.apple_key_locked?
+    end
+
+    it "is locked by a locked feed delivering to Apple" do
+      create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast, edit_locked: true))
+
+      assert podcast.apple_key_locked?
+    end
+  end
+
   it "has a default feed" do
     podcast = Podcast.new.tap(&:valid?)
     assert podcast.default_feed.present?

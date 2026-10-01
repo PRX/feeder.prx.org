@@ -100,6 +100,21 @@ class PodcastIntegrationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "body", text: /cannot access the connected Apple shows: show-1/
   end
 
+  test "locks the credential while a locked feed uses Apple" do
+    key = create(:apple_key, account_id: 123)
+    podcast.update!(apple_key: key)
+    create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast, edit_locked: true))
+
+    get podcast_integrations_url(podcast)
+    assert_select "select[name='podcast[apple_key_id]'][disabled]"
+    assert_select "input[type=submit][value='Save Credential']", count: 0
+    assert_select ".alert-danger", text: /A locked feed uses this podcast's Apple credential/
+
+    patch podcast_integrations_url(podcast), params: {podcast: {apple_key_id: ""}}
+    assert_response :forbidden
+    assert_equal key, podcast.reload.apple_key
+  end
+
   test "rejects access from another account" do
     podcast.update!(prx_account_uri: "/api/v1/accounts/456")
 
