@@ -1,5 +1,7 @@
 module Apple
   class Publisher < Integrations::Base::Publisher
+    include PublishingHeartbeat
+
     delegate :public_feed, :private_feed, :api, to: :show
 
     EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
@@ -20,13 +22,6 @@ module Apple
 
     def podcast
       public_feed.podcast
-    end
-
-    # Calls the publish job's heartbeat block, given to publish!. It proves the
-    # worker is alive and raises LostOwnershipError once its pipeline was
-    # expired. Does nothing outside publish!.
-    def heartbeat!
-      @heartbeat&.call
     end
 
     def poll_all_episodes!
@@ -56,33 +51,30 @@ module Apple
       end
     end
 
-    # The optional block is the publish job's heartbeat (see heartbeat!)
+    # The optional block is the publish job's heartbeat, called on entry to
+    # publisher methods (see PublishingHeartbeat)
     def publish!(&heartbeat)
       @heartbeat = heartbeat
-      heartbeat!
+      @last_beat_at = nil
+
       show.sync!
-      heartbeat!
       raise "Missing Show!" unless show.apple_id.present?
 
       sync_drafting_episode_states!
-      heartbeat!
 
       # Archive deleted or unpublished episodes.
       # These episodes are no longer in the private feed.
       poll_episodes!(episodes_to_archive)
       archive!(episodes_to_archive)
-      heartbeat!
 
       # Un-archive episodes that are re-published.
       # These episodes are in the private feed.
       # Unarchived episodes are converted to "DRAFTING" state.
       poll_episodes!(episodes_to_unarchive)
       unarchive!(episodes_to_unarchive)
-      heartbeat!
 
       # Calculate the episodes_to_sync based on the current state of the private feed
       upload_and_process!(episodes_to_sync)
-      heartbeat!
 
       # success
       Apple::SyncLog.log!(
@@ -91,8 +83,6 @@ module Apple
         external_id: show.apple_id,
         api_response: {success: true}
       )
-    ensure
-      @heartbeat = nil
     end
 
     def sync_drafting_episode_states!
@@ -139,7 +129,6 @@ module Apple
         eps
           .filter(&:needs_upload?)
           .each_slice(PUBLISH_CHUNK_LEN) do |batch|
-          heartbeat!
           upload_media!(batch)
         end
 
@@ -147,7 +136,6 @@ module Apple
           .filter(&:needs_delivery_processing?)
           .filter(&:offset_published?)
           .each_slice(PUBLISH_CHUNK_LEN) do |batch|
-          heartbeat!
           process_delivery!(batch)
         end
 
@@ -166,10 +154,6 @@ module Apple
         sync_podcast_containers!(eps)
 
         media_infos = wait_for_versioned_source_metadata(eps)
-
-        # The short source metadata wait doesn't beat per tick, so beat before uploading
-        heartbeat!
-
         episodes_with_source_metadata = media_infos.map(&:episode)
         unless Set.new(episodes_with_source_metadata) == Set.new(eps)
           raise "Source metadata response did not match requested episodes"
@@ -231,9 +215,6 @@ module Apple
         (timed_out, final_waiting) = Apple::ApiWaiting.wait_for(remaining_eps,
           wait_timeout: wait_timeout,
           wait_interval: wait_interval) do |waiting_eps|
-          # Prove the worker is alive, and abort if its pipeline was expired
-          heartbeat!
-
           ready_episodes, still_waiting_episodes = partition_episodes_by_readiness(waiting_eps)
 
           if ready_episodes.any?
@@ -296,7 +277,6 @@ module Apple
     def archive!(eps = episodes_to_archive)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |chunked_eps|
-          heartbeat!
           res = Apple::Episode.archive(api, show, chunked_eps)
           Rails.logger.info("Archived #{res.length} episodes.")
         end
@@ -306,7 +286,6 @@ module Apple
     def unarchive!(eps = episodes_to_unarchive)
       Rails.logger.tagged("Apple::Publisher##{__method__}") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |chunked_eps|
-          heartbeat!
           res = Apple::Episode.unarchive(api, show, chunked_eps)
           Rails.logger.info("Un-Archived #{res.length} episodes.")
         end
@@ -398,11 +377,7 @@ module Apple
         # Build a lookup from feeder episode ID to Apple::Episode
         feeder_id_to_apple_ep = eps.index_by(&:feeder_id)
 
-        # Called on each delivery wait tick
         stuck_check = ->(still_waiting_pdfs) {
-          # Prove the worker is alive, and abort if its pipeline was expired
-          heartbeat!
-
           still_waiting_eps = still_waiting_pdfs.map { |pdf| feeder_id_to_apple_ep[pdf.episode_id] }.compact.uniq
           check_for_stuck_episodes(still_waiting_eps)
         }
@@ -719,5 +694,7 @@ module Apple
 
       [ready_acc, waiting_acc]
     end
+
+    heartbeat_around_all_methods
   end
 end
