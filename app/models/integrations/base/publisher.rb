@@ -7,8 +7,6 @@ module Integrations
 
       attr_accessor :show
 
-      # The optional heartbeat is the publish job's, called on entry to
-      # publisher methods (see PublishingHeartbeat)
       def initialize(show:, heartbeat: nil)
         @show = show
         @heartbeat = heartbeat
