@@ -14,6 +14,10 @@ describe Apple::Publisher do
 
   let(:publisher) { apple_publisher }
 
+  def with_heartbeat(heartbeat)
+    yield Apple::Publisher.new(show: apple_publisher.show, heartbeat: heartbeat)
+  end
+
   before do
     stub_request(:get, "https://aardvark.prx.org/countriesAndRegions?limit=200")
       .to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
@@ -933,6 +937,50 @@ describe Apple::Publisher do
   end
 
   describe "#wait_for_upload_processing" do
+    it "beats on each delivery and processing wait tick" do
+      episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+      beats = 0
+      wait_stub = ->(_api, _pdfs, &block) {
+        2.times do
+          travel PublishingHeartbeat::HEARTBEAT_INTERVAL + 1.second
+          block.call([])
+        end
+        [false, []]
+      }
+
+      with_heartbeat(-> { beats += 1 }) do |publisher|
+        Apple::PodcastDeliveryFile.stub(:wait_for_delivery, wait_stub) do
+          Apple::PodcastDeliveryFile.stub(:wait_for_processing, wait_stub) do
+            Apple::PodcastContainer.stub(:poll_podcast_container_state, nil) do
+              publisher.wait_for_upload_processing([episode])
+            end
+          end
+        end
+      end
+
+      assert_equal 5, beats
+    end
+
+    it "stops the delivery wait once ownership is lost" do
+      episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+      ticking = false
+      heartbeat = -> { raise PublishingPipelineState::LostOwnershipError if ticking }
+      wait_stub = ->(_api, _pdfs, &block) {
+        ticking = true
+        travel PublishingHeartbeat::HEARTBEAT_INTERVAL + 1.second
+        block.call([])
+        flunk "kept waiting after losing ownership"
+      }
+
+      with_heartbeat(heartbeat) do |publisher|
+        Apple::PodcastDeliveryFile.stub(:wait_for_delivery, wait_stub) do
+          assert_raises(PublishingPipelineState::LostOwnershipError) do
+            publisher.wait_for_upload_processing([episode])
+          end
+        end
+      end
+    end
+
     it "should poll the podcast container state" do
       mock = Minitest::Mock.new
       mock.expect(:call, [], [apple_publisher.api, []])
@@ -1136,6 +1184,57 @@ describe Apple::Publisher do
       Apple::ApiWaiting.stub(:wait_for, wait_for_stub) do
         assert_raises(Apple::AssetStateTimeoutError) do
           apple_publisher.wait_for_asset_state(episodes)
+        end
+      end
+    end
+
+    it "beats once per wait tick even when probing multiple batches" do
+      beats = 0
+      probes = []
+      waiting = episodes * 26
+      wait_for_stub = ->(remaining, **_opts, &block) {
+        2.times do
+          travel PublishingHeartbeat::HEARTBEAT_INTERVAL + 1.second
+          block.call(remaining)
+        end
+        [false, []]
+      }
+      probe = ->(_api, batch) {
+        probes << batch.length
+        [[], batch]
+      }
+
+      with_heartbeat(-> { beats += 1 }) do |publisher|
+        Apple::ApiWaiting.stub(:wait_for, wait_for_stub) do
+          Apple::Episode.stub(:probe_asset_state, probe) do
+            publisher.stub(:check_for_stuck_episodes, nil) do
+              publisher.wait_for_asset_state(waiting)
+            end
+          end
+        end
+      end
+
+      assert_equal 3, beats
+      assert_equal [25, 25, 2] * 2, probes
+    end
+
+    it "stops waiting once ownership is lost" do
+      ticking = false
+      heartbeat = -> { raise PublishingPipelineState::LostOwnershipError if ticking }
+      wait_for_stub = ->(remaining, **_opts, &block) {
+        ticking = true
+        travel PublishingHeartbeat::HEARTBEAT_INTERVAL + 1.second
+        block.call(remaining)
+        flunk "kept waiting after losing ownership"
+      }
+
+      with_heartbeat(heartbeat) do |publisher|
+        Apple::ApiWaiting.stub(:wait_for, wait_for_stub) do
+          Apple::Episode.stub(:probe_asset_state, ->(*) { flunk "polled after losing ownership" }) do
+            assert_raises(PublishingPipelineState::LostOwnershipError) do
+              publisher.wait_for_asset_state(episodes)
+            end
+          end
         end
       end
     end
@@ -1521,6 +1620,63 @@ describe Apple::Publisher do
       end
 
       refute episode.has_unlinked_container?
+    end
+  end
+
+  describe "heartbeats" do
+    it "checks ownership before each publish step" do
+      with_heartbeat(-> { raise PublishingPipelineState::LostOwnershipError }) do |publisher|
+        %i[api sync_drafting_episode_states! archive! unarchive! upload_and_process! upload_media!
+          process_delivery! partition_episodes_by_readiness check_for_stuck_episodes].each do |step|
+          assert_raises(PublishingPipelineState::LostOwnershipError) { publisher.send(step) }
+        end
+      end
+    end
+
+    it "stops after show setup loses ownership before doing draft work" do
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
+      heartbeat = -> { PublishingPipelineState.heartbeat!(pqi) }
+      publisher = Apple::Publisher.new(show: apple_publisher.show, heartbeat: heartbeat)
+      expire = -> {
+        assert_equal podcast, publisher.podcast
+        refute_nil pqi.reload.heartbeat_at
+        PublishingPipelineState.expire!(podcast)
+        travel PublishingHeartbeat::HEARTBEAT_INTERVAL + 1.second
+      }
+      apple_publisher.show.stub(:sync!, expire) do
+        apple_publisher.show.stub(:apple_id, "123") do
+          apple_publisher.show.stub(:draft_upload_candidates, -> { flunk "draft work after ownership loss" }) do
+            assert_raises(PublishingPipelineState::LostOwnershipError) do
+              publisher.publish!
+            end
+          end
+        end
+      end
+
+      assert_equal ["created", "expired"], pqi.publishing_pipeline_states.order(:id).pluck(:status)
+    end
+
+    [:archive, :unarchive].each do |operation|
+      it "stops #{operation} after ownership is lost during the first batch" do
+        episodes = (1..30).map { |id| OpenStruct.new(feeder_id: id) }
+        processed = []
+        heartbeat = -> { raise PublishingPipelineState::LostOwnershipError unless processed.empty? }
+        apply = ->(_api, _show, batch) {
+          processed.concat(batch.map(&:feeder_id))
+          travel PublishingHeartbeat::HEARTBEAT_INTERVAL + 1.second
+          []
+        }
+
+        with_heartbeat(heartbeat) do |publisher|
+          Apple::Episode.stub(operation, apply) do
+            assert_raises(PublishingPipelineState::LostOwnershipError) do
+              publisher.public_send(:"#{operation}!", episodes)
+            end
+          end
+        end
+
+        assert_equal (1..25).to_a, processed
+      end
     end
   end
 

@@ -3,18 +3,26 @@ class PublishingPipelineState < ApplicationRecord
   FAILURE_STATUSES = [:error, :expired, :error_integration, :retry].freeze
   UNIQUE_STATUSES = TERMINAL_STATUSES + [:created, :started]
 
-  # Handle the max timout for a publishing pipeline: Pub RSS job + Pub Apple job + a few extra minutes of flight
-  TIMEOUT = 30.minutes.freeze
+  # Raised when a worker's pipeline was expired or replaced; the worker must
+  # stop without writing any more state. Not a StandardError, so ordinary
+  # `rescue => e` handlers let it through and only explicit rescues catch it.
+  class LostOwnershipError < Exception; end # standard:disable Lint/InheritException
+
+  # How long a pipeline can go without a heartbeat before the reaper treats its
+  # worker as dead. Running workers beat on every transition and wait-loop tick.
+  HEARTBEAT_STALE_AFTER = 10.minutes.freeze
 
   scope :unfinished_pipelines, -> { where(publishing_queue_item_id: PublishingQueueItem.all_unfinished_items) }
   scope :running_pipelines, -> { unfinished_pipelines }
 
+  # A pipeline with no heartbeat yet (job not started) ages from its created state
   scope :expired_pipelines, -> {
-                              pq_items = PublishingQueueItem
-                                .where(id: unfinished_pipelines.where("publishing_pipeline_states.created_at < ?", TIMEOUT.ago)
-                              .select(:publishing_queue_item_id))
+                              stale_items = unfinished_pipelines.created
+                                .joins(:publishing_queue_item)
+                                .where("COALESCE(publishing_queue_items.heartbeat_at, publishing_pipeline_states.created_at) < ?", HEARTBEAT_STALE_AFTER.ago)
+                                .select(:publishing_queue_item_id)
 
-                              where(publishing_queue_item: pq_items)
+                              where(publishing_queue_item_id: stale_items)
                             }
   scope :latest_failed_pipelines, -> {
                                     # Grab the latest attempted Publishing Item AND the latest failed Pub Item.
@@ -139,48 +147,65 @@ class PublishingPipelineState < ApplicationRecord
     expired_pipelines.where(podcast: podcast).exists?
   end
 
-  def self.start!(podcast)
-    state_transition(podcast, :started)
+  def self.start!(pub_item)
+    state_transition(:started, pub_item)
   end
 
-  def self.publish_rss!(podcast)
-    state_transition(podcast, :published_rss)
+  def self.publish_rss!(pub_item)
+    state_transition(:published_rss, pub_item)
   end
 
-  def self.error_rss!(podcast)
-    state_transition(podcast, :error_rss)
+  def self.error_rss!(pub_item)
+    state_transition(:error_rss, pub_item)
   end
 
   # TODO: do something with the integration type?
-  def self.publish_integration!(podcast)
-    state_transition(podcast, :published_integration)
+  def self.publish_integration!(pub_item)
+    state_transition(:published_integration, pub_item)
   end
 
-  def self.error_integration!(podcast)
-    state_transition(podcast, :error_integration)
+  def self.error_integration!(pub_item)
+    state_transition(:error_integration, pub_item)
   end
 
-  def self.complete!(podcast)
-    state_transition(podcast, :complete)
+  def self.complete!(pub_item)
+    state_transition(:complete, pub_item)
   end
 
-  def self.error!(podcast)
-    state_transition(podcast, :error)
+  def self.error!(pub_item)
+    state_transition(:error, pub_item)
   end
 
+  # The reaper expires whatever is currently running, with no owner check
   def self.expire!(podcast)
-    state_transition(podcast, :expired)
+    podcast.with_publish_lock do
+      pqi = PublishingQueueItem.current_unfinished_item(podcast)
+      if pqi.present?
+        create_state!(podcast, :expired, pqi)
+      else
+        Rails.logger.error("Podcast #{podcast.id} has no unfinished work, cannot transition state", {podcast_id: podcast.id, to_state: :expired})
+        nil
+      end
+    end
   end
 
-  def self.retry!(podcast)
-    state_transition(podcast, :retry)
+  def self.retry!(pub_item)
+    state_transition(:retry, pub_item)
   end
 
   def self.expire_pipelines!
     Podcast.with_deleted.where(id: expired_pipelines.select(:podcast_id)).each do |podcast|
       Rails.logger.tagged("PublishingPipeLineState.expire_pipelines!", "Podcast:#{podcast.id}") do
-        expire!(podcast)
+        expire_if_stale!(podcast)
       end
+    end
+  end
+
+  # Recheck under the lock: the worker may have beat, or the pipeline been
+  # replaced, since the reaper selected it
+  def self.expire_if_stale!(podcast)
+    podcast.with_publish_lock do
+      expire!(podcast) if expired?(podcast)
     end
   end
 
@@ -210,27 +235,56 @@ class PublishingPipelineState < ApplicationRecord
     most_recent_state(podcast)&.complete?
   end
 
-  def self.state_transition(podcast, to_state)
-    podcast.with_publish_lock do
-      pqi = PublishingQueueItem.current_unfinished_item(podcast)
-      curr_running_item = PublishingQueueItem.current_unfinished_item(podcast)
-      if pqi.present?
-        Rails.logger.info("Transitioning podcast #{podcast.id} publishing pipeline to state #{to_state}", {podcast_id: podcast.id, to_state: to_state, running_queue_item: curr_running_item&.id})
-        PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: to_state)
-      else
-        Rails.logger.error("Podcast #{podcast.id} has no unfinished work, cannot transition state", {podcast_id: podcast.id, to_state: to_state})
-        nil
-      end
+  # Worker liveness: stamped on the queue item, so pipeline states stay append-only
+  def self.heartbeat!(pub_item)
+    with_owner_lock(pub_item) { stamp_heartbeat!(pub_item) }
+  end
+
+  def self.state_transition(to_state, pub_item)
+    with_owner_lock(pub_item) do |podcast|
+      create_state!(podcast, to_state, pub_item).tap { stamp_heartbeat!(pub_item) }
     end
   end
 
+  # Holds the publish lock on pub_item's podcast, raising LostOwnershipError
+  # unless pub_item still owns the pipeline
+  def self.with_owner_lock(pub_item)
+    raise ArgumentError, "publishing queue item is required" if pub_item.nil?
+
+    podcast = pub_item.podcast
+    podcast.with_publish_lock do
+      assert_owner!(podcast, pub_item)
+      yield podcast
+    end
+  end
+
+  # The database decides who owns the pipeline: pub_item is only the worker's
+  # identity, and it must still be the podcast's current unfinished item.
+  # Call under the publish lock, so ownership can't change before the write.
+  def self.assert_owner!(podcast, pub_item)
+    curr_running_item = PublishingQueueItem.current_unfinished_item(podcast)
+    if curr_running_item != pub_item
+      Rails.logger.warn("Publishing worker lost ownership of podcast #{podcast.id} pipeline", {podcast_id: podcast.id, publishing_queue_item_id: pub_item.id, running_queue_item: curr_running_item&.id})
+      raise LostOwnershipError, "PublishingQueueItem #{pub_item.id} is not the running item #{curr_running_item&.id} for podcast #{podcast.id}"
+    end
+  end
+
+  def self.stamp_heartbeat!(pqi)
+    pqi.update_column(:heartbeat_at, Time.now)
+  end
+
+  def self.create_state!(podcast, to_state, pqi)
+    Rails.logger.info("Transitioning podcast #{podcast.id} publishing pipeline to state #{to_state}", {podcast_id: podcast.id, to_state: to_state, running_queue_item: pqi.id})
+    PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi, status: to_state)
+  end
+
   def complete_publishing!
-    self.class.complete!(podcast)
+    self.class.complete!(publishing_queue_item)
   end
 
   def done?
     self.class.where(publishing_queue_item: publishing_queue_item).where(status: self.class.terminal_status_codes).exists?
   end
 
-  private_class_method :state_transition
+  private_class_method :assert_owner!, :with_owner_lock, :state_transition, :create_state!, :stamp_heartbeat!
 end

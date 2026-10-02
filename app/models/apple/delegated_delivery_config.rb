@@ -111,8 +111,8 @@ module Apple
       !!routing_key&.valid? && publish_enabled?
     end
 
-    def build_publisher
-      Apple::Publisher.from_delegated_delivery_config(self)
+    def build_publisher(heartbeat: nil)
+      Apple::Publisher.from_delegated_delivery_config(self, heartbeat: heartbeat)
     end
 
     def build_show

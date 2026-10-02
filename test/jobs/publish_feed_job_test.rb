@@ -121,6 +121,36 @@ describe PublishFeedJob do
         end
       end
 
+      [
+        [:publish_rss!, nil],
+        [:retry!, Apple::RetryPublishingError.new("retry")],
+        [:error!, RuntimeError.new("boom")]
+      ].each do |transition, failure|
+        it "stops without writing state when its pipeline is replaced before #{transition}" do
+          old_pqi = PublishingPipelineState.start_pipeline!(podcast)
+          new_pqi = nil
+          original = PublishingPipelineState.method(transition)
+
+          reap_then_transition = ->(*args) {
+            PublishingPipelineState.expire!(podcast)
+            new_pqi = PublishingPipelineState.start_pipeline!(podcast)
+            original.call(*args)
+          }
+
+          feeds = failure ? -> { raise failure } : [podcast.default_feed]
+          podcast.stub(:feeds, feeds) do
+            PublishingPipelineState.stub(transition, reap_then_transition) do
+              job.stub(:save_file, FeedBuilder.new(podcast, podcast.default_feed)) do
+                job.perform(podcast, old_pqi)
+              end
+            end
+          end
+
+          assert_equal ["created", "started", "expired"], old_pqi.publishing_pipeline_states.order(:id).pluck(:status)
+          assert_equal ["created"], new_pqi.publishing_pipeline_states.pluck(:status)
+        end
+      end
+
       it "will skip the publishing if the pub items are mismatched" do
         job.stub(:s3_client, stub_client) do
           PublishFeedJob.stub(:perform_later, nil) do
@@ -151,7 +181,7 @@ describe PublishFeedJob do
           # `settle_remaining` is called at the end of the publishing job
           # This means pub_item has been picked up and scheduled
           assert_equal "created", pub_item.reload.last_pipeline_state
-          PublishingPipelineState.complete!(podcast)
+          PublishingPipelineState.complete!(pub_item)
           assert_equal "complete", pub_item.reload.last_pipeline_state
 
           # Start a pipeline: Create publishing item and transition that item's pipeline to :created
@@ -192,31 +222,95 @@ describe PublishFeedJob do
           end
         end
       end
-    end
 
-    it "does not schedule publishing to apple if the delegated delivery config prevents it" do
-      apple_feed.delegated_delivery_config.update!(publish_enabled: false)
-      assert_nil job.publish_integration(podcast, apple_feed)
-    end
+      it "beats before each integration and rss publish" do
+        pqi = PublishingPipelineState.start_pipeline!(podcast)
+        calls = []
 
-    it "does not schedule publishing to apple if the delegated delivery config is disabled" do
-      apple_feed.delegated_delivery_config.update!(publish_enabled: false)
-      assert_nil job.publish_integration(podcast, apple_feed)
+        beat = ->(item) { calls << [:beat, item] }
+        integration = ->(&heartbeat) {
+          calls << [:integration]
+          heartbeat.call
+        }
+        rss = ->(*) {
+          calls << [:rss]
+          FeedBuilder.new(podcast, private_feed)
+        }
+
+        PublishingPipelineState.stub(:heartbeat!, beat) do
+          private_feed.stub(:publish_integration!, integration) do
+            podcast.stub(:feeds, [private_feed]) do
+              job.stub(:save_file, rss) do
+                job.perform(podcast, pqi)
+              end
+            end
+          end
+        end
+
+        assert_equal [[:beat, pqi], [:integration], [:beat, pqi], [:beat, pqi], [:rss]], calls
+        assert_equal "complete", pqi.reload.last_pipeline_state
+        refute_nil pqi.heartbeat_at
+      end
+
+      it "aborts when a wait-loop heartbeat finds its pipeline expired" do
+        old_pqi = PublishingPipelineState.start_pipeline!(podcast)
+        new_pqi = nil
+        ticks = 0
+
+        waiting = ->(&heartbeat) {
+          Apple::ApiWaiting.wait_for([:ep], wait_interval: 0.seconds) do |remaining|
+            ticks += 1
+            heartbeat.call
+            PublishingPipelineState.expire!(podcast)
+            new_pqi = PublishingPipelineState.start_pipeline!(podcast)
+            remaining
+          end
+        }
+
+        private_feed.stub(:publish_integration!, waiting) do
+          podcast.stub(:feeds, [private_feed]) do
+            job.stub(:save_file, ->(*) { flunk "Published rss after losing ownership" }) do
+              job.perform(podcast, old_pqi)
+            end
+          end
+        end
+
+        assert_equal 2, ticks
+        assert_equal ["created", "started", "expired"], old_pqi.publishing_pipeline_states.order(:id).pluck(:status)
+        assert_equal ["created"], new_pqi.publishing_pipeline_states.pluck(:status)
+        assert_nil new_pqi.reload.heartbeat_at
+      end
     end
 
     describe "when the delegated delivery config is present" do
       it "does not schedule publishing to apple if the config is marked as not publishable" do
         apple_feed.delegated_delivery_config.update!(publish_enabled: false)
 
-        assert_nil job.publish_integration(podcast, apple_feed)
+        assert_nil job.publish_integration(podcast, nil, apple_feed)
       end
 
       it "does run the apple publishing if the config is present and marked as publishable" do
         assert apple_feed.delegated_delivery_config.present?
         assert apple_feed.delegated_delivery_config.publish_enabled
+        pqi = PublishingPipelineState.start_pipeline!(podcast)
         private_feed.stub(:publish_integration!, :publishing_apple!) do
-          assert_equal :publishing_apple!, job.publish_integration(podcast, apple_feed)
+          assert_equal :publishing_apple!, job.publish_integration(podcast, pqi, apple_feed)
         end
+      end
+
+      it "re-raises lost ownership instead of recording an integration error" do
+        old_pqi = PublishingPipelineState.start_pipeline!(podcast)
+        PublishingPipelineState.expire!(podcast)
+        new_pqi = PublishingPipelineState.start_pipeline!(podcast)
+
+        private_feed.stub(:publish_integration!, :publishing_apple!) do
+          assert_raises(PublishingPipelineState::LostOwnershipError) do
+            job.publish_integration(podcast, old_pqi, apple_feed)
+          end
+        end
+
+        assert_equal ["created"], new_pqi.publishing_pipeline_states.pluck(:status)
+        assert_equal ["created", "expired"], old_pqi.publishing_pipeline_states.order(:id).pluck(:status)
       end
 
       describe "when the apple publishing fails" do
