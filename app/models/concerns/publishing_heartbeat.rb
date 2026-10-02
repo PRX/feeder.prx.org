@@ -13,7 +13,8 @@ module PublishingHeartbeat
     def heartbeat_around_all_methods(except: [])
       skip = [:initialize, :heartbeat!, *except]
       privates = private_instance_methods(false)
-      names = (public_instance_methods(false) + protected_instance_methods(false) + privates) - skip
+      protecteds = protected_instance_methods(false)
+      names = (public_instance_methods(false) + protecteds + privates) - skip
 
       prepend(Module.new do
         names.each do |name|
@@ -22,6 +23,7 @@ module PublishingHeartbeat
             super(*args, **kwargs, &block)
           end
           private name if privates.include?(name)
+          protected name if protecteds.include?(name)
         end
       end)
     end

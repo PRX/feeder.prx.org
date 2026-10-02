@@ -15,6 +15,16 @@ class PublishingHeartbeatTest < ActiveSupport::TestCase
         yield
       end
 
+      def call_guarded(other)
+        other.guarded
+      end
+
+      protected
+
+      def guarded
+        :guarded
+      end
+
       private
 
       def helper
@@ -50,6 +60,11 @@ class PublishingHeartbeatTest < ActiveSupport::TestCase
   it "keeps private methods private" do
     assert_raises(NoMethodError) { model.helper }
     assert_equal :helper, model.send(:helper)
+  end
+
+  it "keeps protected methods protected" do
+    assert_raises(NoMethodError) { model.guarded }
+    assert_equal :guarded, model.call_guarded(klass.new)
   end
 
   it "only wraps methods defined before heartbeat_around_all_methods" do
