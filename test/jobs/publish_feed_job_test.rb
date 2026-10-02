@@ -203,7 +203,7 @@ describe PublishFeedJob do
           # `settle_remaining` is called at the end of the publishing job
           # This means pub_item has been picked up and scheduled
           assert_equal "created", pub_item.reload.last_pipeline_state
-          PublishingPipelineState.complete!(podcast, pub_item)
+          PublishingPipelineState.complete!(pub_item)
           assert_equal "complete", pub_item.reload.last_pipeline_state
 
           # Start a pipeline: Create publishing item and transition that item's pipeline to :created
@@ -249,7 +249,7 @@ describe PublishFeedJob do
         pqi = PublishingPipelineState.start_pipeline!(podcast)
         calls = []
 
-        beat = ->(_podcast, item) { calls << [:beat, item] }
+        beat = ->(item) { calls << [:beat, item] }
         integration = ->(&heartbeat) {
           calls << [:integration]
           heartbeat.call

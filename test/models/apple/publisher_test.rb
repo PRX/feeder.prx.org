@@ -1668,7 +1668,7 @@ describe Apple::Publisher do
         PublishingPipelineState.expire!(podcast)
         travel PublishingHeartbeat::HEARTBEAT_INTERVAL + 1.second
       }
-      heartbeat = -> { PublishingPipelineState.heartbeat!(podcast, pqi) }
+      heartbeat = -> { PublishingPipelineState.heartbeat!(pqi) }
       publisher = Apple::Publisher.new(show: apple_publisher.show, heartbeat: heartbeat)
 
       apple_publisher.show.stub(:sync!, expire) do

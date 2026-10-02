@@ -32,7 +32,7 @@ class PublishFeedJob < ApplicationJob
   def publish_pipeline(podcast, pub_item)
     Rails.logger.info("Starting publishing pipeline via PublishFeedJob", {podcast_id: podcast.id, publishing_queue_item_id: pub_item.id})
 
-    PublishingPipelineState.start!(podcast, pub_item)
+    PublishingPipelineState.start!(pub_item)
 
     # Publish each integration for each feed (e.g. apple, megaphone)
     podcast.feeds.each { |feed| publish_integration(podcast, pub_item, feed) }
@@ -40,31 +40,31 @@ class PublishFeedJob < ApplicationJob
     # After integrations, publish RSS, if appropriate
     podcast.feeds.each { |feed| publish_rss(podcast, pub_item, feed) }
 
-    PublishingPipelineState.complete!(podcast, pub_item)
+    PublishingPipelineState.complete!(pub_item)
   # Top-level error handling, capping the entire pipeline's error status
   # All of the intermediate errors are handled in the publish_integration and publish_rss
   rescue Apple::RetryPublishingError
     # Terminal state: retry
-    PublishingPipelineState.retry!(podcast, pub_item)
+    PublishingPipelineState.retry!(pub_item)
   rescue => e
     # Terminal state: error. Log first, the error! write can lose ownership.
     Rails.logger.error(e.message, {podcast_id: podcast.id})
-    PublishingPipelineState.error!(podcast, pub_item)
+    PublishingPipelineState.error!(pub_item)
     raise e
   end
 
   def publish_integration(podcast, pub_item, feed)
     return unless feed.publish_integration?
     # The integration calls this at its checkpoints to prove liveness
-    heartbeat = -> { PublishingPipelineState.heartbeat!(podcast, pub_item) }
+    heartbeat = -> { PublishingPipelineState.heartbeat!(pub_item) }
     heartbeat.call
     res = feed.publish_integration!(&heartbeat)
-    PublishingPipelineState.publish_integration!(podcast, pub_item)
+    PublishingPipelineState.publish_integration!(pub_item)
     res
   rescue Apple::AssetStateTimeoutError => e
     # Apple timeout errors indicate the async publishing job is still in progress
     # We always mark the integration as errored in the pipeline state
-    PublishingPipelineState.error_integration!(podcast, pub_item)
+    PublishingPipelineState.error_integration!(pub_item)
 
     # Log at the error's specified level (INFO, WARN, or ERROR)
     e.log_error!
@@ -79,7 +79,7 @@ class PublishFeedJob < ApplicationJob
     end
   rescue => e
     # All other integration errors (network failures, API errors, etc.)
-    PublishingPipelineState.error_integration!(podcast, pub_item)
+    PublishingPipelineState.error_integration!(pub_item)
 
     # Re-raise the error if sync_blocks_rss is enabled, blocking RSS publishing
     # Otherwise, swallow the error and allow RSS publishing to proceed
@@ -87,13 +87,13 @@ class PublishFeedJob < ApplicationJob
   end
 
   def publish_rss(podcast, pub_item, feed)
-    PublishingPipelineState.heartbeat!(podcast, pub_item)
+    PublishingPipelineState.heartbeat!(pub_item)
     rss_builder = save_file(podcast, feed)
     after_publish_rss(podcast, feed, rss_builder.episodes)
-    PublishingPipelineState.publish_rss!(podcast, pub_item)
+    PublishingPipelineState.publish_rss!(pub_item)
     rss_builder
   rescue => e
-    PublishingPipelineState.error_rss!(podcast, pub_item)
+    PublishingPipelineState.error_rss!(pub_item)
     raise e
   end
 
