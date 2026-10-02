@@ -28,8 +28,7 @@ module PublishingHeartbeat
   end
 
   # Calls @heartbeat, set by the including class, throttled to HEARTBEAT_INTERVAL.
-  # Reset @last_beat_at along with it so the first call beats. Does nothing
-  # without a heartbeat.
+  # Does nothing without a heartbeat.
   def heartbeat!
     return unless @heartbeat
     return if @last_beat_at && @last_beat_at > HEARTBEAT_INTERVAL.ago

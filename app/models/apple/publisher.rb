@@ -1,23 +1,12 @@
 module Apple
   class Publisher < Integrations::Base::Publisher
-    include PublishingHeartbeat
-
     delegate :public_feed, :private_feed, :api, to: :show
 
     EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
     EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
 
-    def self.from_delegated_delivery_config(delegated_delivery_config)
-      new(show: Apple::Show.from_delegated_delivery_config(delegated_delivery_config))
-    end
-
-    def initialize(show:)
-      super
-
-      Rails.logger.info("Initialized Apple::Publisher", {public_feed_id: public_feed.id,
-                                                         private_feed_id: private_feed.id,
-                                                         podcast_id: podcast.id,
-                                                         show_apple_id: show.apple_id})
+    def self.from_delegated_delivery_config(delegated_delivery_config, heartbeat: nil)
+      new(show: Apple::Show.from_delegated_delivery_config(delegated_delivery_config), heartbeat: heartbeat)
     end
 
     def podcast
@@ -51,12 +40,7 @@ module Apple
       end
     end
 
-    # The optional block is the publish job's heartbeat, called on entry to
-    # publisher methods (see PublishingHeartbeat)
-    def publish!(&heartbeat)
-      @heartbeat = heartbeat
-      @last_beat_at = nil
-
+    def publish!
       show.sync!
       raise "Missing Show!" unless show.apple_id.present?
 

@@ -14,7 +14,7 @@ describe Apple::Publisher do
 
   let(:publisher) { apple_publisher }
 
-  # Gives the publisher a heartbeat, as publish! does
+  # Gives the publisher a heartbeat, as passing one to the constructor does
   def with_heartbeat(heartbeat)
     apple_publisher.instance_variable_set(:@heartbeat, heartbeat)
     yield
@@ -1644,16 +1644,17 @@ describe Apple::Publisher do
       assert Apple::Publisher.private_method_defined?(:check_for_stuck_episodes)
     end
 
-    it "calls the block given to publish! while it runs" do
+    it "calls the heartbeat given to the constructor while publishing" do
       beats = 0
+      publisher = Apple::Publisher.new(show: apple_publisher.show, heartbeat: -> { beats += 1 })
       # Call a publisher method from the first step of publish!, then stop the publish there
       sync = -> {
-        apple_publisher.podcast
+        publisher.podcast
         raise "stop the publish"
       }
 
       apple_publisher.show.stub(:sync!, sync) do
-        error = assert_raises(RuntimeError) { apple_publisher.publish! { beats += 1 } }
+        error = assert_raises(RuntimeError) { publisher.publish! }
         assert_equal "stop the publish", error.message
       end
 
@@ -1662,13 +1663,19 @@ describe Apple::Publisher do
 
     it "stops after show setup loses ownership before doing draft work" do
       pqi = PublishingPipelineState.start_pipeline!(podcast)
-      expire = -> { PublishingPipelineState.expire!(podcast) }
+      # Expire mid-sync, and take long enough for the next call to beat
+      expire = -> {
+        PublishingPipelineState.expire!(podcast)
+        travel PublishingHeartbeat::HEARTBEAT_INTERVAL + 1.second
+      }
+      heartbeat = -> { PublishingPipelineState.heartbeat!(podcast, pqi) }
+      publisher = Apple::Publisher.new(show: apple_publisher.show, heartbeat: heartbeat)
 
       apple_publisher.show.stub(:sync!, expire) do
         apple_publisher.show.stub(:apple_id, "123") do
           apple_publisher.show.stub(:draft_upload_candidates, -> { flunk "draft work after ownership loss" }) do
             assert_raises(PublishingPipelineState::LostOwnershipError) do
-              apple_publisher.publish! { PublishingPipelineState.heartbeat!(podcast, pqi) }
+              publisher.publish!
             end
           end
         end
