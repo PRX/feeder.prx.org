@@ -48,22 +48,18 @@ class PublishingHeartbeatTest < ActiveSupport::TestCase
     assert_equal [1, 2, 3], model.step(1, key: 2) { 3 }
   end
 
-  it "beats on entry to wrapped methods, passing through args, kwargs and blocks" do
+  it "beats on entry and forwards arguments and blocks" do
     beats = 0
-
     result = model.run(-> { beats += 1 }) { model.step(1, key: 2) { 3 } }
 
     assert_equal [1, 2, 3], result
     assert_equal 1, beats
   end
 
-  it "keeps private methods private" do
+  it "preserves private and protected visibility" do
     assert_raises(NoMethodError) { model.helper }
-    assert_equal :helper, model.send(:helper)
-  end
-
-  it "keeps protected methods protected" do
     assert_raises(NoMethodError) { model.guarded }
+    assert_equal :helper, model.send(:helper)
     assert_equal :guarded, model.call_guarded(klass.new)
   end
 
@@ -75,27 +71,24 @@ class PublishingHeartbeatTest < ActiveSupport::TestCase
     assert_equal 0, beats
   end
 
-  it "throttles beats to the heartbeat interval" do
+  it "throttles beats until the interval passes or the heartbeat is reset" do
     beats = 0
+    heartbeat = -> { beats += 1 }
 
-    model.run(-> { beats += 1 }) do
+    model.run(heartbeat) do
       model.step(1)
+      assert_equal 1, beats
       model.send(:helper)
       travel PublishingHeartbeat::HEARTBEAT_INTERVAL - 1.second
       model.step(2)
+      assert_equal 1, beats
       travel 2.seconds
       model.step(3)
     end
 
     assert_equal 2, beats
-  end
-
-  it "beats right away once the heartbeat is reset" do
-    beats = 0
-
-    2.times { model.run(-> { beats += 1 }) { model.step(1) } }
-
-    assert_equal 2, beats
+    model.run(heartbeat) { model.step(1) }
+    assert_equal 3, beats
   end
 
   it "stops the work when the heartbeat raises" do

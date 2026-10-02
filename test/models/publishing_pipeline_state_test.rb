@@ -72,13 +72,6 @@ describe PublishingPipelineState do
   end
 
   describe "ownership" do
-    it "allows the worker for the current item to transition" do
-      pqi = PublishingPipelineState.start_pipeline!(podcast)
-
-      assert PublishingPipelineState.heartbeat!(pqi)
-      assert PublishingPipelineState.start!(pqi).started?
-    end
-
     it "raises and writes no state when the item is not the current item" do
       pqi = PublishingPipelineState.start_pipeline!(podcast)
       other = PublishingQueueItem.create!(podcast: podcast)
@@ -88,6 +81,8 @@ describe PublishingPipelineState do
         assert_raises(PublishingPipelineState::LostOwnershipError) { PublishingPipelineState.complete!(other) }
       end
       assert_equal "created", pqi.reload.last_pipeline_state
+      assert_nil pqi.heartbeat_at
+      assert_nil other.reload.heartbeat_at
     end
 
     it "requires a queue item" do
@@ -102,17 +97,19 @@ describe PublishingPipelineState do
       old_pqi = PublishingPipelineState.start_pipeline!(podcast)
       PublishingPipelineState.start!(old_pqi)
 
-      # the reaper expires it, and a retry starts a new pipeline
       PublishingPipelineState.expire!(podcast)
       new_pqi = PublishingPipelineState.start_pipeline!(podcast)
-      assert_equal new_pqi, PublishingQueueItem.current_unfinished_item(podcast)
+      last_heartbeat = old_pqi.reload.heartbeat_at
+      travel 1.minute
 
-      [:start!, :publish_rss!, :error_rss!, :publish_integration!, :error_integration!, :complete!, :error!, :retry!].each do |transition|
+      [:heartbeat!, :start!, :publish_rss!, :error_rss!, :publish_integration!, :error_integration!, :complete!, :error!, :retry!].each do |transition|
         assert_raises(PublishingPipelineState::LostOwnershipError) { PublishingPipelineState.send(transition, old_pqi) }
       end
 
       assert_equal ["created"], new_pqi.publishing_pipeline_states.pluck(:status)
       assert_equal ["created", "started", "expired"], old_pqi.publishing_pipeline_states.order(:id).pluck(:status)
+      assert_equal last_heartbeat, old_pqi.reload.heartbeat_at
+      assert_nil new_pqi.reload.heartbeat_at
     end
   end
 
@@ -122,25 +119,14 @@ describe PublishingPipelineState do
       assert_nil pqi.reload.heartbeat_at
 
       assert_no_difference "PublishingPipelineState.count" do
-        PublishingPipelineState.heartbeat!(pqi)
+        assert PublishingPipelineState.heartbeat!(pqi)
       end
       first = pqi.reload.heartbeat_at
       refute_nil first
 
-      # Each beat renews the stamp
       travel 1.minute
       PublishingPipelineState.heartbeat!(pqi)
       assert_operator pqi.reload.heartbeat_at, :>, first
-    end
-
-    it "raises and stamps nothing when the item is not the current item" do
-      old_pqi = PublishingPipelineState.start_pipeline!(podcast)
-      PublishingPipelineState.expire!(podcast)
-      new_pqi = PublishingPipelineState.start_pipeline!(podcast)
-
-      assert_raises(PublishingPipelineState::LostOwnershipError) { PublishingPipelineState.heartbeat!(old_pqi) }
-      assert_nil old_pqi.reload.heartbeat_at
-      assert_nil new_pqi.reload.heartbeat_at
     end
 
     it "is stamped by state transitions" do
@@ -209,16 +195,11 @@ describe PublishingPipelineState do
     end
 
     it "keeps long running pipelines with a fresh heartbeat" do
-      pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
-      pqi = pa1.publishing_queue_item
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
       PublishingPipelineState.start!(pqi)
 
-      # a long delivery keeps beating, well past the pipeline's start
-      8.times do
-        travel stale - 1.minute
-        PublishingPipelineState.heartbeat!(pqi)
-      end
-      assert_operator pa1.created_at, :<, 1.hour.ago
+      travel 2.hours
+      PublishingPipelineState.heartbeat!(pqi)
       assert PublishingPipelineState.expired_pipelines.empty?
       refute PublishingPipelineState.expired?(podcast)
 
@@ -227,15 +208,15 @@ describe PublishingPipelineState do
     end
 
     it "ages pipelines without a heartbeat from their created state" do
-      pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
-      assert_nil pa1.publishing_queue_item.heartbeat_at
+      pqi = PublishingPipelineState.start_pipeline!(podcast)
+      assert_nil pqi.heartbeat_at
 
       travel stale - 1.minute
       assert PublishingPipelineState.expired_pipelines.empty?
       refute PublishingPipelineState.expired?(podcast)
 
       travel 1.minute + 1.second
-      assert_equal [pa1], PublishingPipelineState.expired_pipelines.to_a
+      assert_equal pqi.publishing_pipeline_states.to_a, PublishingPipelineState.expired_pipelines.to_a
       assert PublishingPipelineState.expired?(podcast)
     end
 

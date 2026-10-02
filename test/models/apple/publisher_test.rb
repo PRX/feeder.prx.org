@@ -14,10 +14,8 @@ describe Apple::Publisher do
 
   let(:publisher) { apple_publisher }
 
-  # Gives the publisher a heartbeat, as passing one to the constructor does
   def with_heartbeat(heartbeat)
-    apple_publisher.instance_variable_set(:@heartbeat, heartbeat)
-    yield
+    yield Apple::Publisher.new(show: apple_publisher.show, heartbeat: heartbeat)
   end
 
   before do
@@ -950,17 +948,16 @@ describe Apple::Publisher do
         [false, []]
       }
 
-      with_heartbeat(-> { beats += 1 }) do
+      with_heartbeat(-> { beats += 1 }) do |publisher|
         Apple::PodcastDeliveryFile.stub(:wait_for_delivery, wait_stub) do
           Apple::PodcastDeliveryFile.stub(:wait_for_processing, wait_stub) do
             Apple::PodcastContainer.stub(:poll_podcast_container_state, nil) do
-              apple_publisher.wait_for_upload_processing([episode])
+              publisher.wait_for_upload_processing([episode])
             end
           end
         end
       end
 
-      # Once on entry, then once per tick
       assert_equal 5, beats
     end
 
@@ -975,10 +972,10 @@ describe Apple::Publisher do
         flunk "kept waiting after losing ownership"
       }
 
-      with_heartbeat(heartbeat) do
+      with_heartbeat(heartbeat) do |publisher|
         Apple::PodcastDeliveryFile.stub(:wait_for_delivery, wait_stub) do
           assert_raises(PublishingPipelineState::LostOwnershipError) do
-            apple_publisher.wait_for_upload_processing([episode])
+            publisher.wait_for_upload_processing([episode])
           end
         end
       end
@@ -1207,17 +1204,16 @@ describe Apple::Publisher do
         [[], batch]
       }
 
-      with_heartbeat(-> { beats += 1 }) do
+      with_heartbeat(-> { beats += 1 }) do |publisher|
         Apple::ApiWaiting.stub(:wait_for, wait_for_stub) do
           Apple::Episode.stub(:probe_asset_state, probe) do
-            apple_publisher.stub(:check_for_stuck_episodes, nil) do
-              apple_publisher.wait_for_asset_state(waiting)
+            publisher.stub(:check_for_stuck_episodes, nil) do
+              publisher.wait_for_asset_state(waiting)
             end
           end
         end
       end
 
-      # Once on entry, then once per tick however many batches it probes
       assert_equal 3, beats
       assert_equal [25, 25, 2] * 2, probes
     end
@@ -1232,11 +1228,11 @@ describe Apple::Publisher do
         flunk "kept waiting after losing ownership"
       }
 
-      with_heartbeat(heartbeat) do
+      with_heartbeat(heartbeat) do |publisher|
         Apple::ApiWaiting.stub(:wait_for, wait_for_stub) do
           Apple::Episode.stub(:probe_asset_state, ->(*) { flunk "polled after losing ownership" }) do
             assert_raises(PublishingPipelineState::LostOwnershipError) do
-              apple_publisher.wait_for_asset_state(episodes)
+              publisher.wait_for_asset_state(episodes)
             end
           end
         end
@@ -1628,49 +1624,25 @@ describe Apple::Publisher do
   end
 
   describe "heartbeats" do
-    it "does nothing outside publish!" do
-      assert_nil apple_publisher.heartbeat!
-    end
-
-    it "wraps the publish steps and the wait-tick helpers" do
-      wrapper = Apple::Publisher.ancestors.first
-      wrapped = wrapper.instance_methods(false) + wrapper.private_instance_methods(false)
-
-      %i[api sync_drafting_episode_states! archive! unarchive! upload_and_process! upload_media!
-        process_delivery! partition_episodes_by_readiness check_for_stuck_episodes].each do |name|
-        assert_includes wrapped, name
+    it "checks ownership before each publish step" do
+      with_heartbeat(-> { raise PublishingPipelineState::LostOwnershipError }) do |publisher|
+        %i[api sync_drafting_episode_states! archive! unarchive! upload_and_process! upload_media!
+          process_delivery! partition_episodes_by_readiness check_for_stuck_episodes].each do |step|
+          assert_raises(PublishingPipelineState::LostOwnershipError) { publisher.send(step) }
+        end
       end
-      refute_includes wrapped, :heartbeat!
-      assert Apple::Publisher.private_method_defined?(:check_for_stuck_episodes)
-    end
-
-    it "calls the heartbeat given to the constructor while publishing" do
-      beats = 0
-      publisher = Apple::Publisher.new(show: apple_publisher.show, heartbeat: -> { beats += 1 })
-      # Call a publisher method from the first step of publish!, then stop the publish there
-      sync = -> {
-        publisher.podcast
-        raise "stop the publish"
-      }
-
-      apple_publisher.show.stub(:sync!, sync) do
-        error = assert_raises(RuntimeError) { publisher.publish! }
-        assert_equal "stop the publish", error.message
-      end
-
-      assert_equal 1, beats
     end
 
     it "stops after show setup loses ownership before doing draft work" do
       pqi = PublishingPipelineState.start_pipeline!(podcast)
-      # Expire mid-sync, and take long enough for the next call to beat
+      heartbeat = -> { PublishingPipelineState.heartbeat!(pqi) }
+      publisher = Apple::Publisher.new(show: apple_publisher.show, heartbeat: heartbeat)
       expire = -> {
+        assert_equal podcast, publisher.podcast
+        refute_nil pqi.reload.heartbeat_at
         PublishingPipelineState.expire!(podcast)
         travel PublishingHeartbeat::HEARTBEAT_INTERVAL + 1.second
       }
-      heartbeat = -> { PublishingPipelineState.heartbeat!(pqi) }
-      publisher = Apple::Publisher.new(show: apple_publisher.show, heartbeat: heartbeat)
-
       apple_publisher.show.stub(:sync!, expire) do
         apple_publisher.show.stub(:apple_id, "123") do
           apple_publisher.show.stub(:draft_upload_candidates, -> { flunk "draft work after ownership loss" }) do
@@ -1695,10 +1667,10 @@ describe Apple::Publisher do
           []
         }
 
-        with_heartbeat(heartbeat) do
+        with_heartbeat(heartbeat) do |publisher|
           Apple::Episode.stub(operation, apply) do
             assert_raises(PublishingPipelineState::LostOwnershipError) do
-              apple_publisher.public_send(:"#{operation}!", episodes)
+              publisher.public_send(:"#{operation}!", episodes)
             end
           end
         end

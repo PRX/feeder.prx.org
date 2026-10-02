@@ -29,21 +29,21 @@ describe Feeds::MegaphoneFeed do
   end
 
   it "builds the Megaphone publisher with the heartbeat block" do
-    beats = 0
-    publisher = Object.new
-    publisher.define_singleton_method(:publish!) { @heartbeat.call }
+    publisher = Minitest::Mock.new
+    publisher.expect(:publish!, :published)
+    heartbeat_block = -> {}
     build = ->(feed, heartbeat:) {
       assert_equal megaphone_feed, feed
-      publisher.instance_variable_set(:@heartbeat, heartbeat)
+      assert_same heartbeat_block, heartbeat
       publisher
     }
 
     megaphone_feed.stub(:publish_integration?, true) do
       Megaphone::Publisher.stub(:new, build) do
-        megaphone_feed.publish_integration! { beats += 1 }
+        assert_equal :published, megaphone_feed.publish_integration!(&heartbeat_block)
       end
     end
 
-    assert_equal 1, beats
+    publisher.verify
   end
 end
