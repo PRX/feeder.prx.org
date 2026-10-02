@@ -75,7 +75,7 @@ describe PublishingPipelineState do
     it "allows the worker for the current item to transition" do
       pqi = PublishingPipelineState.start_pipeline!(podcast)
 
-      assert_nil PublishingPipelineState.assert_owner!(podcast, pqi)
+      assert PublishingPipelineState.heartbeat!(podcast, pqi)
       assert PublishingPipelineState.start!(podcast, pqi).started?
     end
 
@@ -84,7 +84,7 @@ describe PublishingPipelineState do
       other = PublishingQueueItem.create!(podcast: podcast)
 
       assert_no_difference "PublishingPipelineState.count" do
-        assert_raises(PublishingPipelineState::LostOwnershipError) { PublishingPipelineState.assert_owner!(podcast, other) }
+        assert_raises(PublishingPipelineState::LostOwnershipError) { PublishingPipelineState.heartbeat!(podcast, other) }
         assert_raises(PublishingPipelineState::LostOwnershipError) { PublishingPipelineState.complete!(podcast, other) }
         assert_raises(PublishingPipelineState::LostOwnershipError) { PublishingPipelineState.error!(podcast, nil) }
       end

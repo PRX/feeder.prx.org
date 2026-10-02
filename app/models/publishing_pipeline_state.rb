@@ -236,14 +236,13 @@ class PublishingPipelineState < ApplicationRecord
   end
 
   # The database decides who owns the pipeline: pub_item is only the worker's
-  # identity, and it must still be the podcast's current unfinished item
+  # identity, and it must still be the podcast's current unfinished item.
+  # Call under the publish lock, so ownership can't change before the write.
   def self.assert_owner!(podcast, pub_item)
-    podcast.with_publish_lock do
-      curr_running_item = PublishingQueueItem.current_unfinished_item(podcast)
-      if pub_item.nil? || curr_running_item != pub_item
-        Rails.logger.warn("Publishing worker lost ownership of podcast #{podcast.id} pipeline", {podcast_id: podcast.id, publishing_queue_item_id: pub_item&.id, running_queue_item: curr_running_item&.id})
-        raise LostOwnershipError, "PublishingQueueItem #{pub_item&.id} is not the running item #{curr_running_item&.id} for podcast #{podcast.id}"
-      end
+    curr_running_item = PublishingQueueItem.current_unfinished_item(podcast)
+    if pub_item.nil? || curr_running_item != pub_item
+      Rails.logger.warn("Publishing worker lost ownership of podcast #{podcast.id} pipeline", {podcast_id: podcast.id, publishing_queue_item_id: pub_item&.id, running_queue_item: curr_running_item&.id})
+      raise LostOwnershipError, "PublishingQueueItem #{pub_item&.id} is not the running item #{curr_running_item&.id} for podcast #{podcast.id}"
     end
   end
 
@@ -279,5 +278,5 @@ class PublishingPipelineState < ApplicationRecord
     self.class.where(publishing_queue_item: publishing_queue_item).where(status: self.class.terminal_status_codes).exists?
   end
 
-  private_class_method :state_transition, :create_state!, :stamp_heartbeat!
+  private_class_method :assert_owner!, :state_transition, :create_state!, :stamp_heartbeat!
 end
