@@ -262,33 +262,6 @@ describe Apple::Publisher do
       end
     end
 
-    it "heartbeats around metadata calls without splitting episode sets" do
-      episodes = (1..52).map { |id| OpenStruct.new(feeder_id: id, apple_new?: true, drafting?: true) }
-      beats = 0
-      calls = []
-      poll = ->(_api, _show, batch) {
-        calls << [:poll, batch.map(&:feeder_id), beats]
-        batch
-      }
-      create = ->(_api, batch) { calls << [:create, batch.map(&:feeder_id), beats] }
-      update = ->(_api, batch) { calls << [:update, batch.map(&:feeder_id), beats] }
-
-      apple_publisher.stub(:heartbeat!, -> { beats += 1 }) do
-        Apple::Episode.stub(:poll_episode_state, poll) do
-          Apple::Episode.stub(:create_episodes, create) do
-            Apple::Episode.stub(:update_episodes, update) do
-              apple_publisher.sync_episodes!(episodes)
-            end
-          end
-        end
-      end
-
-      assert_equal [:poll, :create, :update], calls.map(&:first)
-      calls.each { |_, ids, _| assert_equal (1..52).to_a, ids }
-      calls.each_cons(2) { |previous, following| assert_operator following.last, :>, previous.last }
-      assert_operator beats, :>, calls.last.last
-    end
-
     it "should update draft episodes" do
       apple_publisher.stub(:poll_episodes!, []) do
         draft_ep = OpenStruct.new(drafting?: true, apple_new?: false)
@@ -1208,27 +1181,29 @@ describe Apple::Publisher do
       end
     end
 
-    it "beats on each wait tick before polling Apple" do
+    it "beats once per wait tick even when probing multiple batches" do
       calls = []
+      waiting = episodes * 26
       wait_for_stub = ->(remaining, **_opts, &block) {
         2.times { block.call(remaining) }
         [false, []]
       }
+      probe = ->(_api, batch) {
+        calls << [:poll, batch.length]
+        [[], batch]
+      }
 
       apple_publisher.stub(:heartbeat!, -> { calls << :beat }) do
         Apple::ApiWaiting.stub(:wait_for, wait_for_stub) do
-          apple_publisher.stub(:partition_episodes_by_readiness, ->(eps) {
-            calls << :poll
-            [[], eps]
-          }) do
+          Apple::Episode.stub(:probe_asset_state, probe) do
             apple_publisher.stub(:check_for_stuck_episodes, nil) do
-              apple_publisher.wait_for_asset_state(episodes)
+              apple_publisher.wait_for_asset_state(waiting)
             end
           end
         end
       end
 
-      assert_equal [:beat, :poll, :beat, :poll], calls
+      assert_equal [:beat, [:poll, 25], [:poll, 25], [:poll, 2]] * 2, calls
     end
 
     it "stops waiting once ownership is lost" do
@@ -1637,6 +1612,28 @@ describe Apple::Publisher do
       assert_nil apple_publisher.heartbeat!
     end
 
+    it "beats at six phase checkpoints and clears the callback after success" do
+      calls = []
+      steps = %i[sync_drafting_episode_states! archive! unarchive! upload_and_process!]
+      steps.each { |step| apple_publisher.define_singleton_method(step) { |*| calls << step } }
+      apple_publisher.define_singleton_method(:poll_episodes!) { |*| }
+      %i[episodes_to_archive episodes_to_unarchive episodes_to_sync].each do |step|
+        apple_publisher.define_singleton_method(step) { [] }
+      end
+
+      apple_publisher.show.stub(:apple_id, "123") do
+        apple_publisher.show.stub(:sync!, -> { calls << :show }) do
+          Apple::SyncLog.stub(:log!, nil) do
+            apple_publisher.publish! { calls << :beat }
+          end
+        end
+      end
+
+      assert_equal [:beat, :show, :beat, :sync_drafting_episode_states!, :beat,
+        :archive!, :beat, :unarchive!, :beat, :upload_and_process!, :beat], calls
+      assert_nil apple_publisher.heartbeat!
+    end
+
     it "calls the block given to publish! while it runs" do
       beats = 0
       # Beat from the first step of publish!, then stop the publish there
@@ -1733,22 +1730,23 @@ describe Apple::Publisher do
         end
       end
 
-      it "beats around setup and each upload and delivery batch" do
+      it "beats once before each upload and delivery batch" do
         calls = []
 
         with_batches(episode) do
           apple_publisher.stub(:heartbeat!, -> { calls << :beat }) do
-            apple_publisher.stub(:upload_media!, ->(*) { calls << :upload }) do
-              apple_publisher.stub(:process_delivery!, ->(*) { calls << :delivery }) do
+            apple_publisher.stub(:upload_media!, ->(batch) { calls << [:upload, batch.length] }) do
+              apple_publisher.stub(:process_delivery!, ->(batch) { calls << [:delivery, batch.length] }) do
                 apple_publisher.stub(:raise_delivery_processing_errors, nil) do
-                  apple_publisher.upload_and_process!([episode])
+                  apple_publisher.upload_and_process!([episode] * 26)
                 end
               end
             end
           end
         end
 
-        assert_equal [:beat, :beat, :beat, :upload, :beat, :beat, :delivery, :beat], calls
+        assert_equal [:beat, [:upload, 25], :beat, [:upload, 1],
+          :beat, [:delivery, 25], :beat, [:delivery, 1]], calls
       end
 
       it "beats between the source metadata wait and uploading" do
@@ -1771,15 +1769,22 @@ describe Apple::Publisher do
       end
 
       it "stops before the next batch once ownership is lost" do
+        uploaded = []
+        heartbeat = -> { raise PublishingPipelineState::LostOwnershipError unless uploaded.empty? }
+
         with_batches(episode) do
-          apple_publisher.stub(:heartbeat!, -> { raise PublishingPipelineState::LostOwnershipError }) do
-            apple_publisher.stub(:upload_media!, ->(*) { flunk "uploaded after losing ownership" }) do
-              assert_raises(PublishingPipelineState::LostOwnershipError) do
-                apple_publisher.upload_and_process!([episode])
+          apple_publisher.stub(:heartbeat!, heartbeat) do
+            apple_publisher.stub(:upload_media!, ->(batch) { uploaded.concat(batch) }) do
+              apple_publisher.stub(:process_delivery!, ->(*) { flunk "processed delivery after losing ownership" }) do
+                assert_raises(PublishingPipelineState::LostOwnershipError) do
+                  apple_publisher.upload_and_process!([episode] * 26)
+                end
               end
             end
           end
         end
+
+        assert_equal 25, uploaded.length
       end
     end
 
