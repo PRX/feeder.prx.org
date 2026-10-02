@@ -27,4 +27,23 @@ describe Feeds::MegaphoneFeed do
     refute status.delivered?
     refute status.uploaded?
   end
+
+  it "builds the Megaphone publisher with the heartbeat block" do
+    beats = 0
+    publisher = Object.new
+    publisher.define_singleton_method(:publish!) { @heartbeat.call }
+    build = ->(feed, heartbeat:) {
+      assert_equal megaphone_feed, feed
+      publisher.instance_variable_set(:@heartbeat, heartbeat)
+      publisher
+    }
+
+    megaphone_feed.stub(:publish_integration?, true) do
+      Megaphone::Publisher.stub(:new, build) do
+        megaphone_feed.publish_integration! { beats += 1 }
+      end
+    end
+
+    assert_equal 1, beats
+  end
 end

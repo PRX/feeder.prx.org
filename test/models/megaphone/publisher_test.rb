@@ -116,4 +116,37 @@ describe Megaphone::Publisher do
       assert_equal megaphone_podcast.id, "DEF67890"
     end
   end
+
+  describe "heartbeats" do
+    it "wraps the publish steps and the status wait tick" do
+      wrapper = Megaphone::Publisher.ancestors.first
+      wrapped = wrapper.instance_methods(false) + wrapper.private_instance_methods(false)
+
+      %i[publish! sync_podcast! sync_episodes! delete_episodes! create_and_update_episodes!
+        check_status_episodes! check_episodes].each do |name|
+        assert_includes wrapped, name
+      end
+      refute_includes wrapped, :heartbeat!
+    end
+
+    it "stops the status wait once ownership is lost" do
+      ticking = false
+      heartbeat = -> { raise PublishingPipelineState::LostOwnershipError if ticking }
+      publisher = Megaphone::Publisher.new(feed, heartbeat: heartbeat)
+      tick = ->(_interval) {
+        ticking = true
+        travel PublishingHeartbeat::HEARTBEAT_INTERVAL + 1.second
+      }
+
+      Megaphone::Episode.stub(:unfinished, [Object.new]) do
+        Megaphone::Episode.stub(:find_by_episode, ->(*) { flunk "checked episodes after losing ownership" }) do
+          publisher.stub(:sleep, tick) do
+            assert_raises(PublishingPipelineState::LostOwnershipError) do
+              publisher.check_status_episodes!
+            end
+          end
+        end
+      end
+    end
+  end
 end
