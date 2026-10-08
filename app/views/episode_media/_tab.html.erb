@@ -12,4 +12,10 @@
   <% if status == "processing" %>
     <%= link_to "", episode_media_status_path(episode), class: "d-none", data: {controller: "polling", polling_debounce_value: 3000} %>
   <% end %>
+
+  <% if controller_name == "episode_media" && episode.uncut %>
+    <%= turbo_stream.replace "episode-segmenter-table" do %>
+      <%= render "episode_media/segmenter/table", episode: episode, uncut: episode.uncut %>
+    <% end %>
+  <% end %>
 <% end %>

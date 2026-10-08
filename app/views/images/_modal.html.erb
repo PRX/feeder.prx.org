@@ -24,7 +24,7 @@
             <tr>
               <th scope="row"><strong><%= t("images.label.status") %>:</strong></th>
               <td>
-                <span class="badge bg-<%= upload_status_class(image) %>"><%= image.status.capitalize %></span>
+                <%= upload_status_badge(image) %>
               </td>
             </tr>
             <tr>

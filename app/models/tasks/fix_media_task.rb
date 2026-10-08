@@ -1,6 +1,21 @@
 class Tasks::FixMediaTask < ::Task
   attr_accessor :media_format, :media_bitrate
 
+  def self.start!(owner, copy_task)
+    fix = new(owner: owner)
+
+    # set an explicit format for ffmpeg to use if possible
+    fix.media_format = copy_task.porter_callback_format
+
+    # set an explicit bitrate if vbr
+    fix.media_bitrate = copy_task.porter_callback_bitrate_normalized if copy_task.bad_audio_vbr?
+
+    # keep media in processing status, since this task always comes after a completed copy
+    owner.update!(status: "processing")
+
+    fix.start!
+  end
+
   def media_resource
     owner
   end

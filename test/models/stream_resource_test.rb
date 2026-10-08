@@ -63,6 +63,29 @@ describe StreamResource do
     end
   end
 
+  describe "#after_copy" do
+    let(:copy_task) { build_stubbed(:copy_media_task) }
+
+    it "fixes bad audio files" do
+      refute copy_task.bad_audio?
+      assert_nil resource.after_copy(copy_task)
+
+      copy_task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:DurationDiscrepancy] = 1000
+      assert copy_task.bad_audio?
+
+      mock = Minitest::Mock.new
+      mock.expect :call, "ret-val" do |owner, task|
+        assert_equal resource, owner
+        assert_equal copy_task, task
+      end
+
+      Tasks::FixMediaTask.stub(:start!, mock) do
+        assert_equal "ret-val", resource.after_copy(copy_task)
+        mock.verify
+      end
+    end
+  end
+
   describe "#file_name" do
     it "parses the original url" do
       assert_equal "audio.mp3", resource.file_name
@@ -127,7 +150,6 @@ describe StreamResource do
   describe "#waveform_url" do
     it "generates waveforms next to the audio file" do
       assert resource.generate_waveform?
-      refute resource.slice?
 
       assert_equal "#{resource.url}.json", resource.waveform_url
       assert_equal "#{resource.path}.json", resource.waveform_path

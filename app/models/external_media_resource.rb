@@ -18,10 +18,8 @@ class ExternalMediaResource < MediaResource
   end
 
   def analyze_media(force = false)
-    if force || !(status_complete? || task)
-      Tasks::AnalyzeMediaTask.create! do |task|
-        task.owner = self
-      end.start!
+    if force || needs_copy?
+      Tasks::AnalyzeMediaTask.start!(self)
     end
   end
 end

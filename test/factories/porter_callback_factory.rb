@@ -52,6 +52,13 @@ FactoryBot.define do
     initialize_with { attributes.with_indifferent_access }
   end
 
+  factory :porter_waveform_result, class: Hash do
+    Task { "Waveform" }
+    Generator { "BBC/audiowaveform/v1.x" }
+    DataFormat { "JSON" }
+    initialize_with { attributes.with_indifferent_access }
+  end
+
   factory :porter_inspect_video_result, class: Hash do
     Task { "Inspect" }
     Inspection do

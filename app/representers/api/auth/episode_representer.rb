@@ -16,6 +16,9 @@ class Api::Auth::EpisodeRepresenter < Api::EpisodeRepresenter
 
   property :uncut, decorator: Api::Auth::UncutRepresenter, class: Uncut
 
+  property :alt_media, decorator: Api::Auth::MediaResourceRepresenter, class: AlternateMediaResource, writeable: false
+  property :ready_alt_media, decorator: Api::Auth::MediaResourceRepresenter, class: AlternateMediaResource, writeable: false, if: ->(_o) { !alt_media&.status_complete? }
+
   def self_url(episode)
     api_authorization_episode_path(id: episode.guid)
   end

@@ -41,6 +41,7 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     property :author_email, as: :email
   end
 
+  property :medium
   property :segment_count
   property :media_version_id, as: :media_version, writeable: false
 
@@ -61,6 +62,17 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
         href: represented.enclosure_url,
         type: represented.enclosure_content_type,
         size: represented.enclosure_file_size,
+        duration: represented.media_duration.to_i,
+        status: represented.media_status
+      }
+    end
+  end
+
+  link :alternate_enclosure do
+    if represented.podcast && represented.video?
+      {
+        href: represented.enclosure_alt_url,
+        type: represented.enclosure_alt_content_type,
         duration: represented.media_duration.to_i,
         status: represented.media_status
       }
