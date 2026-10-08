@@ -141,7 +141,7 @@ describe Feed, "Apple delegated delivery" do
     create(:delegated_delivery_config, feed: public_feed, key: key, show_feed_binding: connection)
     create(:apple_hls_config, show_feed_binding: connection, enabled: false)
 
-    assert public_feed.update(private: true, tokens: [FeedToken.new(label: "apple")])
+    assert public_feed.reload.update(private: true, tokens: [FeedToken.new(label: "apple")])
   end
 
   it "allows a feed delivering through its own show to become private" do
