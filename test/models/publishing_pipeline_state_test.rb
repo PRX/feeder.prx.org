@@ -231,6 +231,21 @@ describe PublishingPipelineState do
       assert_equal ["created"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
     end
 
+    it "does not retry failed pipelines for locked podcasts" do
+      PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.error!(podcast)
+      podcast.update!(locked_until: 1.minute.from_now)
+
+      # it does not retry while locked
+      PublishingPipelineState.retry_failed_pipelines!
+      assert_equal ["created", "error"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+
+      # it retries once the lock expires
+      podcast.update!(locked_until: 1.minute.ago)
+      PublishingPipelineState.retry_failed_pipelines!
+      assert_equal ["created"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+    end
+
     it "retries pipelines with intermediate error_integration and non-error terminal status" do
       PublishingPipelineState.start_pipeline!(podcast)
       assert_equal ["created"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)

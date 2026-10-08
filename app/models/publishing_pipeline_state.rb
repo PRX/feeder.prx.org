@@ -195,7 +195,11 @@ class PublishingPipelineState < ApplicationRecord
   def self.retry_failed_pipelines!
     latest_failed_podcasts.each do |podcast|
       Rails.logger.tagged("PublishingPipeLineState.retry_failed_pipelines!", "Podcast:#{podcast.id}") do
-        start_pipeline!(podcast)
+        if podcast.locked?
+          Rails.logger.warn "Podcast #{podcast.id} is locked, skipping retry", {podcast_id: podcast.id}
+        else
+          start_pipeline!(podcast)
+        end
       end
     end
   end
