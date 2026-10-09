@@ -350,6 +350,7 @@ en:
         connection: Apple Show ID
         publish_enabled: Enable publishing to Apple Podcasts Connect
         sync_blocks_rss: Episodes must publish to Apple before the public feed
+        hls_enabled: Enable HLS Video
       megaphone/config:
         publish_enabled: Enable publishing to Megaphone
         sync_blocks_rss: Episodes must publish to Megaphone before the public feed
@@ -957,11 +958,14 @@ en:
       create_feed: "+ Create a new feed"
       publishing: Publishing
       paused: Paused
+      hls_not_eligible: Apple has not enabled video for this show. HLS video requires the podcaster's own Podcasts Connect account and API key.
+      hls_last_checked_html: "HLS eligibility last checked: %{time}"
       help:
         connection: Select the Apple show Apple crawls this feed for.
         delivery: Choose where this feed's episodes go in Apple Podcasts Connect, this feed's own Apple show or a public feed's.
         publish_enabled: Enable publishing this feed's episodes to Apple Podcasts Connect.
         sync_blocks_rss: Require Apple publishing to succeed before public RSS publishing continues.
+        hls_enabled: Deliver this feed's HLS video to Apple Podcasts. Turning this off stops Feeder managing the video and leaves video already on Apple in place.
     form_audio_format:
       title: Audio Format
       help:

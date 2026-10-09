@@ -125,6 +125,25 @@ describe Feed, "Apple delegated delivery" do
     refute public_feed.reload.private?
   end
 
+  it "keeps a connected feed public while HLS video is enabled" do
+    public_feed = create(:public_feed, podcast: podcast)
+    connection = create(:apple_show_feed_binding, feed: public_feed)
+    create(:apple_hls_config, show_feed_binding: connection)
+
+    refute public_feed.update(private: true, tokens: [FeedToken.new(label: "apple")])
+    assert_includes public_feed.errors[:private], "cannot be enabled while HLS video is enabled"
+    refute public_feed.reload.private?
+  end
+
+  it "allows a connected feed with HLS video turned off to become private" do
+    public_feed = create(:public_feed, podcast: podcast)
+    connection = create(:apple_show_feed_binding, feed: public_feed)
+    create(:delegated_delivery_config, feed: public_feed, key: key, show_feed_binding: connection)
+    create(:apple_hls_config, show_feed_binding: connection, enabled: false)
+
+    assert public_feed.reload.update(private: true, tokens: [FeedToken.new(label: "apple")])
+  end
+
   it "allows a feed delivering through its own show to become private" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)

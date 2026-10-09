@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_16_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_22_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "uuid-ossp"
@@ -26,6 +26,34 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_000001) do
     t.index ["feed_id"], name: "index_apple_configs_on_feed_id", unique: true
     t.index ["key_id"], name: "index_apple_configs_on_key_id"
     t.index ["show_feed_binding_id"], name: "index_apple_configs_on_show_feed_binding_id", unique: true
+  end
+
+  create_table "apple_hls_alternate_assets", force: :cascade do |t|
+    t.string "apple_episode_id"
+    t.string "apple_show_id", null: false
+    t.string "content_url"
+    t.datetime "created_at", null: false
+    t.bigint "episode_id", null: false
+    t.string "feeder_guid", null: false
+    t.bigint "feeder_podcast_id", null: false
+    t.datetime "last_checked_at"
+    t.string "last_error"
+    t.string "staged_alternate_asset_id"
+    t.integer "status", null: false
+    t.datetime "updated_at", null: false
+    t.index ["episode_id"], name: "index_apple_hls_alternate_assets_on_episode_id"
+    t.index ["feeder_podcast_id", "apple_show_id", "feeder_guid"], name: "idx_apple_hls_alternate_assets_unique_key", unique: true
+    t.index ["feeder_podcast_id"], name: "index_apple_hls_alternate_assets_on_feeder_podcast_id"
+  end
+
+  create_table "apple_hls_configs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "enabled", default: false, null: false
+    t.datetime "last_checked_at"
+    t.bigint "show_feed_binding_id", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "video_enabled_cache"
+    t.index ["show_feed_binding_id"], name: "index_apple_hls_configs_on_show_feed_binding_id", unique: true
   end
 
   create_table "apple_keys", force: :cascade do |t|
@@ -588,6 +616,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_000001) do
 
   add_foreign_key "apple_configs", "apple_show_feed_bindings", column: "show_feed_binding_id"
   add_foreign_key "apple_configs", "feeds"
+  add_foreign_key "apple_hls_alternate_assets", "episodes"
+  add_foreign_key "apple_hls_alternate_assets", "podcasts", column: "feeder_podcast_id"
+  add_foreign_key "apple_hls_configs", "apple_show_feed_bindings", column: "show_feed_binding_id"
   add_foreign_key "apple_show_feed_bindings", "feeds"
   add_foreign_key "episode_imports", "podcast_imports"
   add_foreign_key "feed_images", "feeds"

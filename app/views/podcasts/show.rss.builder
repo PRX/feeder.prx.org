@@ -138,7 +138,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
 
         if ep.ready_alt_media
           xml.podcast :alternateEnclosure, type: ep.enclosure_alt_content_type do
-            xml.podcast :source, uri: ep.enclosure_alt_url
+            xml.podcast :source, uri: ep.enclosure_alt_url(feed: @feed)
           end
         end
 
