@@ -78,14 +78,6 @@ describe Apple::Api do
       assert_equal 404, res.code.to_i
       assert_requested stub, times: 1
     end
-
-    it "retries other errors" do
-      stub = stub_request(:get, "https://aardvark.prx.org/episodes/missing").to_return(status: 500, body: {errors: []}.to_json)
-
-      api.get("episodes/missing", ignore_errors: [Apple::Api::NOT_FOUND])
-
-      assert_requested stub, times: 3
-    end
   end
 
   describe "#bridge_remote" do

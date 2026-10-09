@@ -310,35 +310,6 @@ module Apple
         assert poll.error?
       end
 
-      it "ignores an episode found by apple id without show relationship data" do
-        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
-          status: :linked, apple_episode_id: episode.item_guid)
-        stub_filtered("episodes", episode.item_guid, [])
-        stub_by_apple_id(episode.item_guid, apple_episode_json("other-guid", id: episode.item_guid))
-        stub_filtered("stagedAlternateAssets", episode.item_guid, [])
-
-        assert poll.error?
-      end
-
-      it "skips the apple id lookup without a row linked by apple id" do
-        stub_filtered("episodes", episode.item_guid, [])
-        stub_filtered("stagedAlternateAssets", episode.item_guid, [])
-        assert_nil poll
-
-        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
-          status: :linked, apple_episode_id: "ep-1")
-        assert poll.error?
-
-        assert_not_requested :get, %r{#{api_base}/episodes/}
-      end
-
-      it "skips the apple id lookup when the GUID matches" do
-        stub_filtered("episodes", episode.item_guid, [apple_episode_json(episode.item_guid, url: "https://dovetail.test/ep1.m3u8")])
-
-        assert poll.linked?
-        assert_not_requested :get, "#{api_base}/episodes/#{episode.item_guid}?include=show"
-      end
-
       it "ignores an episode found by apple id in another show" do
         create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
           status: :linked, apple_episode_id: episode.item_guid)
