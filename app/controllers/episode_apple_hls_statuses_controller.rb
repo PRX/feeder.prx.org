@@ -1,4 +1,7 @@
 class EpisodeAppleHlsStatusesController < ApplicationController
+  # Coalesces repeat page views and frame reloads into one Apple lookup.
+  POLL_INTERVAL = 1.minute
+
   before_action :set_episode
 
   # GET /episodes/1/apple_hls_status
@@ -23,16 +26,18 @@ class EpisodeAppleHlsStatusesController < ApplicationController
   # and the serialized status renders.
   def poll(feed)
     return unless feed.apple_show_feed_binding.hls_config.publishable?
-    return unless pollable?(feed)
+    asset = Apple::HlsAlternateAssetPublisher.asset_for(@episode, feed: feed)
+    return unless pollable?(feed, asset)
+    return if asset&.last_checked_at&.after?(POLL_INTERVAL.ago)
 
     Apple::HlsAlternateAssetPublisher.poll!(@episode, show_feed_binding: feed.apple_show_feed_binding)
   rescue => e
     Rails.logger.error("Apple HLS status poll failed", {episode_id: @episode.id, feed_id: feed.id, error: e})
   end
 
-  def pollable?(feed)
+  def pollable?(feed, asset)
     return true if Apple::HlsAlternateAssetPublisher.publishes?(@episode, feed: feed)
 
-    Apple::HlsAlternateAssetPublisher.asset_for(@episode, feed: feed).present? && feed.rss_episode?(@episode)
+    asset.present? && feed.rss_episode?(@episode)
   end
 end
