@@ -351,7 +351,19 @@ describe PublishFeedJob do
     end
     let(:calls) { [] }
 
-    def publish_hls_feed(hls_error: nil, hls_assets: [])
+    def stub_show(video_enabled, status: 200)
+      show_id = hls_feed.apple_show_feed_binding.apple_show_id
+      body = {data: {id: show_id, type: "shows", attributes: {alternateAssetVideoEnabled: video_enabled}}}.to_json
+      stub_request(:get, "https://aardvark.prx.org/shows/#{show_id}").to_return(status: status, body: body)
+    end
+
+    def hls_config
+      hls_feed.apple_show_feed_binding.hls_config.reload
+    end
+
+    def publish_hls_feed(hls_error: nil, hls_assets: [], video_enabled: true)
+      stub_show(video_enabled) unless video_enabled.nil?
+
       publisher = ->(show_feed_binding:, episodes:) {
         assert_equal hls_feed.apple_show_feed_binding, show_feed_binding
         calls << :hls
@@ -402,20 +414,44 @@ describe PublishFeedJob do
       refute logs.any? { |line| line["msg"] == "Completed Apple HLS publish" }
     end
 
-    it "skips HLS when the config is disabled" do
+    it "skips HLS without reading the show when the config is disabled" do
       hls_feed.apple_show_feed_binding.hls_config.update!(enabled: false)
 
-      publish_hls_feed
+      publish_hls_feed(video_enabled: nil)
 
       assert_equal [:rss], calls
     end
 
-    it "skips HLS when Apple has not enabled video for the show" do
-      hls_feed.apple_show_feed_binding.hls_config.update!(video_enabled_cache: false)
+    it "publishes HLS once Apple enables video for the show" do
+      hls_feed.apple_show_feed_binding.hls_config.update!(video_enabled_cache: false, last_checked_at: 1.day.ago)
 
-      publish_hls_feed
+      publish_hls_feed(video_enabled: true)
+
+      assert_equal [:hls, :rss], calls
+      assert hls_config.publishable?
+      assert_in_delta Time.current, hls_config.last_checked_at, 1.minute
+    end
+
+    it "skips HLS once Apple revokes video for the show" do
+      logs = publish_hls_feed(video_enabled: false)
 
       assert_equal [:rss], calls
+      assert hls_config.not_eligible?
+      assert PublishingPipelineState.complete?(podcast)
+      assert logs.any? { |line| line["msg"] == "Skipping Apple HLS publish, Apple has not enabled video for the show" }
+    end
+
+    it "records a failed show read and still publishes RSS" do
+      stub_show(true, status: 403)
+
+      logs = publish_hls_feed(video_enabled: nil)
+
+      assert_equal [:rss], calls
+      assert hls_config.publishable?
+      statuses = PublishingPipelineState.where(podcast: podcast).latest_pipelines.order(id: :asc).pluck(:status)
+      assert_includes statuses, "error_integration"
+      assert PublishingPipelineState.complete?(podcast)
+      assert logs.any? { |line| line["msg"] == "Apple HLS publish failed" }
     end
   end
 

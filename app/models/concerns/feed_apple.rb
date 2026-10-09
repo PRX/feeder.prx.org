@@ -113,8 +113,9 @@ module FeedApple
   end
 
   # Apple HLS publishing is separate from the delegated-delivery integration.
+  # Apple's video eligibility is rechecked on each publish.
   def publish_apple_hls?
-    public? && !!apple_show_feed_binding&.hls_config&.publishable?
+    public? && !!apple_show_feed_binding&.hls_config&.enabled?
   end
 
   def publish_to_apple?

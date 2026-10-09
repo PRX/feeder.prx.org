@@ -91,6 +91,9 @@ class PublishFeedJob < ApplicationJob
   # Best-effort: HLS failures are recorded and never block RSS. Episode
   # failures stay on their mirror rows; only a failed run marks the pipeline,
   # since a failed pipeline is retried in full.
+  #
+  # Apple can enable or revoke video for a show at any time, so eligibility
+  # is refreshed from the show on every publish.
   def publish_apple_hls(podcast, feed)
     return unless feed.publish_apple_hls?
 
@@ -98,6 +101,11 @@ class PublishFeedJob < ApplicationJob
     context = {feed_id: feed.id, apple_show_id: show_feed_binding.apple_show_id}
 
     Rails.logger.tagged("apple-hls", "feed:#{feed.id}") do
+      unless show_feed_binding.hls_config.refresh_eligibility!
+        Rails.logger.info("Skipping Apple HLS publish, Apple has not enabled video for the show", context)
+        next
+      end
+
       Rails.logger.info("Starting Apple HLS publish", context)
       assets = Apple::HlsAlternateAssetPublisher.publish!(show_feed_binding: show_feed_binding, episodes: feed.rss_episodes)
       failed = assets.count(&:error?)
