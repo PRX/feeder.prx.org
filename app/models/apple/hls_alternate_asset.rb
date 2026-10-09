@@ -50,7 +50,11 @@ module Apple
         content_url = response&.dig("attributes", "alternateAssetContentUrl").presence
         asset.apple_episode_id = response&.dig("id") || asset.apple_episode_id
         asset.content_url = content_url
-        if content_url
+        expected_url = episode.apple_hls_master_url(feed: show_feed_binding.feed)
+        if content_url && expected_url && content_url != expected_url
+          asset.status = :error
+          asset.last_error = "Apple has an outdated alternate asset URL"
+        elsif content_url
           asset.status = :linked
           asset.last_error = nil
         else

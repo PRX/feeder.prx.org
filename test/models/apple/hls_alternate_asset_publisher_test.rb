@@ -125,7 +125,8 @@ module Apple
       logs = capture_json_logs { publish(episode) }
 
       assert_not_requested :patch, /#{api_base}/
-      assert mirror(episode).linked?
+      assert mirror(episode).error?
+      assert_match(/outdated/, mirror(episode).last_error)
       assert_equal "https://dovetail.test/old.m3u8", mirror(episode).content_url
       log = logs.find { |line| line["msg"] == "Apple HLS linked episode is archived, skipping" }
       assert_equal "ep-1", log["apple_episode_id"]
@@ -300,6 +301,17 @@ module Apple
         stub_filtered("stagedAlternateAssets", episode.item_guid, [])
 
         assert poll.error?
+      end
+
+      it "keeps an error when Apple's linked episode has an outdated URL" do
+        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
+          status: :error, apple_episode_id: "ep-1", last_error: "PATCH failed")
+        stub_filtered("episodes", episode.item_guid, [apple_episode_json(episode.item_guid, url: "https://dovetail.test/old.m3u8")])
+
+        asset = poll
+
+        assert asset.error?
+        assert_match(/outdated/, asset.last_error)
       end
 
       it "returns nil when Apple has neither resource and there is no row" do
