@@ -45,8 +45,10 @@ class AlternateMediaResource < MediaResource
     end
   end
 
+  # The HLS transcode can finish after the episode's audio already published,
+  # so publish again to add the alternate enclosure and Apple HLS video.
   def after_hls_transcode(task)
-    # TODO: should this kick off publishing or something?
+    episode&.publish! if status_previously_changed?
   end
 
   def replace_resources!
