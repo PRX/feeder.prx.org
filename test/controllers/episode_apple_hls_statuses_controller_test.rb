@@ -30,7 +30,7 @@ class EpisodeAppleHlsStatusesControllerTest < ActionDispatch::IntegrationTest
 
   test "refreshes status from Apple" do
     create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid)
-    stub_filtered("episodes", [{"id" => "ep-1", "attributes" => {"guid" => episode.item_guid}}])
+    stub_filtered("episodes", [{"id" => "ep-1", "attributes" => {"guid" => episode.item_guid, "alternateAssetContentUrl" => "https://dovetail.test/ep1.m3u8"}}])
 
     get episode_apple_hls_status_path(episode)
 

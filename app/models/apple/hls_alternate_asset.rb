@@ -45,10 +45,18 @@ module Apple
         asset.status = :error
         asset.last_error = error.respond_to?(:message) ? error.message : error.to_s
       elsif resource_type == :episode
-        asset.status = :linked
+        # Apple can hold the episode without its video (crawled before
+        # staging, or the staged asset expired), so only a content URL links.
+        content_url = response&.dig("attributes", "alternateAssetContentUrl").presence
         asset.apple_episode_id = response&.dig("id") || asset.apple_episode_id
-        asset.content_url = response&.dig("attributes", "alternateAssetContentUrl") || asset.content_url
-        asset.last_error = nil
+        asset.content_url = content_url
+        if content_url
+          asset.status = :linked
+          asset.last_error = nil
+        else
+          asset.status = :error
+          asset.last_error = "Apple reports the episode without an alternate asset"
+        end
       elsif resource_type == :staged_alternate_asset
         asset.status = :staged
         asset.staged_alternate_asset_id = response&.dig("id") || asset.staged_alternate_asset_id
