@@ -9,16 +9,24 @@ describe EpisodeAppleHls do
   end
 
   it "requires a ready HLS video to be eligible" do
-    feed = episode.podcast.default_feed
-
     episode.stub(:video?, true) do
       refute episode.hls_eligible_for_apple?
 
       episode.stub(:ready_alt_media, Object.new) do
-        episode.stub(:enclosure_alt_url, ->(feed:) { "https://dovetail/#{feed.id}/ep.m3u8" }) do
-          assert episode.hls_eligible_for_apple?
-          assert_equal "https://dovetail/#{feed.id}/ep.m3u8", episode.apple_hls_master_url(feed: feed)
-        end
+        assert episode.hls_eligible_for_apple?
+      end
+    end
+  end
+
+  it "uses the feed's HLS URL without its enclosure prefix" do
+    feed = create(:feed, podcast: episode.podcast, slug: "hls", enclosure_prefix: "https://prefix.example/")
+
+    episode.stub(:video?, true) do
+      episode.stub(:ready_alt_media, Object.new) do
+        url = episode.apple_hls_master_url(feed: feed)
+
+        assert_equal episode.enclosure_alt_url(feed: feed, prefix: false), url
+        refute_includes url, "prefix.example"
       end
     end
   end

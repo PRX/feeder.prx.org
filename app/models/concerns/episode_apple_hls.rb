@@ -18,8 +18,10 @@ module EpisodeAppleHls
     video? && ready_alt_media.present?
   end
 
-  # The feed-scoped HLS master playlist URL Apple should fetch.
+  # The feed-scoped HLS master playlist URL Apple should fetch. Unprefixed,
+  # like Apple::Episode#enclosure_url, so a feed's enclosure prefix (and any
+  # change to it) never reaches Apple.
   def apple_hls_master_url(feed:)
-    enclosure_alt_url(feed: feed) if hls_eligible_for_apple?
+    enclosure_alt_url(feed: feed, prefix: false) if hls_eligible_for_apple?
   end
 end
