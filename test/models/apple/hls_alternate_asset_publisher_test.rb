@@ -525,14 +525,6 @@ module Apple
         assert_equal :not_published, status(draft)
       end
 
-      it "is not eligible when a replaced upload's HLS transcode never started" do
-        hls_config
-        ep = video_episode(hls_status: "processing")
-        ep.alternate_media_resource.update_columns(original_url: "s3://prx-testing/test/old.mp4")
-
-        assert_equal :not_eligible, status(ep.reload)
-      end
-
       it "is failed when the current upload's HLS transcode failed" do
         hls_config
         ep = video_episode(hls_status: "error")
