@@ -56,6 +56,17 @@ module Apple
         assert_match(/without an alternate asset/, asset.last_error)
       end
 
+      it "marks an Apple episode with an outdated URL as an error" do
+        episode.define_singleton_method(:apple_hls_master_url) { |feed:| "https://example.com/new.m3u8" }
+
+        asset = upsert(resource_type: :episode, response: {"id" => "ep-1", "attributes" => {"alternateAssetContentUrl" => "https://example.com/b.m3u8"}})
+
+        assert asset.error?
+        assert_equal "ep-1", asset.apple_episode_id
+        assert_equal "https://example.com/b.m3u8", asset.content_url
+        assert_match(/outdated/, asset.last_error)
+      end
+
       it "returns nil when Apple has neither resource and there is no prior row" do
         assert_nil upsert(resource_type: nil)
         assert_equal 0, HlsAlternateAsset.count
