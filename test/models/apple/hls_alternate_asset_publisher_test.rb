@@ -313,7 +313,7 @@ module Apple
       it "looks up the feed-scoped RSS GUID" do
         feed.update!(unique_guids: true)
         guid = "#{episode.item_guid}_#{feed.id}"
-        stub_filtered("episodes", guid, [apple_episode_json(guid)])
+        stub_filtered("episodes", guid, [apple_episode_json(guid, url: "https://dovetail.test/ep1.m3u8")])
 
         assert poll.linked?
         assert mirror(episode, guid: guid)

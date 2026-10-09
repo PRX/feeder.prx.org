@@ -45,6 +45,17 @@ module Apple
         assert_equal 1, HlsAlternateAsset.count
       end
 
+      it "marks an Apple episode without an alternate asset as an error" do
+        upsert(resource_type: :staged_alternate_asset, response: staged_json)
+
+        asset = upsert(resource_type: :episode, response: {"id" => "ep-1", "attributes" => {"alternateAssetContentUrl" => nil}})
+
+        assert asset.error?
+        assert_equal "ep-1", asset.apple_episode_id
+        assert_nil asset.content_url
+        assert_match(/without an alternate asset/, asset.last_error)
+      end
+
       it "returns nil when Apple has neither resource and there is no prior row" do
         assert_nil upsert(resource_type: nil)
         assert_equal 0, HlsAlternateAsset.count
@@ -61,7 +72,7 @@ module Apple
       end
 
       it "marks a vanished linked episode as an error" do
-        upsert(resource_type: :episode, response: {"id" => "ep-1"})
+        upsert(resource_type: :episode, response: {"id" => "ep-1", "attributes" => {"alternateAssetContentUrl" => "https://example.com/b.m3u8"}})
 
         asset = upsert(resource_type: nil)
 
