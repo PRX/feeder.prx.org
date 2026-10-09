@@ -14,9 +14,13 @@ class EpisodeAppleHlsStatusesControllerTest < ActionDispatch::IntegrationTest
     create(:apple_hls_config, show_feed_binding: show_feed_binding)
   end
 
-  def stub_filtered(resource, data)
-    stub_request(:get, "#{api_base}/shows/show-1/#{resource}?filter%5Bguid%5D=#{episode.item_guid}")
+  def stub_filtered(resource, data, ep = episode)
+    stub_request(:get, "#{api_base}/shows/show-1/#{resource}?filter%5Bguid%5D=#{ep.item_guid}")
       .to_return(status: 200, body: {data: data, links: {self: "#{api_base}/x"}}.to_json)
+  end
+
+  def video_episode(**attrs)
+    create(:hls_video_episode, podcast: podcast, feeds: [podcast.default_feed, feed], **attrs)
   end
 
   test "authorizes the status before calling Apple" do
@@ -49,11 +53,70 @@ class EpisodeAppleHlsStatusesControllerTest < ActionDispatch::IntegrationTest
     assert episode.apple_hls_alternate_assets.first.staged?
   end
 
-  test "skips Apple for an ineligible episode with no row" do
+  test "has no badge for an audio episode with no row" do
     get episode_apple_hls_status_path(episode)
 
     assert_response :success
-    assert_select ".prx-badge-not_eligible", text: "Not Eligible"
+    assert_select "turbo-frame#apple-hls-statuses .badge", count: 0
+    assert_not_requested :any, /#{api_base}/
+  end
+
+  test "polls Apple for a published eligible video with no row" do
+    ep = video_episode
+    stub_filtered("episodes", [], ep)
+    stub_filtered("stagedAlternateAssets", [], ep)
+
+    get episode_apple_hls_status_path(ep)
+
+    assert_response :success
+    assert_select ".prx-badge-pending", text: "Pending"
+    assert_requested :get, %r{#{api_base}/shows/show-1/episodes}
+  end
+
+  test "skips Apple for a video whose HLS is processing" do
+    ep = video_episode(hls_status: "processing")
+
+    get episode_apple_hls_status_path(ep)
+
+    assert_response :success
+    assert_select ".prx-badge-processing", text: "Processing"
+    assert_not_requested :any, /#{api_base}/
+  end
+
+  test "shows a failed HLS transcode" do
+    ep = video_episode(hls_status: "error")
+
+    get episode_apple_hls_status_path(ep)
+
+    assert_response :success
+    assert_select ".prx-badge-failed", text: "Failed"
+    assert_not_requested :any, /#{api_base}/
+  end
+
+  test "skips Apple for a video not in the feed's RSS" do
+    draft = video_episode(published_at: nil)
+    older = video_episode(published_at: 2.days.ago)
+    video_episode(published_at: 1.day.ago)
+    feed.update!(display_episodes_count: 1)
+
+    [draft, older].each do |ep|
+      get episode_apple_hls_status_path(ep)
+
+      assert_response :success
+      assert_select ".prx-badge-not_published", text: "Not Published"
+    end
+    assert_not_requested :any, /#{api_base}/
+  end
+
+  test "skips Apple for a row of an episode no longer in the feed's RSS" do
+    ep = video_episode
+    create(:apple_hls_alternate_asset, episode: ep, apple_show_id: "show-1", feeder_guid: ep.item_guid)
+    ep.update!(published_at: nil)
+
+    get episode_apple_hls_status_path(ep)
+
+    assert_response :success
+    assert_select ".prx-badge-not_published", text: "Not Published"
     assert_not_requested :any, /#{api_base}/
   end
 end

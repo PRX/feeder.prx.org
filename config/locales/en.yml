@@ -392,9 +392,12 @@ en:
         apple_hls_statuses:
           error: Error
           expired: Expired
+          failed: Failed
           linked: Linked
           not_eligible: Not Eligible
+          not_published: Not Published
           pending: Pending
+          processing: Processing
           staged: Staged
         media_statuses:
           complete: Complete

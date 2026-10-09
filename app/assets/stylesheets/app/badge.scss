@@ -36,6 +36,7 @@
 
 .prx-badge-disconnected,
 .prx-badge-not_eligible,
+.prx-badge-not_published,
 .prx-badge-not_publishable {
   background: $gray-400;
   color: $black;
@@ -46,6 +47,7 @@
 .prx-badge-not_found,
 .prx-badge-bad_timings,
 .prx-badge-no_media,
+.prx-badge-failed,
 .prx-badge-error {
   background: $danger;
 }

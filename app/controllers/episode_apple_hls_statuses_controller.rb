@@ -23,10 +23,16 @@ class EpisodeAppleHlsStatusesController < ApplicationController
   # and the serialized status renders.
   def poll(feed)
     return unless feed.apple_show_feed_binding.hls_config.publishable?
-    return unless @episode.hls_eligible_for_apple? || Apple::HlsAlternateAssetPublisher.asset_for(@episode, feed: feed)
+    return unless pollable?(feed)
 
     Apple::HlsAlternateAssetPublisher.poll!(@episode, show_feed_binding: feed.apple_show_feed_binding)
   rescue => e
     Rails.logger.error("Apple HLS status poll failed", {episode_id: @episode.id, feed_id: feed.id, error: e})
+  end
+
+  def pollable?(feed)
+    return true if Apple::HlsAlternateAssetPublisher.publishes?(@episode, feed: feed)
+
+    Apple::HlsAlternateAssetPublisher.asset_for(@episode, feed: feed).present? && feed.rss_episode?(@episode)
   end
 end

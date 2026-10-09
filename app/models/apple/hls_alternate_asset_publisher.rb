@@ -19,16 +19,26 @@ module Apple
       new(show_feed_binding: show_feed_binding).poll!(episode)
     end
 
+    def self.publishes?(episode, feed:)
+      feed.publish_apple_hls? && episode.hls_eligible_for_apple? && feed.rss_episode?(episode)
+    end
+
     # The producer-facing HLS status for an episode in an Apple-bound feed,
     # read from the local mirror. Nil when the feed has no enabled HLS config.
     def self.status_for(episode, feed:)
       hls_config = feed.apple_show_feed_binding&.hls_config
       return unless hls_config&.enabled?
       return :not_eligible if hls_config.not_eligible?
+      return :failed if episode.hls_failed_for_apple?
 
       asset = asset_for(episode, feed: feed)
-      if asset
+      in_rss = feed.rss_episode?(episode)
+      if asset && (asset.linked? || in_rss)
         asset.status.to_sym
+      elsif (in_rss || episode.published?) && episode.hls_processing_for_apple?
+        :processing
+      elsif !in_rss
+        :not_published
       elsif episode.hls_eligible_for_apple?
         :pending
       else

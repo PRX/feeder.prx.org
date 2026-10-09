@@ -38,6 +38,19 @@ FactoryBot.define do
       alternate_media_resource do
         association(:alternate_media_resource, status: "complete", original_url: "s3://prx-testing/video1.mp4")
       end
+
+      factory :hls_video_episode do
+        transient do
+          uncut_status { "complete" }
+          hls_status { "complete" }
+        end
+
+        after(:create) do |episode, evaluator|
+          uncut = create(:uncut_video, episode: episode, status: evaluator.uncut_status)
+          episode.alternate_media_resource.update_columns(original_url: uncut.url, segmentation: uncut.segmentation, status: evaluator.hls_status)
+          episode.reload
+        end
+      end
     end
   end
 end

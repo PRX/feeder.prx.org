@@ -36,7 +36,9 @@ module EpisodesHelper
 
   # Public feeds of the episode with Apple HLS video turned on.
   def episode_apple_hls_feeds(episode)
-    episode.feeds.select { |feed| feed.public? && feed.apple_show_feed_binding&.hls_config&.enabled? }
+    episode.feeds.select do |feed|
+      feed.publish_apple_hls? && (episode.video? || Apple::HlsAlternateAssetPublisher.asset_for(episode, feed: feed))
+    end
   end
 
   def episode_integration_label(name, feed)
