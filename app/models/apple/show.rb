@@ -320,8 +320,6 @@ module Apple
     end
 
     def find_apple_episode_json_by_apple_id(apple_id)
-      return if apple_id.blank?
-
       resp = api.get("episodes/#{ERB::Util.url_encode(apple_id)}?include=show", ignore_errors: [Apple::Api::NOT_FOUND])
       return if resp.code.to_i == Apple::Api::NOT_FOUND
 
