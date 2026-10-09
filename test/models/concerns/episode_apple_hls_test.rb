@@ -3,7 +3,7 @@ require "test_helper"
 describe EpisodeAppleHls do
   let(:episode) { create(:episode) }
 
-  it "is not eligible for Apple HLS until the HLS media pipeline lands" do
+  it "is not eligible for Apple HLS without HLS video" do
     refute episode.hls_eligible_for_apple?
     assert_nil episode.apple_hls_master_url(feed: episode.podcast.default_feed)
   end
