@@ -319,6 +319,16 @@ module Apple
         .find { |ep_json| ep_json.dig("attributes", "guid") == guid }
     end
 
+    def find_apple_episode_json_by_apple_id(apple_id)
+      return if apple_id.blank?
+
+      resp = api.get("episodes/#{ERB::Util.url_encode(apple_id)}?include=show", ignore_errors: [Apple::Api::NOT_FOUND])
+      return if resp.code.to_i == Apple::Api::NOT_FOUND
+
+      ep_json = api.unwrap_response(resp)["data"]
+      ep_json if ep_json.dig("relationships", "show", "data", "id") == id
+    end
+
     def find_staged_alternate_asset_json_by_guid_filter(guid)
       api.get_paged_collection("shows/#{id}/stagedAlternateAssets?#{self.class.guid_filter(guid)}")
         .find { |asset_json| asset_json.dig("attributes", "guid") == guid }
