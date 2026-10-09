@@ -62,7 +62,9 @@ module Apple
 
     def episode_audio_format
       episodes = podcast&.episodes&.published&.includes(:contents)&.limit(10) || []
-      contents = episodes.map { |episode| episode.contents.first }.compact
+      # Mirror the publisher, which only syncs audio? episodes to Apple
+      # (Integrations::Base::EpisodeSetOperations#filter_episodes_to_sync)
+      contents = episodes.select(&:audio?).map { |episode| episode.contents.first }.compact
       mp3_contents = contents.select { |content| content.audio? && content.mime_type == "audio/mpeg" }
       return if mp3_contents.empty?
 
