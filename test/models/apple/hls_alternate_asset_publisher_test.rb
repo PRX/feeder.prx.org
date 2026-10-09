@@ -264,6 +264,15 @@ module Apple
         stub_request(:get, "#{api_base}/shows/show-1/#{resource}?filter%5Bguid%5D=#{guid}").to_return(collection(data))
       end
 
+      def stub_by_apple_id(apple_id, json = nil)
+        response = json ? {status: 200, body: {data: json}.to_json} : {status: 404, body: {errors: []}.to_json}
+        stub_request(:get, "#{api_base}/episodes/#{apple_id}?include=show").to_return(response)
+      end
+
+      def in_show(json, show_id = "show-1")
+        json.merge("relationships" => {"show" => {"data" => {"type" => "shows", "id" => show_id}}})
+      end
+
       def poll
         HlsAlternateAssetPublisher.poll!(episode, show_feed_binding: show_feed_binding)
       end
@@ -276,6 +285,68 @@ module Apple
         assert asset.linked?
         assert_equal "ep-1", asset.apple_episode_id
         assert_not_requested :get, /stagedAlternateAssets/
+      end
+
+      it "keeps a linked episode Apple joined by its own episode id" do
+        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
+          status: :linked, apple_episode_id: episode.item_guid)
+        stub_filtered("episodes", episode.item_guid, [])
+        stub_by_apple_id(episode.item_guid, in_show(apple_episode_json("other-guid", id: episode.item_guid, url: "https://dovetail.test/ep1.m3u8")))
+
+        asset = poll
+
+        assert asset.linked?
+        assert_equal episode.item_guid, asset.apple_episode_id
+        assert_not_requested :get, /stagedAlternateAssets/
+      end
+
+      it "marks a linked-by-apple-id episode Apple no longer has as an error" do
+        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
+          status: :linked, apple_episode_id: episode.item_guid)
+        stub_filtered("episodes", episode.item_guid, [])
+        stub_by_apple_id(episode.item_guid)
+        stub_filtered("stagedAlternateAssets", episode.item_guid, [])
+
+        assert poll.error?
+      end
+
+      it "ignores an episode found by apple id without show relationship data" do
+        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
+          status: :linked, apple_episode_id: episode.item_guid)
+        stub_filtered("episodes", episode.item_guid, [])
+        stub_by_apple_id(episode.item_guid, apple_episode_json("other-guid", id: episode.item_guid))
+        stub_filtered("stagedAlternateAssets", episode.item_guid, [])
+
+        assert poll.error?
+      end
+
+      it "skips the apple id lookup without a row linked by apple id" do
+        stub_filtered("episodes", episode.item_guid, [])
+        stub_filtered("stagedAlternateAssets", episode.item_guid, [])
+        assert_nil poll
+
+        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
+          status: :linked, apple_episode_id: "ep-1")
+        assert poll.error?
+
+        assert_not_requested :get, %r{#{api_base}/episodes/}
+      end
+
+      it "skips the apple id lookup when the GUID matches" do
+        stub_filtered("episodes", episode.item_guid, [apple_episode_json(episode.item_guid, url: "https://dovetail.test/ep1.m3u8")])
+
+        assert poll.linked?
+        assert_not_requested :get, "#{api_base}/episodes/#{episode.item_guid}?include=show"
+      end
+
+      it "ignores an episode found by apple id in another show" do
+        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
+          status: :linked, apple_episode_id: episode.item_guid)
+        stub_filtered("episodes", episode.item_guid, [])
+        stub_by_apple_id(episode.item_guid, in_show(apple_episode_json("other-guid", id: episode.item_guid), "show-2"))
+        stub_filtered("stagedAlternateAssets", episode.item_guid, [staged_json(episode.item_guid, "https://dovetail.test/ep1.m3u8")])
+
+        assert poll.staged?
       end
 
       it "records a staged asset" do
