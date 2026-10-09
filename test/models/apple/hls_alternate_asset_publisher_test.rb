@@ -422,6 +422,18 @@ module Apple
         assert_match(/without an alternate asset/, asset.last_error)
       end
 
+      it "keeps a publish's result written while the poll read Apple" do
+        asset = create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid, last_checked_at: 1.hour.ago)
+        stub_request(:get, "#{api_base}/shows/show-1/episodes?filter%5Bguid%5D=#{episode.item_guid}").to_return do
+          asset.update!(status: :linked, apple_episode_id: "ep-1", last_checked_at: Time.current)
+          collection([])
+        end
+        stub_filtered("stagedAlternateAssets", episode.item_guid, [])
+
+        assert poll.linked?
+        assert mirror(episode).linked?
+      end
+
       it "looks up the feed-scoped RSS GUID" do
         feed.update!(unique_guids: true)
         guid = "#{episode.item_guid}_#{feed.id}"
