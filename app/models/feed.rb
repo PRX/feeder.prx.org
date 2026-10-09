@@ -156,7 +156,7 @@ class Feed < ApplicationRecord
   end
 
   def rss_episode?(episode)
-    feed_episode?(episode) && episode.feed_ready?
+    episode.feed_ready? && feed_episode?(episode)
   end
 
   def guid
