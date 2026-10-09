@@ -10,12 +10,18 @@ module EpisodeAppleHls
   end
 
   # Strict gate for staging this episode's HLS video with Apple: an HLS
-  # video episode with a complete alternate (HLS) media resource.
+  # video episode whose current upload has a complete HLS transcode. Unlike
+  # ready_alt_media (which RSS uses to keep serving the last complete
+  # playlist), a replacement upload that is still processing or failed is
+  # not eligible, so Apple keeps whatever it already has.
   #
   # TODO: also check the master meets Apple's HLS requirements, once the
   # HLS transcode produces one.
   def hls_eligible_for_apple?
-    video? && ready_alt_media.present?
+    return false unless video? && uncut.present?
+
+    hls = alt_media
+    hls.present? && hls.status_complete? && hls.same_uncut?(uncut)
   end
 
   # The feed-scoped HLS master playlist URL Apple should fetch. Unprefixed,
