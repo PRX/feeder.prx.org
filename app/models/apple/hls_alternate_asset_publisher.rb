@@ -19,10 +19,6 @@ module Apple
       new(show_feed_binding: show_feed_binding).poll!(episode)
     end
 
-    def self.publishes?(episode, feed:)
-      feed.publish_apple_hls? && episode.hls_eligible_for_apple? && feed.rss_episode?(episode)
-    end
-
     # The producer-facing HLS status for an episode in an Apple-bound feed,
     # read from the local mirror. Nil when the feed has no enabled HLS config.
     def self.status_for(episode, feed:)
@@ -76,36 +72,28 @@ module Apple
       eligible.map { |episode| publish_episode(episode) }
     end
 
-    # Refreshes one episode's mirror row from Apple with GUID-filtered
-    # lookups. Never stages: an asset marked expired here is re-staged by the
-    # next RSS publish. Returns nil when Apple has neither resource and there
-    # is no prior row (pending).
     def poll!(episode)
       started_at = Time.current
       guid = episode_guid(episode, feed)
-      asset = Apple::HlsAlternateAsset.find_by(feeder_podcast_id: episode.podcast_id, apple_show_id: show_feed_binding.apple_show_id, feeder_guid: guid)
+      asset = self.class.asset_for(episode, feed: feed)
+      episode_json = show.find_apple_episode_json_by_guid_filter(guid) ||
+        (show.find_apple_episode_json_by_apple_id(guid) if asset&.apple_episode_id == guid)
 
-      if (episode_json = poll_apple_episode_json(guid, asset))
+      attrs = if episode_json
         # Apple ingested the episode with only its audio; the next publish
         # patches it, so it stays pending rather than an error.
         return if asset.nil? && episode_json.dig("attributes", "alternateAssetContentUrl").blank?
 
-        upsert(episode, guid, resource_type: :episode, response: episode_json, unless_checked_after: started_at)
+        {resource_type: :episode, response: episode_json}
       elsif (staged_json = show.find_staged_alternate_asset_json_by_guid_filter(guid))
-        upsert(episode, guid, resource_type: :staged_alternate_asset, response: staged_json, unless_checked_after: started_at)
+        {resource_type: :staged_alternate_asset, response: staged_json}
       else
-        upsert(episode, guid, unless_checked_after: started_at)
+        {}
       end
+      upsert(episode, guid, **attrs, unless_checked_after: started_at)
     end
 
     private
-
-    def poll_apple_episode_json(guid, asset)
-      episode_json = show.find_apple_episode_json_by_guid_filter(guid)
-      return episode_json if episode_json
-
-      show.find_apple_episode_json_by_apple_id(guid) if asset&.apple_episode_id == guid
-    end
 
     def publish_episode(episode)
       guid = episode_guid(episode, feed)
