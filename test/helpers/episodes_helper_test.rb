@@ -230,6 +230,42 @@ describe EpisodesHelper do
     end
   end
 
+  describe "#episode_apple_hls_feeds" do
+    let(:feed) { create(:public_feed, podcast: podcast) }
+    let(:show_feed_binding) { create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1") }
+
+    before do
+      podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
+      create(:apple_hls_config, show_feed_binding: show_feed_binding)
+    end
+
+    it "includes HLS feeds for a video episode" do
+      episode = create(:video_episode, podcast: podcast, feeds: [podcast.default_feed, feed])
+
+      assert_equal [feed], helper.episode_apple_hls_feeds(episode)
+    end
+
+    it "excludes HLS feeds for an audio episode with no row" do
+      episode = create(:episode, podcast: podcast, feeds: [podcast.default_feed, feed])
+
+      assert_empty helper.episode_apple_hls_feeds(episode)
+    end
+
+    it "includes HLS feeds where an audio episode has a row" do
+      episode = create(:episode, podcast: podcast, feeds: [podcast.default_feed, feed])
+      create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid)
+
+      assert_equal [feed], helper.episode_apple_hls_feeds(episode)
+    end
+
+    it "excludes feeds with HLS disabled" do
+      episode = create(:video_episode, podcast: podcast, feeds: [podcast.default_feed, feed])
+      show_feed_binding.hls_config.update!(enabled: false)
+
+      assert_empty helper.episode_apple_hls_feeds(episode.reload)
+    end
+  end
+
   describe "#episode_integration_updated_at" do
     let(:episode) { create(:episode, podcast: podcast, updated_at: 1.day.ago) }
     let(:apple_feed) { create(:apple_feed, podcast: podcast, apple_show_id: "show-1") }
