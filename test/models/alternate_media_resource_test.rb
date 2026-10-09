@@ -49,4 +49,32 @@ describe AlternateMediaResource do
       assert_equal "#{ep.base_published_url}/#{alt.guid}/what.ev", alt.variant_url("what.ev")
     end
   end
+
+  describe "#after_hls_transcode" do
+    let(:alt) { create(:alternate_media_resource, episode: create(:episode)).tap { |a| a.update_columns(status: "processing") } }
+
+    it "publishes the episode when the transcode completes" do
+      publish = Minitest::Mock.new
+      publish.expect(:call, nil)
+
+      alt.episode.stub(:publish!, publish) do
+        alt.update!(status: "complete")
+        alt.after_hls_transcode(nil)
+      end
+
+      assert publish.verify
+    end
+
+    it "does not republish when the status is unchanged" do
+      publish = Minitest::Mock.new
+      alt.update!(status: "complete")
+      alt.update!(updated_at: Time.now)
+
+      alt.episode.stub(:publish!, publish) do
+        alt.after_hls_transcode(nil)
+      end
+
+      assert publish.verify
+    end
+  end
 end
