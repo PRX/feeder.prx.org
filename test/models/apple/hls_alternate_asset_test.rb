@@ -114,6 +114,25 @@ module Apple
         assert_nil recovered.last_error
       end
 
+      it "skips a poll's write when the row was checked after the poll started" do
+        polled_at = 1.minute.ago
+        upsert(resource_type: :episode, response: {"id" => "ep-1", "attributes" => {"alternateAssetContentUrl" => "https://example.com/b.m3u8"}})
+
+        asset = upsert(resource_type: nil, unless_checked_after: polled_at)
+
+        assert asset.linked?
+        assert asset.reload.linked?
+        assert_nil asset.last_error
+      end
+
+      it "writes a poll's result when the row was checked before the poll started" do
+        upsert(resource_type: :staged_alternate_asset, response: staged_json)
+
+        asset = travel_to(1.minute.from_now) { upsert(resource_type: nil, unless_checked_after: Time.current) }
+
+        assert asset.reload.expired?
+      end
+
       it "rejects unknown resource types" do
         assert_raises(ArgumentError) { upsert(resource_type: :show) }
       end

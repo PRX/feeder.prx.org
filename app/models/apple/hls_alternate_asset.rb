@@ -24,14 +24,16 @@ module Apple
     #
     # An error records the failure and keeps the last known Apple state.
     # Returns nil when Apple has neither resource and there is no prior row
-    # (pending).
-    def self.upsert_from_apple!(episode:, show_feed_binding:, feeder_guid:, resource_type: nil, response: nil, error: nil)
+    # (pending). unless_checked_after skips the write if the row was checked
+    # since then, so a slow poll never overwrites a newer publish result.
+    def self.upsert_from_apple!(episode:, show_feed_binding:, feeder_guid:, resource_type: nil, response: nil, error: nil, unless_checked_after: nil)
       if resource_type && !RESOURCE_TYPES.include?(resource_type)
         raise ArgumentError, "unknown resource_type: #{resource_type.inspect}"
       end
 
       key = {feeder_podcast_id: episode.podcast_id, apple_show_id: show_feed_binding.apple_show_id, feeder_guid: feeder_guid}
       asset = find_by(key)
+      return asset if unless_checked_after && asset&.last_checked_at&.after?(unless_checked_after)
       return nil if asset.nil? && resource_type.nil? && error.nil?
 
       asset ||= new(key)

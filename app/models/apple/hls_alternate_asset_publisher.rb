@@ -81,6 +81,7 @@ module Apple
     # next RSS publish. Returns nil when Apple has neither resource and there
     # is no prior row (pending).
     def poll!(episode)
+      started_at = Time.current
       guid = episode_guid(episode, feed)
       asset = Apple::HlsAlternateAsset.find_by(feeder_podcast_id: episode.podcast_id, apple_show_id: show_feed_binding.apple_show_id, feeder_guid: guid)
 
@@ -89,11 +90,11 @@ module Apple
         # patches it, so it stays pending rather than an error.
         return if asset.nil? && episode_json.dig("attributes", "alternateAssetContentUrl").blank?
 
-        upsert(episode, guid, resource_type: :episode, response: episode_json)
+        upsert(episode, guid, resource_type: :episode, response: episode_json, unless_checked_after: started_at)
       elsif (staged_json = show.find_staged_alternate_asset_json_by_guid_filter(guid))
-        upsert(episode, guid, resource_type: :staged_alternate_asset, response: staged_json)
+        upsert(episode, guid, resource_type: :staged_alternate_asset, response: staged_json, unless_checked_after: started_at)
       else
-        upsert(episode, guid)
+        upsert(episode, guid, unless_checked_after: started_at)
       end
     end
 
