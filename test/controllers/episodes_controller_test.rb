@@ -54,7 +54,14 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
     get edit_episode_url(episode)
 
     assert_response :success
-    assert_select "turbo-frame#apple-hls-statuses[src=?] .prx-badge-not_eligible", episode_apple_hls_status_path(episode)
+    assert_select "turbo-frame#apple-hls-statuses", count: 0
+
+    create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid)
+
+    get edit_episode_url(episode)
+
+    assert_response :success
+    assert_select "turbo-frame#apple-hls-statuses[src=?] .prx-badge-not_published", episode_apple_hls_status_path(episode)
     assert_not_requested :any, /aardvark/
   end
 

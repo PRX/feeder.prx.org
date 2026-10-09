@@ -332,6 +332,44 @@ module Apple
       end
     end
 
+    def video_episode(**attrs)
+      create(:hls_video_episode, podcast: podcast, feeds: [podcast.default_feed, feed], **attrs)
+    end
+
+    describe ".publishes?" do
+      let(:hls_config) { create(:apple_hls_config, show_feed_binding: show_feed_binding) }
+
+      def publishes?(ep)
+        HlsAlternateAssetPublisher.publishes?(ep, feed: feed.reload)
+      end
+
+      it "is true for an eligible episode in the feed's RSS" do
+        hls_config
+        assert publishes?(video_episode)
+      end
+
+      it "is false without an enabled HLS config on a public feed" do
+        ep = video_episode
+        show_feed_binding
+        refute publishes?(ep)
+
+        hls_config
+        feed.update_column(:private, true)
+        refute publishes?(ep)
+      end
+
+      it "is false for an ineligible episode" do
+        hls_config
+        refute publishes?(video_episode(hls_status: "processing"))
+      end
+
+      it "is false for an episode not in the feed's RSS" do
+        hls_config
+        refute publishes?(video_episode(published_at: nil))
+        refute publishes?(video_episode(published_at: 1.day.from_now))
+      end
+    end
+
     describe ".status_for" do
       let(:hls_config) { create(:apple_hls_config, show_feed_binding: show_feed_binding) }
 
@@ -354,21 +392,77 @@ module Apple
         assert_equal :not_eligible, status
       end
 
-      it "is pending for an eligible episode with no row" do
+      it "is pending for an eligible episode in the feed's RSS with no row" do
         hls_config
-        assert_equal :pending, status
+        assert_equal :pending, status(video_episode)
       end
 
-      it "is not eligible for an ineligible episode with no row" do
+      it "is processing while the current upload's HLS transcodes" do
         hls_config
-        assert_equal :not_eligible, status(hls_episode(nil, eligible: false))
+        assert_equal :processing, status(video_episode(hls_status: "processing"))
       end
 
-      it "reads the mirror row status" do
+      it "is processing for a published episode whose upload is processing" do
         hls_config
-        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid, status: :expired)
+        ep = video_episode(uncut_status: "processing", hls_status: nil)
+        ep.stub(:feed_ready?, false) do
+          assert_equal :processing, status(ep)
+        end
 
-        assert_equal :expired, status
+        draft = video_episode(published_at: nil, uncut_status: "processing", hls_status: nil)
+        assert_equal :not_published, status(draft)
+      end
+
+      it "is not eligible when a replaced upload's HLS transcode never started" do
+        hls_config
+        ep = video_episode(hls_status: "processing")
+        ep.alternate_media_resource.update_columns(original_url: "s3://prx-testing/test/old.mp4")
+
+        assert_equal :not_eligible, status(ep.reload)
+      end
+
+      it "is failed when the current upload's HLS transcode failed" do
+        hls_config
+        ep = video_episode(hls_status: "error")
+        create(:apple_hls_alternate_asset, episode: ep, apple_show_id: "show-1", feeder_guid: ep.item_guid)
+
+        assert_equal :failed, status(ep)
+      end
+
+      it "is not published for an episode outside the feed's RSS with no row" do
+        hls_config
+        assert_equal :not_published, status(video_episode(published_at: nil))
+        assert_equal :not_published, status(video_episode(published_at: 1.day.from_now))
+
+        older = video_episode(published_at: 2.days.ago)
+        video_episode(published_at: 1.day.ago)
+        feed.update!(display_episodes_count: 1)
+        assert_equal :not_published, status(older)
+      end
+
+      it "is not published for an unlinked row of an episode no longer in the feed's RSS" do
+        hls_config
+        ep = video_episode
+        asset = create(:apple_hls_alternate_asset, episode: ep, apple_show_id: "show-1", feeder_guid: ep.item_guid, status: :staged)
+        ep.update!(published_at: nil)
+
+        assert_equal :not_published, status(ep)
+
+        asset.update!(status: :linked)
+        assert_equal :linked, status(ep)
+      end
+
+      it "is not eligible for an audio episode in the feed's RSS with no row" do
+        hls_config
+        assert_equal :not_eligible, status(create(:episode, podcast: podcast, feeds: [podcast.default_feed, feed]))
+      end
+
+      it "reads the mirror row status of an episode in the feed's RSS" do
+        hls_config
+        ep = video_episode
+        create(:apple_hls_alternate_asset, episode: ep, apple_show_id: "show-1", feeder_guid: ep.item_guid, status: :expired)
+
+        assert_equal :expired, status(ep)
       end
     end
   end
