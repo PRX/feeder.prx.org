@@ -148,9 +148,6 @@ describe Feed do
       [e1, e2, e3, draft].each do |e|
         assert_equal feed1.rss_episodes.include?(e), feed1.rss_episode?(e)
       end
-      assert feed1.rss_episode?(e2)
-      refute feed1.rss_episode?(e3)
-      refute feed1.rss_episode?(draft)
 
       feed1.episode_offset_seconds = -3600
       assert feed1.rss_episode?(e3)

@@ -115,23 +115,13 @@ class EpisodeAppleHlsStatusesControllerTest < ActionDispatch::IntegrationTest
     assert_not_requested :get, %r{#{api_base}/episodes/}
   end
 
-  test "skips Apple for a video whose HLS is processing" do
-    ep = video_episode(hls_status: "processing")
+  test "skips Apple for a video whose HLS is processing or failed" do
+    {"processing" => "processing", "error" => "failed"}.each do |hls_status, badge|
+      get episode_apple_hls_status_path(video_episode(hls_status: hls_status))
 
-    get episode_apple_hls_status_path(ep)
-
-    assert_response :success
-    assert_select ".prx-badge-processing", text: "Processing"
-    assert_not_requested :any, /#{api_base}/
-  end
-
-  test "shows a failed HLS transcode" do
-    ep = video_episode(hls_status: "error")
-
-    get episode_apple_hls_status_path(ep)
-
-    assert_response :success
-    assert_select ".prx-badge-failed", text: "Failed"
+      assert_response :success
+      assert_select ".prx-badge-#{badge}", text: badge.capitalize
+    end
     assert_not_requested :any, /#{api_base}/
   end
 
