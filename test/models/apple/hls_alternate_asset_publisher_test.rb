@@ -393,6 +393,35 @@ module Apple
         assert_nil mirror(episode)
       end
 
+      it "leaves an episode Apple has without an alternate asset pending" do
+        stub_filtered("episodes", episode.item_guid, [apple_episode_json(episode.item_guid)])
+
+        assert_nil poll
+        assert_nil mirror(episode)
+        assert_not_requested :get, /stagedAlternateAssets/
+      end
+
+      it "marks a staged row whose Apple episode has no alternate asset as an error" do
+        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid)
+        stub_filtered("episodes", episode.item_guid, [apple_episode_json(episode.item_guid)])
+
+        asset = poll
+
+        assert asset.error?
+        assert_match(/without an alternate asset/, asset.last_error)
+      end
+
+      it "marks a linked row whose Apple episode lost its alternate asset as an error" do
+        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
+          status: :linked, apple_episode_id: "ep-1")
+        stub_filtered("episodes", episode.item_guid, [apple_episode_json(episode.item_guid)])
+
+        asset = poll
+
+        assert asset.error?
+        assert_match(/without an alternate asset/, asset.last_error)
+      end
+
       it "looks up the feed-scoped RSS GUID" do
         feed.update!(unique_guids: true)
         guid = "#{episode.item_guid}_#{feed.id}"
