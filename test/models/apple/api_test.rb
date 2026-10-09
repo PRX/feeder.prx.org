@@ -69,6 +69,25 @@ describe Apple::Api do
     end
   end
 
+  describe "#get" do
+    it "makes a single attempt and returns an ignored error response" do
+      stub = stub_request(:get, "https://aardvark.prx.org/episodes/missing").to_return(status: 404, body: {errors: []}.to_json)
+
+      res = api.get("episodes/missing", ignore_errors: [Apple::Api::NOT_FOUND])
+
+      assert_equal 404, res.code.to_i
+      assert_requested stub, times: 1
+    end
+
+    it "retries other errors" do
+      stub = stub_request(:get, "https://aardvark.prx.org/episodes/missing").to_return(status: 500, body: {errors: []}.to_json)
+
+      api.get("episodes/missing", ignore_errors: [Apple::Api::NOT_FOUND])
+
+      assert_requested stub, times: 3
+    end
+  end
+
   describe "#bridge_remote" do
     it "stubs an empty response if there are no params given" do
       resp = api.bridge_remote("someResource", [])

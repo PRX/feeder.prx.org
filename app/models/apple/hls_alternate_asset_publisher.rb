@@ -83,7 +83,7 @@ module Apple
     def poll!(episode)
       guid = episode_guid(episode, feed)
 
-      if (episode_json = show.find_apple_episode_json_by_guid_filter(guid))
+      if (episode_json = poll_apple_episode_json(episode, guid))
         upsert(episode, guid, resource_type: :episode, response: episode_json)
       elsif (staged_json = show.find_staged_alternate_asset_json_by_guid_filter(guid))
         upsert(episode, guid, resource_type: :staged_alternate_asset, response: staged_json)
@@ -93,6 +93,14 @@ module Apple
     end
 
     private
+
+    def poll_apple_episode_json(episode, guid)
+      episode_json = show.find_apple_episode_json_by_guid_filter(guid)
+      return episode_json if episode_json
+
+      asset = Apple::HlsAlternateAsset.find_by(feeder_podcast_id: episode.podcast_id, apple_show_id: show_feed_binding.apple_show_id, feeder_guid: guid)
+      show.find_apple_episode_json_by_apple_id(guid) if asset&.apple_episode_id == guid
+    end
 
     def publish_episode(episode)
       guid = episode_guid(episode, feed)

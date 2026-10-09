@@ -130,21 +130,21 @@ module Apple
       self.class.join_url(api_frag)
     end
 
-    def local_api_retry_errors(tries: ERROR_RETRIES)
+    def local_api_retry_errors(tries: ERROR_RETRIES, ignore_errors: [])
       count = 0
       last_resp = nil
       while count < tries
         count += 1
         last_resp = yield
-        break if ok_code(last_resp)
+        break if ok_code(last_resp, ignore_errors: ignore_errors)
       end
 
       last_resp
     end
 
-    def get(api_frag, tries: ERROR_RETRIES)
+    def get(api_frag, tries: ERROR_RETRIES, ignore_errors: [])
       uri = join_url(api_frag)
-      local_api_retry_errors(tries: tries) do
+      local_api_retry_errors(tries: tries, ignore_errors: ignore_errors) do
         get_uri(uri)
       end
     end
