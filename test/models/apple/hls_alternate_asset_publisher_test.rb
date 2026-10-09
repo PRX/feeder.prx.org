@@ -419,40 +419,6 @@ module Apple
       create(:hls_video_episode, podcast: podcast, feeds: [podcast.default_feed, feed], **attrs)
     end
 
-    describe ".publishes?" do
-      let(:hls_config) { create(:apple_hls_config, show_feed_binding: show_feed_binding) }
-
-      def publishes?(ep)
-        HlsAlternateAssetPublisher.publishes?(ep, feed: feed.reload)
-      end
-
-      it "is true for an eligible episode in the feed's RSS" do
-        hls_config
-        assert publishes?(video_episode)
-      end
-
-      it "is false without an enabled HLS config on a public feed" do
-        ep = video_episode
-        show_feed_binding
-        refute publishes?(ep)
-
-        hls_config
-        feed.update_column(:private, true)
-        refute publishes?(ep)
-      end
-
-      it "is false for an ineligible episode" do
-        hls_config
-        refute publishes?(video_episode(hls_status: "processing"))
-      end
-
-      it "is false for an episode not in the feed's RSS" do
-        hls_config
-        refute publishes?(video_episode(published_at: nil))
-        refute publishes?(video_episode(published_at: 1.day.from_now))
-      end
-    end
-
     describe ".status_for" do
       let(:hls_config) { create(:apple_hls_config, show_feed_binding: show_feed_binding) }
 

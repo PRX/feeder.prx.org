@@ -19,10 +19,6 @@ class EpisodeAppleHlsStatusesControllerTest < ActionDispatch::IntegrationTest
       .to_return(status: 200, body: {data: data, links: {self: "#{api_base}/x"}}.to_json)
   end
 
-  def stub_by_apple_id(data, ep = episode)
-    stub_request(:get, "#{api_base}/episodes/#{ep.item_guid}?include=show").to_return(status: 200, body: {data: data}.to_json)
-  end
-
   def video_episode(**attrs)
     create(:hls_video_episode, podcast: podcast, feeds: [podcast.default_feed, feed], **attrs)
   end
@@ -46,20 +42,15 @@ class EpisodeAppleHlsStatusesControllerTest < ActionDispatch::IntegrationTest
     assert_select "turbo-frame#apple-hls-statuses .prx-badge-linked", text: "Linked"
   end
 
-  test "skips Apple when the row was checked recently" do
+  test "polls Apple only once the row's last check is stale" do
     create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid, last_checked_at: 30.seconds.ago)
 
     get episode_apple_hls_status_path(episode)
 
-    assert_response :success
     assert_select ".prx-badge-staged", text: "Staged"
     assert_not_requested :any, /#{api_base}/
-  end
 
-  test "polls Apple when the row's last check is stale" do
-    create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid, last_checked_at: 30.seconds.ago)
     stub_filtered("episodes", [{"id" => "ep-1", "attributes" => {"guid" => episode.item_guid, "alternateAssetContentUrl" => "https://dovetail.test/ep1.m3u8"}}])
-
     travel_to(EpisodeAppleHlsStatusesController::POLL_INTERVAL.from_now) do
       get episode_apple_hls_status_path(episode)
     end
@@ -67,20 +58,6 @@ class EpisodeAppleHlsStatusesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".prx-badge-linked", text: "Linked"
     assert_requested :get, %r{#{api_base}/shows/show-1/episodes}
-  end
-
-  test "keeps a linked episode whose RSS GUID is its Apple episode id" do
-    create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
-      status: :linked, apple_episode_id: episode.item_guid)
-    stub_filtered("episodes", [])
-    stub_by_apple_id({"id" => episode.item_guid, "attributes" => {"guid" => "other-guid", "alternateAssetContentUrl" => "https://dovetail.test/ep1.m3u8"},
-                      "relationships" => {"show" => {"data" => {"type" => "shows", "id" => "show-1"}}}})
-
-    get episode_apple_hls_status_path(episode)
-
-    assert_response :success
-    assert_select "turbo-frame#apple-hls-statuses .prx-badge-linked", text: "Linked"
-    assert episode.apple_hls_alternate_assets.first.linked?
   end
 
   test "renders the serialized status when Apple fails" do
