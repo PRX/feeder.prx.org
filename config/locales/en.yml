@@ -345,6 +345,11 @@ en:
       apple/delegated_delivery_config:
         publish_enabled: Enable publishing to Apple Podcasts Connect
         sync_blocks_rss: Episodes must publish to Apple before the public feed
+      apple/feed_settings:
+        delivery: Apple Delivery
+        connection: Apple Show ID
+        publish_enabled: Enable publishing to Apple Podcasts Connect
+        sync_blocks_rss: Episodes must publish to Apple before the public feed
       megaphone/config:
         publish_enabled: Enable publishing to Megaphone
         sync_blocks_rss: Episodes must publish to Megaphone before the public feed
@@ -444,7 +449,6 @@ en:
         itunes_subcategory: Apple Podcasts Sub-Category
         label: Label
         labels:
-          apple: Apple Subscriptions
           default: Default RSS Feed
           megaphone: Megaphone Integration
         new_feed_url: New Feed URL
@@ -931,17 +935,33 @@ en:
       title: Ad Zones to Include
       help:
         ad_zones: Control the types of ads that should be stitched into episodes in this feed.
-    form_delegated_delivery_config:
-      title: Apple Subscriptions
-      description: Configure your credentials to publish episodes through Apple's Podcast Connect API
-      guide_link: <a href="https://help.prx.org/hc/en-us/articles/26602803552155-Setting-up-Apple-Podcast-Subscriptions-with-Apple-Delegated-Delivery" target="_blank">Check out our guide to step you through the setup.</a>
-      key_uploaded: Apple API Key Uploaded
+    form_apple_settings:
+      title: Apple Settings
+      status: Apple Status
+      connected: Connected
+      configured: Configured
+      not_connected: Not connected
+      last_checked_html: "Last checked: %{time}"
       show_lookup_failed: Failed to load shows from Apple Podcasts Connect.
+      confirm_replace: Are you sure you want to replace this Apple connection? Dependent delegated-delivery feeds will use the new connection.
+      confirm_remove: Are you sure you want to remove this Apple connection?
+      confirm_leave_own_show: Are you sure you want to stop publishing to this feed's own Apple show? Saving will remove its Apple connection. Choose a public feed mapping to keep delegated delivery.
+      view_mapped_feed: Go to the mapped feed
+      no_mappings: No public feed on this podcast has an available Apple show connection. Connect one in a public feed's Apple Settings, or publish to this feed's own Apple show.
+      no_mappings_own_show: No other public feed on this podcast has an available Apple show connection. Choose "This feed's own Apple show" instead.
+      mapped_feed: Feed mapped to Apple Subscriptions
+      deliveries:
+        none: No delegated delivery
+        own: This feed's own Apple show
+        mapped: "%{feed} (%{show_id})"
+      create_feed: "+ Create a new feed"
+      publishing: Publishing
+      paused: Paused
       help:
-        display_episodes_count: You can optionally limit the number of episodes that Paid Subscribers will see in Apple Podcasts. Leave this field blank to include all.
-        publish_enabled: Enable automatically publishing and updating episodes in this feed to Apple?
-        sync_blocks_rss: Block publishing to the default feed RSS until the Apple episode is published?
-        episode_offset_seconds: How early should episodes be published to subscribers?
+        connection: Select the Apple show Apple crawls this feed for.
+        delivery: Choose where this feed's episodes go in Apple Podcasts Connect, this feed's own Apple show or a public feed's.
+        publish_enabled: Enable publishing this feed's episodes to Apple Podcasts Connect.
+        sync_blocks_rss: Require Apple publishing to succeed before public RSS publishing continues.
     form_audio_format:
       title: Audio Format
       help:
@@ -1007,8 +1027,13 @@ en:
       help:
         locked: This feed is locked, to make changes please <a href="https://help.prx.org/hc/en-us">contact PRX support.</a>
     helper:
-      apple_episode_offset_options:
-        "-86400": 1 day early
+      episode_offset_options:
+        "-300": 5 minutes early
+        "-900": 15 minutes early
+        "-3600": 1 hour early
+        "-21600": 6 hours early
+        "-43200": 12 hours early
+        "-86400": 24 hours early
         "-172800": 2 days early
         "-259200": 3 days early
         "-345600": 4 days early
@@ -1020,15 +1045,6 @@ en:
         "-2419200": 4 weeks early
         "-3024000": 5 weeks early
         "-3628800": 6 weeks early
-      episode_offset_options:
-        "-300": 5 minutes early
-        "-900": 15 minutes early
-        "-3600": 1 hour early
-        "-21600": 6 hours early
-        "-43200": 12 hours early
-        "-86400": 24 hours early
-        "-259200": 3 days early
-        "-604800": 1 week early
         "-6048000": 10 weeks early
         "300": 5 minutes late
         "900": 15 minutes late
@@ -1383,6 +1399,8 @@ en:
         empty: Add an account credential below before connecting this podcast to Apple.
         save: Save Credential
         unsaved_confirm: You have an unsaved Apple credential selection.
+        locked_title: Warning
+        locked_html: A locked feed uses this podcast's Apple credential. To change it, please <a href="https://help.prx.org/hc/en-us">contact PRX support.</a>
         confirm_change:
           one: This podcast has one connected Apple show. Changing credentials will affect that connection.
           other: This podcast has %{count} connected Apple shows. Changing credentials will affect those connections.

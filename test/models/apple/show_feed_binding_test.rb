@@ -28,12 +28,26 @@ module Apple
         assert_includes binding.errors[:apple_show_id], "Can't be blank"
       end
 
-      it "requires a public feed" do
+      it "allows a private feed with a token" do
         private_feed = create(:private_feed, podcast: create(:podcast))
+
+        assert build(:apple_show_feed_binding, feed: private_feed).valid?
+      end
+
+      it "requires a token on a private feed" do
+        private_feed = create(:private_feed, podcast: create(:podcast))
+        private_feed.tokens.each(&:mark_for_destruction)
         binding = build(:apple_show_feed_binding, feed: private_feed)
 
         refute binding.valid?
-        assert_includes binding.errors[:feed], "must be a public feed"
+        assert_includes binding.errors[:feed], "must have a token when private"
+      end
+
+      it "rejects a Megaphone feed" do
+        binding = build(:apple_show_feed_binding, feed: create(:megaphone_feed))
+
+        refute binding.valid?
+        assert_includes binding.errors[:feed], "cannot be a Megaphone feed"
       end
 
       it "allows only one binding per feed" do
@@ -47,6 +61,36 @@ module Apple
       end
     end
 
+    describe ".available_for_delivery" do
+      it "lists unassigned public bindings and the delivery feed's own binding" do
+        podcast = create(:podcast)
+        delivery_feed = create(:private_feed, podcast: podcast)
+        public_binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+        own_binding = create(:apple_show_feed_binding, feed: delivery_feed)
+        other_private = create(:apple_show_feed_binding, feed: create(:private_feed, podcast: podcast))
+        assigned = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+        create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), show_feed_binding: assigned)
+        create(:apple_show_feed_binding, feed: create(:public_feed))
+
+        available = ShowFeedBinding.available_for_delivery(delivery_feed).to_a
+
+        assert_equal [public_binding, own_binding].sort_by(&:id), available.sort_by(&:id)
+        refute_includes available, other_private
+      end
+    end
+
+    describe "#other_feed_config" do
+      it "finds another feed's config that delivers through the show" do
+        podcast = create(:podcast)
+        binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+        assert_nil binding.other_feed_config
+
+        config = create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), show_feed_binding: binding)
+
+        assert_equal config, binding.other_feed_config
+      end
+    end
+
     describe ".active" do
       it "excludes bindings whose feeds are soft deleted" do
         binding = create(:apple_show_feed_binding)
@@ -56,6 +100,189 @@ module Apple
 
         assert_includes ShowFeedBinding.active.to_a, active_binding
         refute_includes ShowFeedBinding.active.to_a, binding
+      end
+    end
+
+    it "refuses direct disconnection while delegated delivery uses the binding" do
+      config = create(:delegated_delivery_config)
+      binding = config.show_feed_binding
+      sync_log = Apple::SyncLog.log!(feeder_type: :feeds, feeder_id: binding.feed_id, external_id: binding.apple_show_id)
+
+      refute binding.destroy
+      assert_includes binding.errors[:base], "cannot be removed while delegated-delivery feeds use it"
+      assert_equal binding, config.reload.show_feed_binding
+      assert_predicate binding.reload, :persisted?
+      assert_equal sync_log, binding.feed.reload.apple_sync_log
+    end
+
+    it "clears only the disconnected feed's Apple sync log" do
+      binding = create(:apple_show_feed_binding)
+      sync_log = Apple::SyncLog.log!(feeder_type: :feeds, feeder_id: binding.feed_id, external_id: binding.apple_show_id)
+      other_binding = create(:apple_show_feed_binding)
+      other_log = Apple::SyncLog.log!(feeder_type: :feeds, feeder_id: other_binding.feed_id, external_id: other_binding.apple_show_id)
+      megaphone_log = ::SyncLog.log!(integration: :megaphone, feeder_type: :feeds, feeder_id: binding.feed_id, external_id: "megaphone-show")
+      assert_equal sync_log, binding.feed.apple_sync_log
+
+      binding.destroy!
+
+      refute ::SyncLog.exists?(sync_log.id)
+      assert_nil binding.feed.apple_sync_log
+      assert ::SyncLog.exists?(other_log.id)
+      assert ::SyncLog.exists?(megaphone_log.id)
+    end
+
+    it "restores the binding and sync log when disconnection rolls back" do
+      binding = create(:apple_show_feed_binding)
+      sync_log = Apple::SyncLog.log!(feeder_type: :feeds, feeder_id: binding.feed_id, external_id: binding.apple_show_id)
+
+      ShowFeedBinding.transaction do
+        binding.destroy!
+        raise ActiveRecord::Rollback
+      end
+
+      assert_predicate binding.reload, :persisted?
+      assert_equal sync_log, binding.feed.reload.apple_sync_log
+    end
+
+    it "mirrors default feed routing when connected outside a controller" do
+      podcast = create(:podcast)
+      config = create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast))
+      binding = config.reload.show_feed_binding
+      body = {data: {id: "replacement", type: "shows"}}.to_json
+      stub_request(:get, "https://aardvark.prx.org/shows/replacement").to_return(status: 200, body: body)
+
+      binding.connect_existing("replacement")
+
+      assert_empty binding.errors
+      assert_equal "replacement", binding.reload.apple_show_id
+      assert_equal "replacement", binding.feed.reload.apple_sync_log.external_id
+      assert_equal "replacement", config.feed.reload.apple_show_id
+    end
+
+    describe ".connect_existing" do
+      it "rejects another connection to a show already used for delivery" do
+        config = create(:delegated_delivery_config)
+        existing = config.show_feed_binding
+        feed = create(:public_feed, podcast: config.podcast)
+
+        assert_no_difference "ShowFeedBinding.count" do
+          binding = ShowFeedBinding.connect_existing(feed: feed, apple_show_id: existing.apple_show_id)
+
+          refute_predicate binding, :persisted?
+          assert_includes binding.errors[:apple_show_id], "is already connected to another feed"
+        end
+      end
+
+      it "preserves the original connection when its replacement is already connected" do
+        key = create(:apple_key, account_id: 123)
+        podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/123", apple_key: key)
+        original = create(:apple_show_feed_binding, feed: podcast.default_feed)
+        other = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+        original_show_id = original.apple_show_id
+
+        binding = ShowFeedBinding.connect_existing(feed: original.feed, apple_show_id: other.apple_show_id)
+
+        assert_includes binding.errors[:apple_show_id], "is already connected to another feed"
+        assert_equal original_show_id, original.reload.apple_show_id
+        assert_predicate original, :valid?
+      end
+
+      it "enforces unique show connections even when validation is bypassed" do
+        existing = create(:apple_show_feed_binding)
+        feed = create(:public_feed, podcast: create(:podcast))
+
+        assert_raises ActiveRecord::RecordNotUnique do
+          ShowFeedBinding.transaction(requires_new: true) do
+            ShowFeedBinding.insert_all!([
+              {feed_id: feed.id, apple_show_id: existing.apple_show_id}
+            ])
+          end
+        end
+      end
+
+      it "verifies show access before creating a binding" do
+        key = create(:apple_key, account_id: 123)
+        podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/123", apple_key: key)
+        feed = create(:public_feed, podcast: podcast)
+        body = {data: {id: "show-1", type: "shows", attributes: {title: "A show"}}}.to_json
+        stub_request(:get, "https://aardvark.prx.org/shows/show-1").to_return(status: 200, body: body)
+
+        binding = ShowFeedBinding.connect_existing(feed: feed, apple_show_id: "show-1")
+
+        assert_predicate binding, :persisted?
+        assert_equal key, feed.podcast.reload.apple_key
+      end
+
+      it "does not create a binding when the show is unreadable" do
+        key = create(:apple_key, account_id: 123)
+        podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/123", apple_key: key)
+        feed = create(:public_feed, podcast: podcast)
+        stub_request(:get, "https://aardvark.prx.org/shows/missing").to_return(status: 404, body: "{}")
+
+        assert_no_difference "ShowFeedBinding.count" do
+          binding = ShowFeedBinding.connect_existing(feed: feed, apple_show_id: "missing")
+          refute_predicate binding, :persisted?
+          assert_predicate binding.errors[:apple_show_id], :present?
+        end
+        assert_equal key, feed.podcast.reload.apple_key
+      end
+
+      it "requires the podcast to have a selected key" do
+        feed = create(:public_feed, podcast: create(:podcast, prx_account_uri: "/api/v1/accounts/123"))
+
+        binding = ShowFeedBinding.connect_existing(feed: feed, apple_show_id: "show-1")
+
+        refute_predicate binding, :persisted?
+        assert_includes binding.errors[:apple_key], "must be selected for the feed's podcast"
+      end
+
+      it "rejects a selected key from another PRX account" do
+        podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/123")
+        key = create(:apple_key, account_id: 456)
+        podcast.update_column(:apple_key_id, key.id)
+        feed = create(:public_feed, podcast: podcast)
+
+        binding = ShowFeedBinding.connect_existing(feed: feed, apple_show_id: "show-1")
+
+        refute_predicate binding, :persisted?
+        assert_includes binding.errors[:apple_key], "must belong to the feed's PRX account"
+      end
+    end
+
+    describe ".connection_options" do
+      it "uses show ids as values for non-archived shows" do
+        key = create(:apple_key, key_id: "credential12")
+        body = {
+          data: [
+            {id: "show-1", attributes: {title: "Shared", publishingState: "PUBLISHED"}},
+            {id: "show-2", attributes: {title: "Old", publishingState: "ARCHIVED"}}
+          ],
+          links: {}
+        }.to_json
+        stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: body)
+
+        options = ShowFeedBinding.connection_options(key, feed: create(:public_feed))
+
+        assert_equal ["show-1"], options.map(&:value)
+        assert_equal "Shared — show-1", options.first.label
+      end
+
+      it "omits shows connected to other feeds, including other podcasts" do
+        key = create(:apple_key)
+        feed = create(:public_feed)
+        create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
+        create(:apple_show_feed_binding, feed: create(:public_feed, podcast: feed.podcast), apple_show_id: "show-2")
+        create(:apple_show_feed_binding, feed: create(:public_feed), apple_show_id: "show-3")
+        shows = %w[show-1 show-2 show-3 show-4].map { |id| {id: id, attributes: {title: id, publishingState: "PUBLISHED"}} }
+        stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: {data: shows, links: {}}.to_json)
+
+        options = ShowFeedBinding.connection_options(key, feed: feed)
+
+        assert_equal ["show-1", "show-4"], options.map(&:value)
+      end
+
+      it "returns no options without a selected key" do
+        assert_empty ShowFeedBinding.connection_options(nil, feed: create(:public_feed))
       end
     end
   end

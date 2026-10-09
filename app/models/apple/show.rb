@@ -57,10 +57,6 @@ module Apple
       api.unwrap_response(resp)
     end
 
-    def self.from_podcast(podcast)
-      from_delegated_delivery_config(podcast.delegated_delivery_config)
-    end
-
     def inspect
       "#<Apple:Show:#{object_id} show_id=#{try(:apple_id) || "nil"}>"
     end
@@ -87,7 +83,7 @@ module Apple
       @draft_upload_candidates ||=
         begin
           draft_ids = Set.new(
-            private_feed.integration_draft_episodes
+            private_feed.integration_draft_episodes(:apple)
               .includes(:contents)
               .select { |ep| ep.enclosure_ready?(true) }
               .map(&:id)

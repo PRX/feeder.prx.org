@@ -139,12 +139,13 @@ describe Feed do
   end
 
   describe "#integration_episode?" do
-    it "matches feed_episode? for feeds without integrations" do
+    it "excludes feeds without Apple delivery" do
       published = create(:episode, podcast: podcast, published_at: 1.hour.ago)
       scheduled = create(:episode, podcast: podcast, published_at: 1.hour.from_now)
 
-      assert feed1.integration_episode?(published)
-      refute feed1.integration_episode?(scheduled)
+      assert_empty feed1.integration_types
+      refute feed1.integration_episode?(published, :apple)
+      refute feed1.integration_episode?(scheduled, :apple)
     end
   end
 
@@ -155,6 +156,38 @@ describe Feed do
       refute feed3.default?
       assert podcast.feeds.count == 3
       assert_equal Feed.default.pluck(:id), [feed1.id]
+    end
+  end
+
+  describe "soft deletion" do
+    it "preserves default-feed identity through deletion and restoration" do
+      default_feed_id = feed1.id
+
+      feed1.destroy!
+
+      deleted_feed = Feed.with_deleted.find(default_feed_id)
+      assert deleted_feed.deleted?
+      assert_nil deleted_feed.slug
+      assert deleted_feed.default?
+
+      deleted_feed.restore!
+
+      assert_nil deleted_feed.reload.slug
+      assert deleted_feed.default?
+      assert_equal default_feed_id, Podcast.find(podcast.id).default_feed.id
+    end
+
+    it "continues to reject a replacement while the original default feed is deleted" do
+      feed1.destroy!
+
+      assert_raises ActiveRecord::RecordNotUnique do
+        Feed.transaction(requires_new: true) do
+          Feed.create!(podcast: podcast, slug: nil, file_name: Feed::DEFAULT_FILE_NAME)
+        end
+      end
+
+      assert_nil Feed.with_deleted.find(feed1.id).slug
+      assert_nil podcast.feeds.default.first
     end
   end
 
@@ -356,8 +389,7 @@ describe Feed do
   end
 
   describe "#publish_to_apple?" do
-    it "returns false if the feed is not an Apple Subscription feed" do
-      refute_equal feed2.type, "Feeds::AppleSubscription"
+    it "returns false if the feed has no delegated-delivery config" do
       refute feed2.publish_to_apple?
     end
   end

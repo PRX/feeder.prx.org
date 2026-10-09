@@ -18,6 +18,10 @@ FactoryBot.define do
     end
 
     after(:build) do |config, evaluator|
+      if config.key
+        config.key.account_id = config.feed&.podcast&.account_id || config.key.account_id
+      end
+
       next unless evaluator.routing_fixture == :show_feed_binding
 
       show_id = config.feed.apple_show_id.presence || "show-#{SecureRandom.uuid}"
