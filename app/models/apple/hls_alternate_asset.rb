@@ -43,32 +43,30 @@ module Apple
       if error
         asset.status = :error
         asset.last_error = error.respond_to?(:message) ? error.message : error.to_s
-      elsif resource_type == :episode
-        # Apple can hold the episode without its video (crawled before
-        # staging, or the staged asset expired), so only a content URL links.
+      elsif resource_type
         content_url = response&.dig("attributes", "alternateAssetContentUrl").presence
-        asset.apple_episode_id = response&.dig("id") || asset.apple_episode_id
-        asset.content_url = content_url
+        if resource_type == :episode
+          asset.apple_episode_id = response&.dig("id") || asset.apple_episode_id
+          asset.content_url = content_url
+        else
+          asset.staged_alternate_asset_id = response&.dig("id") || asset.staged_alternate_asset_id
+          asset.content_url = content_url || asset.content_url
+        end
+
         if outdated_url?(content_url, episode, show_feed_binding)
           asset.status = :error
           asset.last_error = "Apple has an outdated alternate asset URL"
+        elsif resource_type == :staged_alternate_asset
+          asset.status = :staged
+          asset.last_error = nil
         elsif content_url
+          # Apple can hold the episode without its video (crawled before
+          # staging, or the staged asset expired), so only a content URL links.
           asset.status = :linked
           asset.last_error = nil
         else
           asset.status = :error
           asset.last_error = "Apple reports the episode without an alternate asset"
-        end
-      elsif resource_type == :staged_alternate_asset
-        content_url = response&.dig("attributes", "alternateAssetContentUrl").presence
-        asset.staged_alternate_asset_id = response&.dig("id") || asset.staged_alternate_asset_id
-        asset.content_url = content_url || asset.content_url
-        if outdated_url?(content_url, episode, show_feed_binding)
-          asset.status = :error
-          asset.last_error = "Apple has an outdated alternate asset URL"
-        else
-          asset.status = :staged
-          asset.last_error = nil
         end
       elsif asset.staged? || asset.expired?
         asset.status = :expired
