@@ -63,6 +63,21 @@ class EpisodeAppleHlsTest < ActiveSupport::TestCase
     end
   end
 
+  it "uses the HLS URL even with an enclosure override" do
+    feed = create(:feed, podcast: episode.podcast, slug: "hls")
+    episode.enclosure_override_url = "https://megaphone.test/audio.mp3"
+
+    episode.stub(:video?, true) do
+      episode.stub(:hls_eligible_for_apple?, true) do
+        url = episode.apple_hls_master_url(feed: feed)
+
+        assert_equal episode.enclosure_dovetail_url(feed: feed, prefix: false, ext: "m3u8"), url
+        assert url.end_with?(".m3u8")
+        refute_includes url, "megaphone.test"
+      end
+    end
+  end
+
   it "has HLS alternate asset mirror rows" do
     asset = create(:apple_hls_alternate_asset, episode: episode)
 
