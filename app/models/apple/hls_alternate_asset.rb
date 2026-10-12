@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 module Apple
-  # Local mirror of one Apple alternate-asset lifecycle, keyed by the Apple
-  # show and the rendered RSS GUID. Apple remains the source of truth; this
-  # row caches the latest known state for status reads and recovery.
   class HlsAlternateAsset < ApplicationRecord
     CONTENT_KIND = "VIDEO"
     MIME_TYPE = "application/vnd.apple.mpegurl"
