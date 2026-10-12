@@ -1393,8 +1393,8 @@ en:
         title: Account Credentials
         description: Credentials belong to PRX account %{account_name} (%{account_id}) and are available to every podcast in that account.
         guide_link: <a href="https://help.prx.org/hc/en-us/articles/26602803552155-Setting-up-Apple-Podcast-Subscriptions-with-Apple-Delegated-Delivery" target="_blank">Check out our setup guide.</a>
-        key_label: "Apple Key …%{key_id}"
-        provider_label: "Provider …%{provider_id}"
+        key_label: "Apple Key %{key_id}"
+        provider_label: "Provider %{provider_id}"
         usage:
           zero: Not used by any podcasts
           one: Used by one podcast

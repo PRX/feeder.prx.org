@@ -14,8 +14,8 @@ class PodcastIntegrationsControllerTest < ActionDispatch::IntegrationTest
     get podcast_integrations_url(podcast)
 
     assert_response :success
-    assert_select "body", text: /#{visible.key_id.last(4)}/
-    assert_select "body", text: /#{hidden.key_id.last(4)}/, count: 0
+    assert_select "body", text: /#{visible.key_id}/
+    assert_select "body", text: /#{hidden.key_id}/, count: 0
     assert_select "select[name='podcast[apple_key_id]'] option[selected][value='#{visible.id}']", count: 1
     assert_select "body", text: /Used by 2 podcasts/
     assert_select "body", text: /Stubbed Account \(123\)/
