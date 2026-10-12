@@ -113,6 +113,19 @@ describe Tasks::CopyMediaTask do
       assert_equal [[nil, 3.0], [3.0, nil]], uncut.reload.segmentation
     end
 
+    it "saves ad breaks from tags matching the episode ad breaks" do
+      episode = create(:episode, medium: "audio", ad_breaks: 1)
+      uncut = create(:uncut, episode: episode, segmentation: nil)
+      task = create(:copy_media_task, owner: uncut, status: "processing")
+
+      Content.stub_any_instance(:copy_media, true) do
+        task.update!(status: "complete")
+      end
+
+      assert_equal 2, episode.reload.contents.count
+      assert_equal [[nil, 3.0], [3.0, nil]], uncut.reload.segmentation
+    end
+
     it "saves ad breaks from tags when not slicing" do
       episode = create(:episode, medium: "audio", segment_count: 3)
       uncut = create(:uncut, episode: episode, segmentation: nil)
