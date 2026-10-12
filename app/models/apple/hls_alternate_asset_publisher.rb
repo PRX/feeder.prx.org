@@ -120,7 +120,7 @@ module Apple
       if episode_json.dig("attributes", "publishingState") == "ARCHIVED"
         Rails.logger.error("Apple HLS linked episode is archived, skipping",
           {episode_id: episode.id, feed_id: feed.id, apple_show_id: show_feed_binding.apple_show_id, guid: guid, apple_episode_id: episode_json["id"]})
-      elsif !alternate_asset_current?(episode_json, url)
+      elsif !Apple::HlsAlternateAsset.current_on_apple?(episode_json, url)
         resp = api.patch("episodes/#{episode_json["id"]}", linked_episode_params(episode_json["id"], url))
         episode_json = api.response!(resp).dig("api_response", "val", "data")
       end
@@ -161,21 +161,8 @@ module Apple
       Apple::HlsAlternateAsset.upsert_from_apple!(episode: episode, show_feed_binding: show_feed_binding, feeder_guid: guid, **attrs)
     end
 
-    def alternate_asset_attributes(url)
-      {
-        alternateAssetContentUrl: url,
-        alternateAssetContentKind: Apple::HlsAlternateAsset::CONTENT_KIND,
-        alternateAssetMimeType: Apple::HlsAlternateAsset::MIME_TYPE
-      }
-    end
-
-    def alternate_asset_current?(episode_json, url)
-      attributes = episode_json["attributes"] || {}
-      alternate_asset_attributes(url).all? { |key, value| attributes[key.to_s] == value }
-    end
-
     def linked_episode_params(apple_episode_id, url)
-      {data: {type: "episodes", id: apple_episode_id, attributes: alternate_asset_attributes(url)}}
+      {data: {type: "episodes", id: apple_episode_id, attributes: Apple::HlsAlternateAsset.apple_attributes(url)}}
     end
 
     def staged_update_params(staged_id, url)
@@ -186,7 +173,7 @@ module Apple
       {
         data: {
           type: "stagedAlternateAssets",
-          attributes: alternate_asset_attributes(url).merge(guid: guid),
+          attributes: Apple::HlsAlternateAsset.apple_attributes(url).merge(guid: guid),
           relationships: {show: {data: {type: "shows", id: show.apple_id}}}
         }
       }
