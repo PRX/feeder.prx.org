@@ -38,9 +38,6 @@ class StreamResource < ApplicationRecord
     end
   end
 
-  def set_copy_metadata(copy_task)
-  end
-
   def after_copy(copy_task)
     if copy_task.bad_audio?
       Tasks::FixMediaTask.start!(self, copy_task)

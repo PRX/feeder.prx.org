@@ -3,26 +3,28 @@ require "test_helper"
 describe Uncut do
   let(:uncut) { build_stubbed(:uncut) }
 
-  describe "#set_copy_metadata" do
+  describe "#after_copy" do
     let(:copy_task) { build_stubbed(:copy_media_task) }
 
     it "sets ad breaks from id3 tags" do
       uncut.segmentation = nil
-      uncut.set_copy_metadata(copy_task)
+      saved = false
+      uncut.stub(:save!, -> { saved = true }) do
+        uncut.after_copy(copy_task)
+      end
+      assert saved
       assert_equal [[nil, 3.0], [3.0, nil]], uncut.segmentation
 
       copy_task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Tags][0][:value] = "AIS_AD_BREAK_1=4000"
-      uncut.set_copy_metadata(copy_task)
+      uncut.stub(:save!, true) do
+        uncut.after_copy(copy_task)
+      end
       assert_equal [[nil, 3.0], [3.0, nil]], uncut.segmentation
     end
-  end
-
-  describe "#after_copy" do
-    let(:copy_task) { build_stubbed(:copy_media_task) }
 
     it "fixes bad audio files" do
       refute copy_task.bad_audio?
-      assert_nil uncut.after_copy(copy_task)
+      assert_nil uncut.stub(:save!, true) { uncut.after_copy(copy_task) }
 
       copy_task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:DurationDiscrepancy] = 1000
       assert copy_task.bad_audio?
@@ -34,8 +36,10 @@ describe Uncut do
       end
 
       Tasks::FixMediaTask.stub(:start!, mock) do
-        assert_equal "ret-val", uncut.after_copy(copy_task)
-        mock.verify
+        uncut.stub(:save!, true) do
+          assert_equal "ret-val", uncut.after_copy(copy_task)
+          mock.verify
+        end
       end
     end
 
@@ -45,12 +49,13 @@ describe Uncut do
       assert_empty uncut.episode.contents
 
       Content.stub_any_instance(:copy_media, true) do
-        uncut.episode.stub(:save!, true) do
-          uncut.set_copy_metadata(copy_task)
-          uncut.after_copy(copy_task)
-          assert_equal 2, uncut.episode.contents.length
-          assert_equal [nil, 3.0], uncut.episode.contents[0].segmentation
-          assert_equal [3.0, nil], uncut.episode.contents[1].segmentation
+        uncut.stub(:save!, true) do
+          uncut.episode.stub(:save!, true) do
+            uncut.after_copy(copy_task)
+            assert_equal 2, uncut.episode.contents.length
+            assert_equal [nil, 3.0], uncut.episode.contents[0].segmentation
+            assert_equal [3.0, nil], uncut.episode.contents[1].segmentation
+          end
         end
       end
     end

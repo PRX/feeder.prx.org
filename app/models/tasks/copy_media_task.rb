@@ -20,7 +20,6 @@ class Tasks::CopyMediaTask < ::Task
 
     if complete?
       set_media_metadata
-      media_resource.set_copy_metadata(self)
 
       # change status, if metadata doesn't pass validations
       media_resource.status = "invalid" if media_resource.invalid?
