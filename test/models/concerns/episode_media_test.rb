@@ -79,6 +79,41 @@ class EpisodeMediaTest < ActiveSupport::TestCase
     end
   end
 
+  describe "#uncut=" do
+    let(:episode) { create(:episode_with_media) }
+
+    it "sets the medium from the new uncut" do
+      episode.uncut = Uncut.new(original_url: "s3://prx-testing/test/video.mp4")
+      assert_equal "video", episode.medium
+      assert episode.contents.first.marked_for_destruction?
+      refute episode.uncut.marked_for_destruction?
+
+      episode.save!
+      assert_equal "s3://prx-testing/test/video.mp4", episode.reload.uncut.original_url
+    end
+
+    it "keeps the replacement uncut over the existing contents" do
+      episode.uncut = Uncut.new(original_url: "s3://prx-testing/test/uncut.mp3")
+      assert_equal "uncut", episode.medium
+      assert episode.contents.first.marked_for_destruction?
+
+      episode.save!
+      assert_equal "s3://prx-testing/test/uncut.mp3", episode.reload.uncut.original_url
+    end
+
+    it "sets the medium from the existing uncut when only updating segmentation" do
+      episode.update!(medium: "video", contents: [])
+      uncut = create(:uncut_video, episode: episode)
+      episode.reload
+
+      episode.uncut = Uncut.new(segmentation: [[nil, 4.0], [4.0, nil]])
+      assert_equal "video", episode.medium
+      assert_equal uncut, episode.uncut
+      refute episode.uncut.marked_for_destruction?
+      assert_equal [[nil, 4.0], [4.0, nil]], episode.uncut.segmentation
+    end
+  end
+
   describe "#segment_range" do
     it "returns a range of positions" do
       e = Episode.new(segment_count: nil)

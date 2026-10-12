@@ -249,6 +249,7 @@ describe Api::Auth::EpisodesController do
       episode_update.reload
       assert_not_nil episode_update.uncut
       assert_equal "https://s3.amazonaws.com/prx-testing/test/video.mp4", episode_update.uncut.original_url
+      assert_equal "video", episode_update.medium
     end
 
     it "keeps the uncut when updating only segmentation on a video episode" do
@@ -266,6 +267,7 @@ describe Api::Auth::EpisodesController do
       episode_update.reload
       assert_equal uncut.id, episode_update.uncut&.id
       assert_equal [[nil, 4.0], [4.0, nil]], episode_update.uncut.segmentation
+      assert_equal "video", episode_update.medium
     end
   end
 

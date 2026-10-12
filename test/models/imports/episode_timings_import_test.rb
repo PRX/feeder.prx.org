@@ -150,6 +150,7 @@ describe EpisodeTimingsImport do
         assert_nil uncut.reload.deleted_at
         assert_equal [[nil, 1.23], [1.23, 4.56], [4.56, nil]], uncut.segmentation
         assert_equal uncut.id, episode.reload.uncut&.id
+        assert_equal "video", episode.medium
       end
     end
   end
