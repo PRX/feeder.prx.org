@@ -80,15 +80,15 @@
           </div>
         <% end %>
 
-        <% if policy(@apple_key).create? %>
+        <% if policy(@new_apple_key).create? %>
           <h3 class="h6 mt-4"><%= t(".apple_credentials.add_title") %></h3>
           <p class="small text-muted"><%= t(".apple_credentials.upload_help") %></p>
 
-          <% if @apple_key.errors.any? %>
-            <div class="alert alert-danger" role="alert"><%= @apple_key.errors.full_messages.to_sentence %></div>
+          <% if @new_apple_key.errors.any? %>
+            <div class="alert alert-danger" role="alert"><%= @new_apple_key.errors.full_messages.to_sentence %></div>
           <% end %>
 
-          <%= form_with(model: [@podcast, @apple_key], html: {autocomplete: "off"}, data: {controller: "apple-key"}) do |form| %>
+          <%= form_with(model: [@podcast, @new_apple_key], html: {autocomplete: "off"}, data: {controller: "apple-key"}) do |form| %>
             <%= form.file_field :key_file, class: "mb-3 form-control", accept: ".p8,.pem", data: {action: "apple-key#convertFileToKey"}, required: true %>
             <%= form.hidden_field :key_pem_b64, data: {apple_key_target: "pem"} %>
             <%= form.hidden_field :provider_id, data: {apple_key_target: "provider"} %>
