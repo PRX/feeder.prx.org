@@ -138,5 +138,19 @@ describe EpisodeTimingsImport do
         assert_equal 3, episode.reload.segment_count
       end
     end
+
+    it "re-segments video uncuts without destroying them" do
+      episode.update!(medium: "video")
+      uncut = create(:uncut, episode: episode, medium: "video", mime_type: "video/mp4", segmentation: [[1.2, 3.4]])
+
+      Episode.stub_any_instance(:copy_media, true) do
+        import.import!
+        assert import.status_complete?
+
+        assert_nil uncut.reload.deleted_at
+        assert_equal [[nil, 1.23], [1.23, 4.56], [4.56, nil]], uncut.segmentation
+        assert_equal uncut.id, episode.reload.uncut&.id
+      end
+    end
   end
 end
