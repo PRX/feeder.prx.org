@@ -30,9 +30,6 @@ module Apple
       eligible = episodes.select(&:hls_eligible_for_apple?)
       return [] if eligible.empty?
 
-      # Load bulk state here, outside publish_episode's rescue, so a failed
-      # read raises instead of being recorded on every episode. Staged assets
-      # are only needed for episodes Apple has not crawled yet.
       unlinked = eligible.reject { |episode| apple_episode_json(episode) }
       show.staged_alternate_asset_json if unlinked.any?
 
@@ -62,8 +59,6 @@ module Apple
       show.find_apple_episode_json_by_guid(episode_guid(episode, feed))
     end
 
-    # An archived Apple episode was hidden on purpose (or its unarchive
-    # failed), so it is recorded as Apple reports it and left unpatched.
     def publish_linked(episode, guid, url, episode_json)
       if episode_json.dig("attributes", "publishingState") == "ARCHIVED"
         Rails.logger.error("Apple HLS linked episode is archived, skipping",
@@ -85,7 +80,6 @@ module Apple
       upsert(episode, guid, resource_type: :staged_alternate_asset, response: staged_json)
     end
 
-    # The create has no idempotency key, so it is sent once.
     def stage(episode, guid, url)
       log_vanished(episode, guid)
 
@@ -95,8 +89,6 @@ module Apple
       upsert(episode, guid, resource_type: :staged_alternate_asset, response: staged_json)
     end
 
-    # Apple no longer returns the resource a prior row recorded: staged assets
-    # expire, but a linked episode should not disappear.
     def log_vanished(episode, guid)
       asset = Apple::HlsAlternateAsset.find_by(feeder_podcast_id: episode.podcast_id, apple_show_id: show_feed_binding.apple_show_id, feeder_guid: guid)
       context = {episode_id: episode.id, feed_id: feed.id, apple_show_id: show_feed_binding.apple_show_id, guid: guid}
