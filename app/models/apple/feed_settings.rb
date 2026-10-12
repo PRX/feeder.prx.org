@@ -176,11 +176,6 @@ module Apple
       connection_changed(binding.disconnect)
     end
 
-    # Save HLS after the feed saves and after disconnect, so a disconnected
-    # binding takes its HLS config with it.
-    #
-    # Enabling HLS, or reconnecting while enabled, rechecks Apple video
-    # eligibility. Disabling makes no Apple request and leaves Apple video as is.
     def save_hls_config
       return true unless hls_submitted?
 
