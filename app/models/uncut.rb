@@ -49,6 +49,7 @@ class Uncut < MediaResource
       self.ad_breaks = breaks_from_tags(copy_task.porter_callback_tags)
       episode.segment_count = [episode.segment_count.to_i, segmentation.count, 1].max
     end
+    save! if changed?
 
     # fix bad files before slicing
     if audio? && copy_task.bad_audio?
