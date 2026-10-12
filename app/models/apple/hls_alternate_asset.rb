@@ -71,6 +71,9 @@ module Apple
       elsif asset.linked?
         asset.status = :error
         asset.last_error = "Apple no longer reports the linked episode or a staged alternate asset"
+      elsif asset.error?
+        # Replace any earlier error so the badge reflects Apple's current state
+        asset.last_error = "Apple reports neither the episode nor a staged alternate asset"
       end
 
       asset.save!

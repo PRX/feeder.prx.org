@@ -154,6 +154,8 @@ module Apple
         Rails.logger.warn("Apple HLS linked episode vanished, re-staging", context.merge(apple_episode_id: asset.apple_episode_id))
       elsif asset&.staged? || asset&.expired?
         Rails.logger.info("Apple HLS staged asset expired, re-staging", context.merge(staged_alternate_asset_id: asset.staged_alternate_asset_id))
+      elsif asset&.error?
+        Rails.logger.info("Apple HLS asset in error, re-staging", context.merge(last_error: asset.last_error))
       end
     end
 
