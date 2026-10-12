@@ -131,8 +131,6 @@ class Podcast < ApplicationRecord
     end
   end
 
-  # A locked feed's Apple connection or delivery depends on this
-  # podcast's credential.
   def apple_key_locked?
     feeds.where(edit_locked: true).apple_connected.exists?
   end
