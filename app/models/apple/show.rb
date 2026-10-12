@@ -74,8 +74,6 @@ module Apple
         delegated_delivery_config: delegated_delivery_config)
     end
 
-    # The Apple-crawled public feed's show, for HLS publishing. It has no
-    # delivery feed.
     def self.from_show_feed_binding(show_feed_binding)
       apple_key = show_feed_binding.feed.podcast.apple_key
       raise "Missing Apple key for podcast" unless apple_key
