@@ -41,7 +41,8 @@ module Apple
     end
 
     def staged_json(guid, url, id: "staged-1")
-      {"id" => id, "type" => "stagedAlternateAssets", "attributes" => {"guid" => guid, "alternateAssetContentUrl" => url}}
+      attributes = {"guid" => guid, "alternateAssetContentUrl" => url, "alternateAssetContentKind" => HlsAlternateAsset::CONTENT_KIND, "alternateAssetMimeType" => HlsAlternateAsset::MIME_TYPE}
+      {"id" => id, "type" => "stagedAlternateAssets", "attributes" => attributes}
     end
 
     def publish(*episodes)
