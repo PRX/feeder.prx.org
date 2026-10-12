@@ -21,7 +21,6 @@ module EpisodesHelper
     episode.integration_feeds(integration).index_with { |feed| feed_integration_status(episode, integration, feed) }
   end
 
-  # Status for an episode no feed of the integration delivers.
   def episode_integration_placeholder_status(episode)
     episode.draft? ? "draft" : "not_publishable"
   end

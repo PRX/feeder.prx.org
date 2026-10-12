@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class EnforceDelegatedDeliveryConfigUniqueness < ActiveRecord::Migration[7.2]
   FEED_INDEX = "index_apple_configs_on_feed_id"
   BINDING_INDEX = "index_apple_configs_on_show_feed_binding_id"
