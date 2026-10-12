@@ -56,6 +56,7 @@ class Uncut < MediaResource
     elsif segmentation_ready?
       slice_contents!
       episode.contents.each(&:copy_media)
+      episode.alternate_media_resource&.copy_media
     end
   end
 

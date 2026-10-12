@@ -40,12 +40,45 @@ describe Uncut do
       assert uncut.segmentation_ready?
       assert_empty uncut.episode.contents
 
-      Content.stub_any_instance(:copy_media, true) do
+      content_copies = 0
+      content_copy = proc { content_copies += 1 }
+
+      Content.stub_any_instance(:copy_media, content_copy) do
         uncut.episode.stub(:save!, true) do
           uncut.after_copy(copy_task)
+          assert_equal 2, content_copies
           assert_equal 2, uncut.episode.contents.length
           assert_equal [nil, 3.0], uncut.episode.contents[0].segmentation
           assert_equal [3.0, nil], uncut.episode.contents[1].segmentation
+        end
+      end
+    end
+
+    it "kicks off slicing video contents and alt media" do
+      ep = build_stubbed(:episode, medium: "video", segment_count: 1)
+      uncut = build_stubbed(:uncut_video, status: "complete", episode: ep)
+
+      assert uncut.segmentation_ready?
+      assert_empty uncut.episode.contents
+
+      content_copies = 0
+      content_copy = proc { content_copies += 1 }
+      alt_copies = 0
+      alt_copy = proc { alt_copies += 1 }
+
+      Content.stub_any_instance(:copy_media, content_copy) do
+        AlternateMediaResource.stub_any_instance(:copy_media, alt_copy) do
+          uncut.episode.stub(:save!, true) do
+            uncut.after_copy(copy_task)
+
+            assert_equal 2, content_copies
+            assert_equal 2, uncut.episode.contents.length
+            assert_equal [nil, 3.0], uncut.episode.contents[0].segmentation
+            assert_equal [3.0, nil], uncut.episode.contents[1].segmentation
+
+            assert_equal 1, alt_copies
+            assert_equal [[nil, 3.0], [3.0, nil]], uncut.episode.alternate_media_resource.segmentation
+          end
         end
       end
     end
