@@ -83,12 +83,6 @@ class PublishFeedJob < ApplicationJob
     end
   end
 
-  # Best-effort: HLS failures are recorded and never block RSS. Episode
-  # failures stay on their mirror rows; only a failed run marks the pipeline,
-  # since a failed pipeline is retried in full.
-  #
-  # Apple can enable or revoke video for a show at any time, so eligibility
-  # is refreshed from the show on every publish.
   def publish_apple_hls(podcast, feed)
     return unless feed.publish_apple_hls?
 
