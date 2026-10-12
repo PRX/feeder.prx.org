@@ -49,8 +49,7 @@ module Apple
         content_url = response&.dig("attributes", "alternateAssetContentUrl").presence
         asset.apple_episode_id = response&.dig("id") || asset.apple_episode_id
         asset.content_url = content_url
-        expected_url = episode.apple_hls_master_url(feed: show_feed_binding.feed)
-        if content_url && expected_url && content_url != expected_url
+        if outdated_url?(content_url, episode, show_feed_binding)
           asset.status = :error
           asset.last_error = "Apple has an outdated alternate asset URL"
         elsif content_url
@@ -61,10 +60,16 @@ module Apple
           asset.last_error = "Apple reports the episode without an alternate asset"
         end
       elsif resource_type == :staged_alternate_asset
-        asset.status = :staged
+        content_url = response&.dig("attributes", "alternateAssetContentUrl").presence
         asset.staged_alternate_asset_id = response&.dig("id") || asset.staged_alternate_asset_id
-        asset.content_url = response&.dig("attributes", "alternateAssetContentUrl") || asset.content_url
-        asset.last_error = nil
+        asset.content_url = content_url || asset.content_url
+        if outdated_url?(content_url, episode, show_feed_binding)
+          asset.status = :error
+          asset.last_error = "Apple has an outdated alternate asset URL"
+        else
+          asset.status = :staged
+          asset.last_error = nil
+        end
       elsif asset.staged? || asset.expired?
         asset.status = :expired
         asset.last_error = nil
@@ -75,6 +80,11 @@ module Apple
 
       asset.save!
       asset
+    end
+
+    def self.outdated_url?(content_url, episode, show_feed_binding)
+      expected_url = episode.apple_hls_master_url(feed: show_feed_binding.feed)
+      content_url.present? && expected_url.present? && content_url != expected_url
     end
   end
 end
