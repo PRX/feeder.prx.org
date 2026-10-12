@@ -327,6 +327,17 @@ module Apple
         assert poll.staged?
       end
 
+      it "marks a staged asset with an outdated URL as an error" do
+        stub_filtered("episodes", episode.item_guid, [])
+        stub_filtered("stagedAlternateAssets", episode.item_guid, [staged_json(episode.item_guid, "https://dovetail.test/old.m3u8")])
+
+        asset = poll
+
+        assert asset.error?
+        assert_match(/outdated/, asset.last_error)
+        assert_not_requested :patch, /#{api_base}/
+      end
+
       it "marks a vanished staged asset expired and never stages" do
         create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid)
         stub_filtered("episodes", episode.item_guid, [])
