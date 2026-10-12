@@ -192,6 +192,23 @@ module Apple
       assert_equal "ep-old", log["apple_episode_id"]
     end
 
+    it "logs and re-stages an asset in error" do
+      create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid,
+        status: :error, last_error: "Apple API Error")
+      stub_apple_episodes([])
+      stub_staged_assets([])
+      stub_request(:post, "#{api_base}/stagedAlternateAssets")
+        .to_return(status: 201, body: {data: staged_json(episode.item_guid, "https://dovetail.test/ep1.m3u8")}.to_json)
+
+      logs = capture_json_logs { publish(episode) }
+
+      assert mirror(episode).staged?
+      assert_nil mirror(episode).last_error
+      log = logs.find { |line| line["msg"] == "Apple HLS asset in error, re-staging" }
+      assert_equal "Apple API Error", log["last_error"]
+      assert_equal 30, log["level"]
+    end
+
     it "records a failed write and continues with the next episode" do
       other = hls_episode("https://dovetail.test/ep2.m3u8")
       stub_apple_episodes([])

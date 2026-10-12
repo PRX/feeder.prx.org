@@ -145,13 +145,14 @@ module Apple
         assert_match(/no longer reports/, asset.last_error)
       end
 
-      it "keeps a prior error when Apple has neither resource" do
+      it "replaces a prior error when Apple has neither resource" do
         upsert(error: StandardError.new("boom"))
 
         asset = upsert(resource_type: nil)
 
         assert asset.error?
-        assert_equal "boom", asset.last_error
+        assert_equal "Apple reports neither the episode nor a staged alternate asset", asset.last_error
+        assert_equal 1, HlsAlternateAsset.count
       end
 
       it "records Apple errors and clears them on success" do
