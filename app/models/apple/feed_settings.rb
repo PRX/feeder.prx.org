@@ -46,13 +46,10 @@ module Apple
       define_method(:"#{name}_changed?") { submitted?(name) && public_send(name) != public_send(:"#{name}_was") }
     end
 
-    # Kept from the first read: preparing a connection edits the saved binding.
     def connection_was
       @connection_was ||= binding&.apple_show_id.to_s
     end
 
-    # A private feed's connection only serves its own show, so one without a
-    # config still delivers there.
     def delivery_was
       if config.nil?
         (binding && feed.private?) ? OWN : ""
@@ -71,18 +68,14 @@ module Apple
       !!config&.sync_blocks_rss?
     end
 
-    # Megaphone feeds deliver to Apple without an Apple show connection.
     def connectable?
       feed.apple_connectable?
     end
 
-    # The default feed is what other feeds deliver through, so it has no
-    # delivery of its own.
     def deliverable?
       connectable? && !feed.default?
     end
 
-    # A new feed maps to a public feed; its own show is set up once saved.
     def own_available?
       feed.persisted?
     end
@@ -95,17 +88,21 @@ module Apple
       delivery == OWN
     end
 
-    # The shorthand the form shows sections by: none, own or mapped.
     def route
       return "none" if delivery.blank?
 
       own_show? ? "own" : "mapped"
     end
 
-    # Saving this delivery removes the feed's connection. A private feed's
-    # connection only serves its own show. A public feed's goes when it maps
-    # to another feed or its delivery is removed, but not when it just stays
-    # without delivery, since other feeds may deliver through its show.
+    # Whether this delivery clears the feed's connection to its Apple show,
+    # so saving disconnects it and the form hides the connection fields. Only
+    # feeds with a delivery choice (not the default or Megaphone feeds) whose
+    # delivery isn't their own show qualify:
+    # - A private feed's is cleared, since no other feed can use its show.
+    # - A public feed's is cleared when it delivers through another feed's
+    #   show or its delivery changes to none. One that already had no
+    #   delivery keeps it, since other feeds may deliver through its show.
+    #   While they do, a delivery that clears it fails to save.
     def disconnects?
       deliverable? && !own_show? && (feed.private? || delivery.present? || delivery_changed?)
     end
