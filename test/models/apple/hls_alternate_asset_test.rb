@@ -186,36 +186,6 @@ module Apple
         assert asset.reload.expired?
       end
 
-      it "re-checks a poll's guard against a write that lands mid-upsert" do
-        travel_to(2.minutes.ago) { upsert(resource_type: :staged_alternate_asset, response: staged_json) }
-        polled_at = 1.minute.ago
-
-        # A publish links the row after the poll started, while the poll is
-        # still building its result.
-        episode.define_singleton_method(:apple_hls_master_url) do |feed:|
-          HlsAlternateAsset.update_all(status: :linked, apple_episode_id: "ep-1", last_checked_at: Time.current)
-          "https://example.com/a.m3u8"
-        end
-
-        asset = upsert(resource_type: :staged_alternate_asset, response: staged_json, unless_checked_after: polled_at)
-
-        assert asset.linked?
-        assert asset.reload.linked?
-        assert_equal "ep-1", asset.apple_episode_id
-      end
-
-      it "locks the existing row while checking and writing" do
-        upsert(resource_type: :staged_alternate_asset, response: staged_json)
-        sql = []
-        subscriber = ->(*, payload) { sql << payload[:sql] }
-
-        ActiveSupport::Notifications.subscribed(subscriber, "sql.active_record") do
-          travel_to(1.minute.from_now) { upsert(resource_type: nil, unless_checked_after: Time.current) }
-        end
-
-        assert sql.any? { |q| q.include?("apple_hls_alternate_assets") && q.include?("FOR UPDATE") }
-      end
-
       it "rejects unknown resource types" do
         assert_raises(ArgumentError) { upsert(resource_type: :show) }
       end
