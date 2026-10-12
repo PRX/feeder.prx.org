@@ -49,9 +49,9 @@ module Apple
           asset.content_url = content_url || asset.content_url
         end
 
-        if outdated_url?(content_url, episode, show_feed_binding)
+        if (outdated = outdated_error(response, episode, show_feed_binding))
           asset.status = :error
-          asset.last_error = "Apple has an outdated alternate asset URL"
+          asset.last_error = outdated
         elsif resource_type == :staged_alternate_asset
           asset.status = :staged
           asset.last_error = nil
@@ -77,12 +77,34 @@ module Apple
       asset
     end
 
-    def self.outdated_url?(content_url, episode, show_feed_binding)
-      return false if content_url.blank?
+    def self.apple_attributes(url)
+      {
+        alternateAssetContentUrl: url,
+        alternateAssetContentKind: CONTENT_KIND,
+        alternateAssetMimeType: MIME_TYPE
+      }
+    end
+
+    # Whether an Apple episode or staged asset JSON holds the expected URL,
+    # content kind, and MIME type.
+    def self.current_on_apple?(response, url)
+      attributes = response&.dig("attributes") || {}
+      apple_attributes(url).all? { |key, value| attributes[key.to_s] == value }
+    end
+
+    def self.outdated_error(response, episode, show_feed_binding)
+      content_url = response&.dig("attributes", "alternateAssetContentUrl")
+      return if content_url.blank?
 
       expected_url = episode.apple_hls_master_url(feed: show_feed_binding.feed)
-      expected_url.present? && content_url != expected_url
+      return if expected_url.blank? || current_on_apple?(response, expected_url)
+
+      if content_url == expected_url
+        "Apple has an outdated alternate asset content kind or MIME type"
+      else
+        "Apple has an outdated alternate asset URL"
+      end
     end
-    private_class_method :outdated_url?
+    private_class_method :outdated_error
   end
 end
