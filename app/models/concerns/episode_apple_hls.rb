@@ -24,10 +24,12 @@ module EpisodeAppleHls
     hls.present? && hls.status_complete? && hls.same_uncut?(uncut)
   end
 
-  # The feed-scoped HLS master playlist URL Apple should fetch. Unprefixed,
-  # like Apple::Episode#enclosure_url, so a feed's enclosure prefix (and any
-  # change to it) never reaches Apple.
+  # The feed-scoped HLS master playlist URL Apple should fetch.
+  # Unprefixed, like Apple::Episode#enclosure_url, so a feed's enclosure prefix
+  # (and any change to it) never reaches Apple.
+  # Always use the base dovetail HLS playlist enclosure, even when an enclosure
+  # override (e.g.  Megaphone's MP3) replaces the enclosure.
   def apple_hls_master_url(feed:)
-    enclosure_alt_url(feed: feed, prefix: false) if hls_eligible_for_apple?
+    enclosure_dovetail_url(feed: feed, prefix: false, ext: "m3u8") if hls_eligible_for_apple?
   end
 end
