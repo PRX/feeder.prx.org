@@ -140,8 +140,10 @@ describe EpisodeTimingsImport do
     end
 
     it "re-segments video uncuts without destroying them" do
-      episode.update!(medium: "video")
-      uncut = create(:uncut, episode: episode, medium: "video", mime_type: "video/mp4", segmentation: [[1.2, 3.4]])
+      video = create(:video_episode, original_guid: "abcd", podcast: podcast_import.podcast)
+      uncut = create(:uncut, episode: video, medium: "video", mime_type: "video/mp4", segmentation: [[1.2, 3.4]])
+      alt_id = video.alternate_media_resource.id
+      content_ids = video.contents.map(&:id).sort
 
       Episode.stub_any_instance(:copy_media, true) do
         import.import!
@@ -149,8 +151,14 @@ describe EpisodeTimingsImport do
 
         assert_nil uncut.reload.deleted_at
         assert_equal [[nil, 1.23], [1.23, 4.56], [4.56, nil]], uncut.segmentation
-        assert_equal uncut.id, episode.reload.uncut&.id
-        assert_equal "video", episode.medium
+        video.reload
+        assert_equal uncut.id, video.uncut&.id
+        assert_equal "video", video.medium
+        assert_equal 3, video.segment_count
+
+        # uncut isn't complete, so nothing is re-sliced yet
+        assert_equal alt_id, video.alternate_media_resource&.id
+        assert_equal content_ids, video.contents.map(&:id).sort
       end
     end
   end

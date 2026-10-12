@@ -112,6 +112,77 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       refute episode.uncut.marked_for_destruction?
       assert_equal [[nil, 4.0], [4.0, nil]], episode.uncut.segmentation
     end
+
+    it "keeps a video medium when updating segmentation of a processing uncut" do
+      video = create(:video_episode)
+      uncut = create(:uncut, episode: video, status: "processing", original_url: "https://ex.com/dl?id=1")
+      alt_id = video.alternate_media_resource.id
+      content_ids = video.contents.map(&:id).sort
+      video.reload
+
+      video.uncut = Uncut.new(segmentation: [[nil, 4.0], [4.0, nil]])
+      assert_equal "video", video.medium
+      assert_equal uncut, video.uncut
+      refute video.uncut.marked_for_destruction?
+      refute video.alternate_media_resource.marked_for_destruction?
+      refute video.contents.any?(&:marked_for_destruction?)
+
+      video.save!
+      video.reload
+      assert_equal "video", video.medium
+      assert_equal uncut.id, video.uncut&.id
+      assert_equal alt_id, video.alternate_media_resource&.id
+      assert_equal content_ids, video.contents.map(&:id).sort
+    end
+
+    it "keeps a video medium when updating segmentation of a complete uncut" do
+      video = create(:video_episode)
+      uncut = create(:uncut_video, episode: video, status: "complete")
+      alt_id = video.alternate_media_resource.id
+      content_ids = video.contents.map(&:id).sort
+      video.reload
+
+      video.uncut = Uncut.new(segmentation: [[nil, 4.0], [4.0, nil]])
+      assert_equal "video", video.medium
+
+      video.save!
+      video.reload
+      assert_equal "video", video.medium
+      assert_equal uncut.id, video.uncut&.id
+      assert_equal [[nil, 4.0], [4.0, nil]], video.uncut.segmentation
+      assert_equal alt_id, video.alternate_media_resource&.id
+      assert_equal content_ids, video.contents.map(&:id).sort
+    end
+
+    it "keeps an uncut medium when updating segmentation of a processing uncut" do
+      episode.update!(medium: "uncut", contents: [])
+      uncut = create(:uncut, episode: episode, status: "processing", original_url: "s3://b/audio.mp4")
+      episode.reload
+
+      episode.uncut = Uncut.new(segmentation: [[nil, 4.0], [4.0, nil]])
+      assert_equal "uncut", episode.medium
+      assert_equal uncut, episode.uncut
+      refute episode.uncut.marked_for_destruction?
+
+      episode.save!
+      assert_equal "uncut", episode.reload.medium
+      assert_equal uncut.id, episode.uncut&.id
+      assert_equal [[nil, 4.0], [4.0, nil]], episode.uncut.segmentation
+    end
+
+    it "keeps an uncut medium when updating segmentation of a complete uncut" do
+      episode.update!(medium: "uncut", contents: [])
+      uncut = create(:uncut, episode: episode, status: "complete", medium: "audio", original_url: "s3://b/audio.mp4")
+      episode.reload
+
+      episode.uncut = Uncut.new(segmentation: [[nil, 4.0], [4.0, nil]])
+      assert_equal "uncut", episode.medium
+
+      episode.save!
+      assert_equal "uncut", episode.reload.medium
+      assert_equal uncut.id, episode.uncut&.id
+      assert_equal [[nil, 4.0], [4.0, nil]], episode.uncut.segmentation
+    end
   end
 
   describe "#segment_range" do

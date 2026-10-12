@@ -150,7 +150,8 @@ module EpisodeMedia
     # if uncut is unchanged or missing, update other attributes
     if (uncut && self.uncut) && (uncut.href.blank? || (self.uncut.href == uncut.href))
       self.uncut.segmentation = uncut.segmentation if uncut.segmentation.present?
-      self.medium = uncut_medium(self.uncut)
+      # processing uncuts can't reliably detect video, so keep any uncut medium
+      self.medium = uncut_medium(self.uncut) unless medium_uncut? || medium_video?
     else
       # set medium first, so changing it can't destroy the new uncut
       self.medium = uncut_medium(uncut)
