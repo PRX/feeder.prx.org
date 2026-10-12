@@ -5,7 +5,7 @@ class TestCallback
   attr_accessor :result
 end
 
-describe PorterCallback do
+class PorterCallbackTest < ActiveSupport::TestCase
   it "handles non-porter messages" do
     assert_nil TestCallback.porter_callback_job_id({})
     assert_nil TestCallback.porter_callback_status({})

@@ -1,7 +1,7 @@
 require "test_helper"
 require "time_formats"
 
-describe TimeFormats do
+class TimeFormatsTest < ActiveSupport::TestCase
   it "formats 0-23 as a string" do
     assert_equal 0.to_hour_of_day, "12:00:00 midnight"
     (1..11).each { |h| assert_equal(h.to_hour_of_day, "#{h}:00:00 AM") }
