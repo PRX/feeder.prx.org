@@ -68,20 +68,15 @@ class PublishFeedJob < ApplicationJob
       e.log_error!
 
       if config.sync_blocks_rss
-        # When sync_blocks_rss is enabled, Apple publishing must succeed before RSS
         raise Apple::RetryPublishingError.new(e.message)
       else
-        # When sync_blocks_rss is disabled, we allow RSS publishing to continue despite timeout
-        # The integration error is recorded in pipeline state but doesn't block RSS delivery
         Rails.logger.info("Apple publishing timed out, continuing to RSS", context)
       end
     rescue => e
       Rails.logger.error("Integration feed publish failed", context.merge(error: e))
-      # All other integration errors (network failures, API errors, etc.)
       PublishingPipelineState.error_integration!(podcast)
 
-      # Re-raise the error if sync_blocks_rss is enabled, blocking RSS publishing
-      # Otherwise, swallow the error and allow RSS publishing to proceed
+      # Without sync_blocks_rss, swallow the error so RSS publishing proceeds
       raise e if config.sync_blocks_rss
     end
   end

@@ -126,7 +126,6 @@ module Apple
       errors.add(:show_feed_binding, "must belong to the configured feed's podcast")
     end
 
-    # Only the owning feed delivers through a private feed's binding.
     def show_feed_binding_is_public_or_own
       bound_feed = show_feed_binding&.feed
       return if bound_feed.nil? || bound_feed.public? || bound_feed == feed

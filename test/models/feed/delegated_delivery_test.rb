@@ -377,7 +377,6 @@ describe Feed, "Apple delegated delivery" do
     it "returns false for published episodes not in feed_episodes" do
       apple_feed.save!
       published = create(:episode, podcast: podcast, published_at: 1.hour.ago)
-      # remove from the apple feed's episodes
       apple_feed.episodes_feeds.where(episode: published).delete_all
 
       refute apple_feed.integration_episode?(published, :apple)
@@ -429,10 +428,8 @@ describe Feed, "Apple delegated delivery" do
     it "returns false for draft episodes not assigned to this feed" do
       apple_feed.save!
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
-      # verify it's initially included
       assert apple_feed.integration_episode?(draft, :apple)
 
-      # remove from the apple feed
       apple_feed.episodes_feeds.where(episode: draft).delete_all
       apple_feed.reload
 
