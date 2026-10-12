@@ -151,6 +151,9 @@ class MediaResource < ApplicationRecord
   def copy_media(force = false)
   end
 
+  def set_copy_metadata(copy_task)
+  end
+
   def after_copy(copy_task)
   end
 

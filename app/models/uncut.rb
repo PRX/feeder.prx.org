@@ -43,13 +43,15 @@ class Uncut < MediaResource
     end
   end
 
-  def after_copy(copy_task)
+  def set_copy_metadata(copy_task)
     # optionally set ad breaks from ID3 tags
     if copy_task.porter_callback_tags.present? && ad_breaks.blank?
       self.ad_breaks = breaks_from_tags(copy_task.porter_callback_tags)
       episode.segment_count = [episode.segment_count.to_i, segmentation.count, 1].max
     end
+  end
 
+  def after_copy(copy_task)
     # fix bad files before slicing
     if audio? && copy_task.bad_audio?
       Tasks::FixMediaTask.start!(self, copy_task)

@@ -3,18 +3,22 @@ require "test_helper"
 describe Uncut do
   let(:uncut) { build_stubbed(:uncut) }
 
-  describe "#after_copy" do
+  describe "#set_copy_metadata" do
     let(:copy_task) { build_stubbed(:copy_media_task) }
 
     it "sets ad breaks from id3 tags" do
       uncut.segmentation = nil
-      uncut.after_copy(copy_task)
+      uncut.set_copy_metadata(copy_task)
       assert_equal [[nil, 3.0], [3.0, nil]], uncut.segmentation
 
       copy_task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Tags][0][:value] = "AIS_AD_BREAK_1=4000"
-      uncut.after_copy(copy_task)
+      uncut.set_copy_metadata(copy_task)
       assert_equal [[nil, 3.0], [3.0, nil]], uncut.segmentation
     end
+  end
+
+  describe "#after_copy" do
+    let(:copy_task) { build_stubbed(:copy_media_task) }
 
     it "fixes bad audio files" do
       refute copy_task.bad_audio?
@@ -42,6 +46,7 @@ describe Uncut do
 
       Content.stub_any_instance(:copy_media, true) do
         uncut.episode.stub(:save!, true) do
+          uncut.set_copy_metadata(copy_task)
           uncut.after_copy(copy_task)
           assert_equal 2, uncut.episode.contents.length
           assert_equal [nil, 3.0], uncut.episode.contents[0].segmentation
