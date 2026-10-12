@@ -11,6 +11,7 @@ class AppleKeysController < ApplicationController
     if @apple_key.save
       redirect_to podcast_integrations_path(@podcast), notice: t(".notice")
     else
+      @apple_key.key_pem_b64 = nil
       load_apple_credentials(new_apple_key: @apple_key)
       flash.now[:error] = t(".error")
       render "podcast_integrations/show", status: :unprocessable_entity

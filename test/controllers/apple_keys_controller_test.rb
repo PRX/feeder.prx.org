@@ -57,6 +57,29 @@ class AppleKeysControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Unable to upload Apple credential", flash[:error]
   end
 
+  test "does not echo the submitted private key when create fails" do
+    post podcast_apple_keys_url(podcast), params: {
+      apple_key: key_params.merge(provider_id: "short")
+    }
+
+    assert_response :unprocessable_entity
+    assert_select "body", text: /Provider is too short/
+    assert_select "form[action='#{podcast_apple_keys_path(podcast)}'] input[name='apple_key[key_pem_b64]']", count: 1
+    assert_select "input[name='apple_key[key_pem_b64]'][value]", count: 0
+    refute_includes response.body, key_params[:key_pem_b64].strip
+    refute_includes response.body, key_params[:key_pem_b64].delete("\n")
+  end
+
+  test "keeps key validation errors after clearing the submitted private key" do
+    post podcast_apple_keys_url(podcast), params: {
+      apple_key: key_params.merge(key_pem_b64: Base64.encode64("not a key"))
+    }
+
+    assert_response :unprocessable_entity
+    assert_select "body", text: /ec key format did not pass OpenSSL validation/
+    refute_includes response.body, Base64.encode64("not a key").strip
+  end
+
   test "removes an unused account credential" do
     key = create(:apple_key, account_id: 123)
 
