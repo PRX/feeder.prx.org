@@ -1,6 +1,6 @@
 require "test_helper"
 
-describe EpisodeAppleHls do
+class EpisodeAppleHlsTest < ActiveSupport::TestCase
   let(:episode) { create(:episode) }
 
   it "is not eligible for Apple HLS without HLS video" do
