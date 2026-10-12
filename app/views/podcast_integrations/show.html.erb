@@ -33,7 +33,7 @@
             <% end %>
 
             <div class="form-floating input-group mb-3">
-              <% options = @apple_keys.map { |key| ["#{t(".apple_credentials.key_label", key_id: key.key_id.to_s.last(4))} · #{t(".apple_credentials.provider_label", provider_id: key.provider_id.to_s.last(4))}", key.id] } %>
+              <% options = @apple_keys.map { |key| ["#{t(".apple_credentials.key_label", key_id: key.key_id)} · #{t(".apple_credentials.provider_label", provider_id: key.provider_id)}", key.id] } %>
               <%= form.select :apple_key_id, options, {include_blank: t(".podcast_credential.none")}, data: select_data %>
               <%= form.label :apple_key_id, t(".podcast_credential.label") %>
               <%= field_help_text t(".podcast_credential.help") %>
@@ -63,8 +63,8 @@
             <% @apple_keys.each do |key| %>
               <div class="list-group-item d-flex justify-content-between align-items-start gap-3">
                 <div>
-                  <strong><%= t(".apple_credentials.key_label", key_id: key.key_id.to_s.last(4)) %></strong>
-                  <span class="text-muted ms-2"><%= t(".apple_credentials.provider_label", provider_id: key.provider_id.to_s.last(4)) %></span>
+                  <strong><%= t(".apple_credentials.key_label", key_id: key.key_id) %></strong>
+                  <span class="text-muted ms-2"><%= t(".apple_credentials.provider_label", provider_id: key.provider_id) %></span>
                   <div class="small text-muted mt-1"><%= t(".apple_credentials.usage", count: key.podcasts.size) %></div>
                 </div>
                 <% if key == @podcast.apple_key %>
