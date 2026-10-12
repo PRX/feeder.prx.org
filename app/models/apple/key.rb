@@ -68,7 +68,9 @@ module Apple
       false
     end
 
-    private def protect_referenced_key
+    private
+
+    def protect_referenced_key
       return unless in_use?
 
       errors.add(:base, "Apple credentials cannot be removed while podcasts use them")

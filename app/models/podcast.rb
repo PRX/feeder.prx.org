@@ -148,16 +148,6 @@ class Podcast < ApplicationRecord
     end
   end
 
-  private def sync_legacy_apple_key
-    Apple::DelegatedDeliveryConfig.sync_legacy_key_for!(self)
-  end
-
-  private def clear_apple_key
-    self.apple_key = nil
-    update_column(:apple_key_id, nil)
-    sync_legacy_apple_key
-  end
-
   def apple_key_belongs_to_account
     if apple_key && apple_key.account_id != account_id
       errors.add(:apple_key, "must belong to the podcast's PRX account")
@@ -309,5 +299,17 @@ class Podcast < ApplicationRecord
     else
       super
     end
+  end
+
+  private
+
+  def sync_legacy_apple_key
+    Apple::DelegatedDeliveryConfig.sync_legacy_key_for!(self)
+  end
+
+  def clear_apple_key
+    self.apple_key = nil
+    update_column(:apple_key_id, nil)
+    sync_legacy_apple_key
   end
 end
