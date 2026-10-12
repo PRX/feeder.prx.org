@@ -5,7 +5,7 @@ class TestUtils
   attr_accessor :source_url
 end
 
-describe PorterUtils do
+class PorterUtilsTest < ActiveSupport::TestCase
   let(:sns) { SnsMock.new }
   let(:model) { TestUtils.new }
 

@@ -4,7 +4,7 @@ class TestSanitizer
   include TextSanitizer
 end
 
-describe TextSanitizer do
+class TextSanitizerTest < ActiveSupport::TestCase
   let(:model) { TestSanitizer.new }
   let(:text) do
     "<!-- Sorry! --><p>my</p>" \

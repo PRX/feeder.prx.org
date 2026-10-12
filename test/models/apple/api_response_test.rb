@@ -7,7 +7,7 @@ class TestResponse
   attr_accessor :api_response
 end
 
-describe Apple::ApiResponse do
+class Apple::ApiResponseTest < ActiveSupport::TestCase
   let(:valid_data) { {"data" => "foo"} }
 
   let(:invalid_response_attr) { {"api_response" => {"ok" => false, "val" => valid_data}} }

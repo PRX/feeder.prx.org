@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-describe Apple::ApiWaiting do
+class Apple::ApiWaitingTest < ActiveSupport::TestCase
   describe ".wait_for" do
     it "waits until there is nothing left to process" do
       records = [1, 2, 3].freeze

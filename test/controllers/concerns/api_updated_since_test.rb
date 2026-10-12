@@ -14,7 +14,7 @@ class ApiUpdatedSinceTestController < Api::BaseController
   end
 end
 
-describe ApiUpdatedSince do
+class ApiUpdatedSinceTest < ActiveSupport::TestCase
   let(:controller) { ApiUpdatedSinceTestController.new }
 
   it "defaults to nothing" do
