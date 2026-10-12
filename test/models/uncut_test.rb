@@ -49,9 +49,7 @@ describe Uncut do
       assert_empty uncut.episode.contents
 
       content_copies = 0
-      content_copy = proc { content_copies += 1 }
-
-      Content.stub_any_instance(:copy_media, content_copy) do
+      Content.stub_any_instance(:copy_media, -> { content_copies += 1 }) do
         uncut.stub(:save!, true) do
           uncut.episode.stub(:save!, true) do
             uncut.after_copy(copy_task)
@@ -72,12 +70,9 @@ describe Uncut do
       assert_empty uncut.episode.contents
 
       content_copies = 0
-      content_copy = proc { content_copies += 1 }
       alt_copies = 0
-      alt_copy = proc { alt_copies += 1 }
-
-      Content.stub_any_instance(:copy_media, content_copy) do
-        AlternateMediaResource.stub_any_instance(:copy_media, alt_copy) do
+      Content.stub_any_instance(:copy_media, -> { content_copies += 1 }) do
+        AlternateMediaResource.stub_any_instance(:copy_media, -> { alt_copies += 1 }) do
           uncut.stub(:save!, true) do
             uncut.episode.stub(:save!, true) do
               uncut.after_copy(copy_task)
