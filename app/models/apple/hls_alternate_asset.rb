@@ -81,8 +81,10 @@ module Apple
     end
 
     def self.outdated_url?(content_url, episode, show_feed_binding)
+      return false if content_url.blank?
+
       expected_url = episode.apple_hls_master_url(feed: show_feed_binding.feed)
-      content_url.present? && expected_url.present? && content_url != expected_url
+      expected_url.present? && content_url != expected_url
     end
     private_class_method :outdated_url?
   end
