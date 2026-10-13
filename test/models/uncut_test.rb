@@ -130,10 +130,10 @@ describe Uncut do
       it "creates alt media and contents" do
         uncut.slice_contents!
 
-        assert episode.alt_media.previously_new_record?
-        assert_equal "created", episode.alt_media.status
-        assert_equal uncut.url, episode.alt_media.original_url
-        assert_equal [[nil, 1], [2, 3], [3, nil]], episode.alt_media.segmentation
+        assert episode.alternate_media_resource.previously_new_record?
+        assert_equal "created", episode.alternate_media_resource.status
+        assert_equal uncut.url, episode.alternate_media_resource.original_url
+        assert_equal [[nil, 1], [2, 3], [3, nil]], episode.alternate_media_resource.segmentation
 
         # should slice contents from the preview mp3, not the full mp4
         assert_equal 3, episode.contents.size
