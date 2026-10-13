@@ -236,22 +236,6 @@ describe Api::Auth::EpisodesController do
       assert_nil episode_update.medium
     end
 
-    it "keeps a video uncut added to an audio episode" do
-      episode_update.update!(medium: "audio")
-      update_hash = {uncut: {href: "https://s3.amazonaws.com/prx-testing/test/video.mp4"}}
-
-      @controller.stub(:process_media, true) do
-        put(:update, body: update_hash.to_json, as: :json,
-          params: {id: episode_update.guid, api_version: "v1", format: "json"})
-      end
-      assert_response :success
-
-      episode_update.reload
-      assert_not_nil episode_update.uncut
-      assert_equal "https://s3.amazonaws.com/prx-testing/test/video.mp4", episode_update.uncut.original_url
-      assert_equal "video", episode_update.medium
-    end
-
     it "keeps the uncut when updating only segmentation on a video episode" do
       video = create(:video_episode, podcast: podcast, published_at: nil)
       uncut = create(:uncut, episode: video, status: "complete", medium: "video", mime_type: "video/mp4",

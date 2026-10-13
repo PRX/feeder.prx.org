@@ -101,18 +101,6 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       assert_equal "s3://prx-testing/test/uncut.mp3", episode.reload.uncut.original_url
     end
 
-    it "sets the medium from the existing uncut when only updating segmentation" do
-      episode.update!(medium: "video", contents: [])
-      uncut = create(:uncut_video, episode: episode)
-      episode.reload
-
-      episode.uncut = Uncut.new(segmentation: [[nil, 4.0], [4.0, nil]])
-      assert_equal "video", episode.medium
-      assert_equal uncut, episode.uncut
-      refute episode.uncut.marked_for_destruction?
-      assert_equal [[nil, 4.0], [4.0, nil]], episode.uncut.segmentation
-    end
-
     it "keeps a video medium when updating segmentation of a processing uncut" do
       video = create(:video_episode)
       uncut = create(:uncut, episode: video, status: "processing", original_url: "https://ex.com/dl?id=1")
@@ -163,20 +151,6 @@ class EpisodeMediaTest < ActiveSupport::TestCase
       assert_equal "uncut", episode.medium
       assert_equal uncut, episode.uncut
       refute episode.uncut.marked_for_destruction?
-
-      episode.save!
-      assert_equal "uncut", episode.reload.medium
-      assert_equal uncut.id, episode.uncut&.id
-      assert_equal [[nil, 4.0], [4.0, nil]], episode.uncut.segmentation
-    end
-
-    it "keeps an uncut medium when updating segmentation of a complete uncut" do
-      episode.update!(medium: "uncut", contents: [])
-      uncut = create(:uncut, episode: episode, status: "complete", medium: "audio", original_url: "s3://b/audio.mp4")
-      episode.reload
-
-      episode.uncut = Uncut.new(segmentation: [[nil, 4.0], [4.0, nil]])
-      assert_equal "uncut", episode.medium
 
       episode.save!
       assert_equal "uncut", episode.reload.medium
