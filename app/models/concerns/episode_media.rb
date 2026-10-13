@@ -307,10 +307,14 @@ module EpisodeMedia
   end
 
   def alt_media
-    alternate_media_resource if video?
+    if video? && alternate_media_resource
+      [alternate_media_resource]
+    end
   end
 
   def ready_alt_media
-    complete_alternate_media_resource if video?
+    if video? && !alternate_media_resource&.status_complete? && complete_alternate_media_resource
+      [complete_alternate_media_resource]
+    end
   end
 end

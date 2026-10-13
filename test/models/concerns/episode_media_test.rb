@@ -551,11 +551,20 @@ class EpisodeMediaTest < ActiveSupport::TestCase
     let(:ep) { build_stubbed(:episode, medium: "video", segment_count: 2, alternate_media_resource: alt1, complete_alternate_media_resource: alt2) }
 
     it "is only set for video episodes" do
-      assert_equal alt1, ep.alt_media
-      assert_equal alt2, ep.ready_alt_media
+      assert_equal [alt1], ep.alt_media
+      assert_equal [alt2], ep.ready_alt_media
 
       ep.medium = "passthru"
       assert_nil ep.alt_media
+      assert_nil ep.ready_alt_media
+    end
+
+    it "only returns when the latest is incomplete" do
+      assert_equal [alt1], ep.alt_media
+      assert_equal [alt2], ep.ready_alt_media
+
+      ep.alternate_media_resource.status = "complete"
+      assert_equal [alt1], ep.alt_media
       assert_nil ep.ready_alt_media
     end
   end
