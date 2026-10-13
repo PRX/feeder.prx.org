@@ -34,8 +34,14 @@ module EpisodesHelper
       episode.updated_at
   end
 
+  def apple_hls_ui_enabled?
+    !Rails.env.production?
+  end
+
   # Public feeds of the episode with Apple HLS video turned on.
   def episode_apple_hls_feeds(episode)
+    return [] unless apple_hls_ui_enabled?
+
     episode.feeds.select do |feed|
       feed.publish_apple_hls? && (episode.video? || Apple::HlsAlternateAssetPublisher.asset_for(episode, feed: feed))
     end
