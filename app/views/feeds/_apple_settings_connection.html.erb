@@ -3,7 +3,7 @@
   <%= render "apple_connection_field", feed: feed, settings: settings, apple: apple, shows: [], loading: true, lookup_failed: false %>
 <% end %>
 
-<% if settings.hls_available? %>
+<% if apple_hls_ui_enabled? && settings.hls_available? %>
   <div class="form-check mb-3">
     <%= apple.check_box :hls_enabled, disabled: !policy(feed).update? %>
     <div class="d-flex align-items-center">

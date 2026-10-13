@@ -264,6 +264,14 @@ describe EpisodesHelper do
 
       assert_empty helper.episode_apple_hls_feeds(episode.reload)
     end
+
+    it "excludes HLS feeds in production" do
+      episode = create(:video_episode, podcast: podcast, feeds: [podcast.default_feed, feed])
+
+      Rails.stub(:env, ActiveSupport::EnvironmentInquirer.new("production")) do
+        assert_empty helper.episode_apple_hls_feeds(episode)
+      end
+    end
   end
 
   describe "#episode_integration_updated_at" do
