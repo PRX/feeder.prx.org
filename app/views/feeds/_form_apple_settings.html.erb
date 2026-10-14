@@ -64,7 +64,7 @@
         <% if (checked = [binding, config].compact.find(&:persisted?)) %>
           <span class="text-muted"><%= t(".last_checked_html", time: local_time_ago(checked.updated_at)) %></span>
         <% end %>
-        <% hls_config = settings.hls_config if settings.hls_available? %>
+        <% hls_config = settings.hls_config if apple_hls_ui_enabled? && settings.hls_available? %>
         <% if hls_config&.enabled? && hls_config.last_checked_at %>
           <span class="d-block text-muted"><%= t(".hls_last_checked_html", time: local_time_ago(hls_config.last_checked_at)) %></span>
         <% end %>

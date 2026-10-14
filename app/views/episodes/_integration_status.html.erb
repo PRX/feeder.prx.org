@@ -9,7 +9,7 @@
   <p class="status-text">
     <strong>Status:</strong>
     <span class="badge rounded-pill prx-badge-<%= status %>">
-      <%= t("helpers.label.episode.media_statuses.#{status}") %>
+      <%= t("helpers.label.episode.#{status_type}.#{status}") %>
     </span>
     <% if local_assigns[:updated_at] %>
       <br>

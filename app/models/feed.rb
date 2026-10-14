@@ -155,6 +155,10 @@ class Feed < ApplicationRecord
     feed_episodes.where(id: episode.id).exists?
   end
 
+  def rss_episode?(episode)
+    episode.feed_ready? && feed_episode?(episode)
+  end
+
   def guid
     podcast&.guid
   end
