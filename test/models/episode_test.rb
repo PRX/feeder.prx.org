@@ -415,6 +415,28 @@ describe Episode do
         assert episode.publish_to_apple?
       end
     end
+
+    describe "#apple_episodes" do
+      let(:episode) { create(:episode, podcast: podcast, published_at: 1.hour.ago) }
+
+      it "returns no episodes without a delegated delivery config" do
+        assert_empty episode.apple_episodes
+      end
+
+      it "builds an Apple episode for each feed publishing to Apple" do
+        configs = [true, true, false].map do |publish_enabled|
+          binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+          create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), show_feed_binding: binding, publish_enabled: publish_enabled)
+        end
+        podcast.reload
+
+        apple_episodes = episode.apple_episodes
+
+        assert(apple_episodes.all? { |apple_episode| apple_episode.is_a?(Apple::Episode) })
+        assert(apple_episodes.all? { |apple_episode| apple_episode.feeder_episode == episode })
+        assert_equal configs.first(2).map(&:apple_show_id).sort, apple_episodes.map(&:apple_show_id).sort
+      end
+    end
   end
 
   describe "#ready_transcript" do

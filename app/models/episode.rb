@@ -127,6 +127,11 @@ class Episode < ApplicationRecord
     podcast.delegated_delivery_configs.any?(&:publish_to_apple?)
   end
 
+  # Apple episodes, one per feed this episode is delivered through.
+  def apple_episodes
+    integration_feeds(:apple).filter_map { |feed| feed.integration_episode(self, :apple) }
+  end
+
   def megaphone_episode
     Megaphone::Episode.new.tap { |episode| episode.feeder_episode = self }
   end
