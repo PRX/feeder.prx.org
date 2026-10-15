@@ -53,20 +53,6 @@ class SyncLog < ApplicationRecord
     }
     sync_log = SyncLog.find_or_initialize_by(identity)
 
-    # TODO remove with cutover once no legacy NULL-show Apple episode rows remain.
-    if external_show_id.present? && sync_log.new_record?
-      legacy_sync_log = SyncLog.find_by(
-        **identity.except(:external_show_id),
-        external_id: external_id,
-        external_show_id: nil
-      )
-
-      if legacy_sync_log
-        sync_log = legacy_sync_log
-        sync_log.external_show_id = external_show_id
-      end
-    end
-
     sync_log.update!(external_id: external_id, api_response: api_response, updated_at: Time.now.utc)
     sync_log
   end

@@ -97,10 +97,27 @@ describe Apple::DelegatedDeliveryConfig do
   end
 
   describe "Apple routing" do
-    it "uses legacy routing by default" do
-      config, legacy, _binding = build_routing_config
+    it "uses show-feed-binding routing by default" do
+      config, _legacy, binding = build_routing_config
 
       with_apple_routing_source(nil) do
+        assert_equal :show_feed_binding, config.routing_source
+        assert_equal config.podcast.apple_key, config.routing_key
+        assert_equal binding.feed, config.public_feed
+        assert_equal binding.apple_show_id, config.apple_show_id
+
+        publisher = config.build_publisher
+        assert_equal config.podcast.apple_key.key_id, publisher.api.key_id
+        assert_equal binding.feed, publisher.public_feed
+        assert_equal config.private_feed, publisher.private_feed
+        assert_equal binding.apple_show_id, publisher.show.apple_id
+      end
+    end
+
+    it "uses legacy routing when selected" do
+      config, legacy, _binding = build_routing_config
+
+      with_apple_routing_source("legacy") do
         assert_equal :legacy, config.routing_source
         assert_equal legacy[:key], config.routing_key
         assert_equal legacy[:public_feed], config.public_feed
@@ -112,24 +129,6 @@ describe Apple::DelegatedDeliveryConfig do
         assert_equal legacy[:public_feed], publisher.public_feed
         assert_equal legacy[:private_feed], publisher.private_feed
         assert_equal legacy[:show_id], publisher.show.apple_id
-      end
-    end
-
-    it "uses show-feed-binding routing when selected" do
-      config, legacy, binding = build_routing_config
-
-      with_apple_routing_source("show_feed_binding") do
-        assert_equal :show_feed_binding, config.routing_source
-        assert_equal config.podcast.apple_key, config.routing_key
-        assert_equal binding.feed, config.public_feed
-        assert_equal binding.apple_show_id, config.apple_show_id
-        assert_equal legacy[:private_feed], config.private_feed
-
-        publisher = config.build_publisher
-        assert_equal config.podcast.apple_key.key_id, publisher.api.key_id
-        assert_equal binding.feed, publisher.public_feed
-        assert_equal legacy[:private_feed], publisher.private_feed
-        assert_equal binding.apple_show_id, publisher.show.apple_id
       end
     end
 
@@ -167,6 +166,29 @@ describe Apple::DelegatedDeliveryConfig do
     end
   end
 
+  describe "legacy routing synchronization" do
+    it "mirrors podcast credential changes to the legacy config key" do
+      podcast = create(:podcast)
+      original_key = create(:apple_key, account_id: podcast.account_id)
+      podcast.update!(apple_key: original_key)
+      config = create(
+        :delegated_delivery_config,
+        feed: create(:private_feed, podcast: podcast),
+        key: original_key,
+        show_feed_binding: create(:apple_show_feed_binding, feed: podcast.default_feed)
+      )
+      replacement_key = create(:apple_key, account_id: podcast.account_id)
+
+      podcast.update!(apple_key: replacement_key)
+
+      assert_equal replacement_key, config.reload.key
+
+      podcast.update!(apple_key: nil)
+
+      assert_nil config.reload.key
+    end
+  end
+
   def build_routing_config
     podcast = create(:podcast)
     public_feed = podcast.public_feed
@@ -192,6 +214,8 @@ describe Apple::DelegatedDeliveryConfig do
       feeder_id: public_feed.id,
       external_id: "legacy-sync-show"
     )
+    config.update_column(:key_id, legacy_key.id)
+    config.reload
 
     legacy = {
       key: legacy_key,

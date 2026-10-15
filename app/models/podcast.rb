@@ -64,6 +64,7 @@ class Podcast < ApplicationRecord
   validates :explicit, inclusion: {in: VALID_EXPLICITS}, allow_nil: false
 
   before_validation :set_defaults, :sanitize_text
+  after_update :sync_legacy_apple_key, if: :saved_change_to_apple_key_id?
   after_commit :set_guid!, if: -> { guid.blank? }
 
   scope :filter_by_title, ->(text) { where("podcasts.title ILIKE ?", "%#{text}%") if text.present? }
@@ -144,6 +145,10 @@ class Podcast < ApplicationRecord
     else
       account_id
     end
+  end
+
+  private def sync_legacy_apple_key
+    Apple::DelegatedDeliveryConfig.sync_legacy_key_for!(self)
   end
 
   def apple_key_belongs_to_account
