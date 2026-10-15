@@ -954,6 +954,8 @@ en:
         none: No delegated delivery
         own: This feed's own Apple show
         mapped: "%{feed} (%{show_id})"
+      connections:
+        show: "%{title} (%{show_id})"
       create_feed: "+ Create a new feed"
       publishing: Publishing
       paused: Paused

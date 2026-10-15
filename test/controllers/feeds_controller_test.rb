@@ -94,9 +94,9 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
   ["show-2", ""].each do |selection|
     test "preserves submitted connection #{selection.inspect} on validation failure" do
       apple_feed = connected_apple_feed
-      options = [
-        ["Configured show", "show-1"],
-        ["Other show", "show-2"]
+      shows = [
+        {id: "show-1", title: "Configured show"},
+        {id: "show-2", title: "Other show"}
       ]
 
       patch podcast_feed_url(podcast, apple_feed), params: {
@@ -111,7 +111,7 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
       assert_equal selection, Rack::Utils.parse_nested_query(URI(frame_url).query)["selection"]
       assert_not_requested :get, "https://aardvark.prx.org/shows"
 
-      Apple::ShowFeedBinding.stub(:connection_options, options) { get frame_url }
+      Apple::ShowFeedBinding.stub(:connectable_shows, shows) { get frame_url }
 
       assert_response :success
       assert_select 'select[name="feed[apple_settings][connection]"]' do

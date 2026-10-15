@@ -259,8 +259,8 @@ module Apple
       end
     end
 
-    describe ".connection_options" do
-      it "uses show ids as values for non-archived shows" do
+    describe ".connectable_shows" do
+      it "returns non-archived shows" do
         key = create(:apple_key, key_id: "credential12")
         body = {
           data: [
@@ -271,9 +271,9 @@ module Apple
         }.to_json
         stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: body)
 
-        options = ShowFeedBinding.connection_options(key, feed: create(:public_feed))
+        shows = ShowFeedBinding.connectable_shows(key, feed: create(:public_feed))
 
-        assert_equal [["Shared — show-1", "show-1"]], options
+        assert_equal [{id: "show-1", title: "Shared"}], shows
       end
 
       it "omits shows connected to other feeds, including other podcasts" do
@@ -285,13 +285,13 @@ module Apple
         shows = %w[show-1 show-2 show-3 show-4].map { |id| {id: id, attributes: {title: id, publishingState: "PUBLISHED"}} }
         stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: {data: shows, links: {}}.to_json)
 
-        options = ShowFeedBinding.connection_options(key, feed: feed)
+        shows = ShowFeedBinding.connectable_shows(key, feed: feed)
 
-        assert_equal ["show-1", "show-4"], options.map(&:last)
+        assert_equal ["show-1", "show-4"], shows.pluck(:id)
       end
 
-      it "returns no options without a selected key" do
-        assert_empty ShowFeedBinding.connection_options(nil, feed: create(:public_feed))
+      it "returns no shows without a selected key" do
+        assert_empty ShowFeedBinding.connectable_shows(nil, feed: create(:public_feed))
       end
     end
   end

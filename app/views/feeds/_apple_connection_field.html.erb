@@ -13,7 +13,7 @@
          confirm_delete: t("feeds.form_apple_settings.confirm_remove")
        } %>
   <% end %>
-  <%= apple.select :connection, apple_connection_options(settings, options), {include_blank: true},
+  <%= apple.select :connection, apple_connection_options(settings, shows), {include_blank: true},
         disabled: loading || !policy(feed).update?, data: data %>
   <%= apple.label :connection %>
   <%= field_help_text t("feeds.form_apple_settings.help.connection") %>

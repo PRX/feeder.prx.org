@@ -84,7 +84,7 @@ module Apple
     end
 
     # Shows bound to other feeds are omitted, since a show connects to one feed.
-    def self.connection_options(apple_key, feed:)
+    def self.connectable_shows(apple_key, feed:)
       return [] unless apple_key
 
       api = Apple::Api.from_key(apple_key)
@@ -97,8 +97,7 @@ module Apple
         show_id = show["id"]
         next if show_id.blank? || used_ids.include?(show_id.to_s)
 
-        title = show.dig("attributes", "title").presence || show_id
-        ["#{title} — #{show_id}", show_id.to_s]
+        {id: show_id.to_s, title: show.dig("attributes", "title").presence}
       end
     rescue => error
       Rails.logger.error("Unable to list Apple shows", apple_key_id: apple_key&.id, error: error)

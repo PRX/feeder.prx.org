@@ -1,7 +1,10 @@
 module FeedsHelper
   # The saved and selected shows stay selectable while Apple's list excludes them.
-  def apple_connection_options(settings, options)
-    choices = options.dup
+  def apple_connection_options(settings, shows)
+    choices = shows.map do |show|
+      label = show[:title] ? t("feeds.form_apple_settings.connections.show", title: show[:title], show_id: show[:id]) : show[:id]
+      [label, show[:id]]
+    end
     [settings.connection_was, settings.connection].compact_blank.uniq.each do |show_id|
       choices.prepend([show_id, show_id]) unless choices.any? { |_, value| value == show_id }
     end

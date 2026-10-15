@@ -101,8 +101,8 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_select '.alert-danger[role="alert"]', count: 0
     assert_select 'select[name="feed[apple_settings][connection]"][data-value-was="show-1"].is-changed' do
       assert_select 'option[selected][value="show-2"]', text: "show-2"
-      assert_select 'option[value="show-1"]', text: "Connected show — show-1"
-      assert_select 'option[value="show-3"]', text: "Other show — show-3"
+      assert_select 'option[value="show-1"]', text: "Connected show (show-1)"
+      assert_select 'option[value="show-3"]', text: "Other show (show-3)"
     end
     assert_equal "show-1", feed.reload.apple_show_feed_binding.apple_show_id
   end
@@ -144,25 +144,25 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     selected_key = create(:apple_key, account_id: podcast.account_id)
     create(:apple_key, account_id: podcast.account_id)
     podcast.update!(apple_key: selected_key)
-    option = ["Selected show — show-1", "show-1"]
+    show = {id: "show-1", title: "Selected show"}
 
-    Apple::ShowFeedBinding.stub(:connection_options, ->(apple_key, feed:) {
+    Apple::ShowFeedBinding.stub(:connectable_shows, ->(apple_key, feed:) {
       assert_equal selected_key, apple_key
       assert_equal self.feed, feed
-      [option]
+      [show]
     }) do
       get podcast_feed_apple_connection_url(podcast, feed)
     end
 
     assert_response :success
-    assert_select "select[name='feed[apple_settings][connection]'] option[value='show-1']", text: "Selected show — show-1"
+    assert_select "select[name='feed[apple_settings][connection]'] option[value='show-1']", text: "Selected show (show-1)"
   end
 
   test "requires confirmation when replacing a connection used by delegated delivery" do
     connected_apple_feed
     create(:delegated_delivery_config, feed: private_feed, key: podcast.apple_key, show_feed_binding: feed.apple_show_feed_binding)
 
-    Apple::ShowFeedBinding.stub(:connection_options, []) do
+    Apple::ShowFeedBinding.stub(:connectable_shows, []) do
       get podcast_feed_apple_connection_url(podcast, feed)
     end
 
