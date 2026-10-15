@@ -269,6 +269,23 @@ describe Apple::Publisher do
         assert mock.verify
       end
     end
+
+    it "logs attempted and updated counts for draft episodes" do
+      apple_publisher.stub(:poll_episodes!, []) do
+        draft_ep_1 = OpenStruct.new(drafting?: true, apple_new?: false)
+        draft_ep_2 = OpenStruct.new(drafting?: true, apple_new?: false)
+
+        logs = capture_json_logs do
+          Apple::Episode.stub(:update_episodes, [:sync_log]) do
+            apple_publisher.sync_episodes!([draft_ep_1, draft_ep_2])
+          end
+        end
+
+        log = logs.find { |l| l[:msg] == "Updated remote episodes" }
+        assert_equal 2, log[:attempted_count]
+        assert_equal 1, log[:updated_count]
+      end
+    end
   end
 
   describe "Archive and Unarchive flows" do

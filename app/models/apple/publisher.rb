@@ -455,8 +455,8 @@ module Apple
         # However, if the episode is drafting state,
         # then we can try to update the episode attributes
         draft_apple_episodes = eps.select(&:drafting?)
-        Apple::Episode.update_episodes(api, draft_apple_episodes)
-        Rails.logger.info("Updated remote episodes", {count: draft_apple_episodes.length})
+        updated = Apple::Episode.update_episodes(api, draft_apple_episodes)
+        Rails.logger.info("Updated remote episodes", {attempted_count: draft_apple_episodes.length, updated_count: Array(updated).length})
 
         show.reload
       end

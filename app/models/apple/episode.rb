@@ -73,8 +73,9 @@ module Apple
       end
     end
 
+    # Returns the sync logs for the successfully updated episodes
     def self.update_episodes(api, episodes)
-      return if episodes.empty?
+      return [] if episodes.empty?
 
       (episode_bridge_results, errs) =
         api.bridge_remote_and_retry("updateEpisodes",

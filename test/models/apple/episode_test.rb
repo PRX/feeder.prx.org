@@ -418,7 +418,14 @@ describe Apple::Episode do
         apple_sync_log_for(apple_episode2.feeder_episode).destroy
         apple_episode2.feeder_episode.reload
 
-        updated_episodes = Apple::Episode.update_episodes(apple_api, [apple_episode1, apple_episode2])
+        updated_episodes = nil
+        logs = capture_json_logs do
+          updated_episodes = Apple::Episode.update_episodes(apple_api, [apple_episode1, apple_episode2])
+        end
+
+        ignored_log = logs.find { |l| l[:msg] == "Apple::Api ignored bridge error" }
+        assert ignored_log, "Expected the ignored 409 to be logged"
+        assert_equal episode2.item_guid, ignored_log[:request_metadata][:guid]
 
         assert_equal 1, updated_episodes.length, "Expected one successfully updated episode"
         assert_equal "123", updated_episodes.first.external_id, "Expected the successful episode to be updated"
@@ -427,6 +434,10 @@ describe Apple::Episode do
         apple_episode2.feeder_episode.reload
         assert_nil apple_sync_log_for(apple_episode2.feeder_episode), "Expected no sync log update for the episode with 409 error"
       end
+    end
+
+    it "returns an empty array when there are no episodes" do
+      assert_equal [], Apple::Episode.update_episodes(apple_api, [])
     end
   end
 
