@@ -38,6 +38,28 @@ module Apple
       find_or_initialize_by(feed: feed).connect_existing(apple_show_id)
     end
 
+    # Shows bound to other feeds are omitted, since a show connects to one feed.
+    def self.connectable_shows(apple_key, feed:)
+      return [] unless apple_key
+
+      api = Apple::Api.from_key(apple_key)
+      shows = Apple::Show.apple_shows_json(api) || []
+      used_ids = where.not(feed: feed).pluck(:apple_show_id).to_set
+
+      shows.filter_map do |show|
+        next if show.dig("attributes", "publishingState") == "ARCHIVED"
+
+        show_id = show["id"]
+        next if show_id.blank? || used_ids.include?(show_id.to_s)
+
+        {id: show_id.to_s, title: show.dig("attributes", "title").presence}
+      end
+    rescue => error
+      Rails.logger.error("Unable to list Apple shows", apple_key_id: apple_key&.id, error: error)
+      yield error if block_given?
+      []
+    end
+
     def connect_existing(apple_show_id)
       connect! if prepare_connection(apple_show_id)
       self
@@ -81,28 +103,6 @@ module Apple
       association(:delegated_delivery_config).reset
       destroy
       self
-    end
-
-    # Shows bound to other feeds are omitted, since a show connects to one feed.
-    def self.connectable_shows(apple_key, feed:)
-      return [] unless apple_key
-
-      api = Apple::Api.from_key(apple_key)
-      shows = Apple::Show.apple_shows_json(api) || []
-      used_ids = where.not(feed: feed).pluck(:apple_show_id).to_set
-
-      shows.filter_map do |show|
-        next if show.dig("attributes", "publishingState") == "ARCHIVED"
-
-        show_id = show["id"]
-        next if show_id.blank? || used_ids.include?(show_id.to_s)
-
-        {id: show_id.to_s, title: show.dig("attributes", "title").presence}
-      end
-    rescue => error
-      Rails.logger.error("Unable to list Apple shows", apple_key_id: apple_key&.id, error: error)
-      yield error if block_given?
-      []
     end
 
     # Apple crawls a private feed through one of its tokens.
