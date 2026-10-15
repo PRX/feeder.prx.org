@@ -263,8 +263,7 @@ module Apple
 
         options = ShowFeedBinding.connection_options(key, feed: create(:public_feed))
 
-        assert_equal ["show-1"], options.map(&:value)
-        assert_equal "Shared — show-1", options.first.label
+        assert_equal [["Shared — show-1", "show-1"]], options
       end
 
       it "omits shows connected to other feeds, including other podcasts" do
@@ -278,7 +277,7 @@ module Apple
 
         options = ShowFeedBinding.connection_options(key, feed: feed)
 
-        assert_equal ["show-1", "show-4"], options.map(&:value)
+        assert_equal ["show-1", "show-4"], options.map(&:last)
       end
 
       it "returns no options without a selected key" do

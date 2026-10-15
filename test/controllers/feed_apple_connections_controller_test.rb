@@ -144,7 +144,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     selected_key = create(:apple_key, account_id: podcast.account_id)
     create(:apple_key, account_id: podcast.account_id)
     podcast.update!(apple_key: selected_key)
-    option = Apple::ShowFeedBinding::ConnectionOption.new("Selected show — show-1", "show-1")
+    option = ["Selected show — show-1", "show-1"]
 
     Apple::ShowFeedBinding.stub(:connection_options, ->(apple_key, feed:) {
       assert_equal selected_key, apple_key

@@ -2,8 +2,6 @@
 
 module Apple
   class ShowFeedBinding < ApplicationRecord
-    ConnectionOption = Data.define(:label, :value)
-
     belongs_to :feed
 
     has_one :delegated_delivery_config,
@@ -125,7 +123,7 @@ module Apple
         next if show_id.blank? || used_ids.include?(show_id.to_s)
 
         title = show.dig("attributes", "title").presence || show_id
-        ConnectionOption.new("#{title} — #{show_id}", show_id.to_s)
+        ["#{title} — #{show_id}", show_id.to_s]
       end
     rescue => error
       Rails.logger.error("Unable to list Apple shows", apple_key_id: apple_key&.id, error: error)

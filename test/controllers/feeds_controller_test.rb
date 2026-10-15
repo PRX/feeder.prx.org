@@ -95,8 +95,8 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     test "preserves submitted connection #{selection.inspect} on validation failure" do
       apple_feed = connected_apple_feed
       options = [
-        Apple::ShowFeedBinding::ConnectionOption.new("Configured show", "show-1"),
-        Apple::ShowFeedBinding::ConnectionOption.new("Other show", "show-2")
+        ["Configured show", "show-1"],
+        ["Other show", "show-2"]
       ]
 
       patch podcast_feed_url(podcast, apple_feed), params: {
