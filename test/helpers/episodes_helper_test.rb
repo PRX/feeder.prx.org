@@ -97,8 +97,10 @@ describe EpisodesHelper do
       it "returns 'disconnected' when the integration facade is unavailable" do
         feed = episode.integration_feeds(:apple).first
 
-        feed.stub(:integration_episode, nil) do
-          assert_equal({feed => "disconnected"}, helper.episode_integration_statuses(episode, :apple))
+        episode.stub(:integration_feeds, [feed]) do
+          feed.stub(:integration_episode, nil) do
+            assert_equal({feed => "disconnected"}, helper.episode_integration_statuses(episode, :apple))
+          end
         end
       end
 
@@ -107,8 +109,10 @@ describe EpisodesHelper do
         integration_episode.define_singleton_method(:delivery_status) { |*| nil }
         feed = episode.integration_feeds(:apple).first
 
-        feed.stub(:integration_episode, integration_episode) do
-          assert_equal({feed => "disconnected"}, helper.episode_integration_statuses(episode, :apple))
+        episode.stub(:integration_feeds, [feed]) do
+          feed.stub(:integration_episode, integration_episode) do
+            assert_equal({feed => "disconnected"}, helper.episode_integration_statuses(episode, :apple))
+          end
         end
       end
 
