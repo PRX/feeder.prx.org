@@ -260,6 +260,43 @@ describe Apple::Episode do
     end
   end
 
+  describe "#remote_missing_required_attributes" do
+    let(:apple_episode_api_response) do
+      build(:apple_episode_api_response, apple_episode_id: "123").tap do |res|
+        res["api_response"]["api_response"]["val"]["data"]["attributes"].merge!(remote_attributes)
+      end
+    end
+    let(:remote_attributes) { {"title" => "A title", "originalReleaseDate" => "2024-01-01T00:00:00Z"} }
+
+    it "is empty when the remote has the required attributes" do
+      assert_equal [], apple_episode.remote_missing_required_attributes
+    end
+
+    describe "when the remote is hollow" do
+      let(:remote_attributes) { {"title" => nil, "originalReleaseDate" => ""} }
+
+      it "lists the blank required attributes" do
+        assert_equal ["title", "originalReleaseDate"], apple_episode.remote_missing_required_attributes
+      end
+    end
+
+    describe "when only one attribute is missing" do
+      let(:remote_attributes) { {"title" => "A title", "originalReleaseDate" => nil} }
+
+      it "lists only the blank attribute" do
+        assert_equal ["originalReleaseDate"], apple_episode.remote_missing_required_attributes
+      end
+    end
+
+    it "is empty when there is no remote pair" do
+      apple_sync_log_for(episode).destroy
+      episode.reload
+
+      assert_nil apple_episode.apple_json
+      assert_equal [], apple_episode.remote_missing_required_attributes
+    end
+  end
+
   describe "#apple_published?" do
     let(:episode) { create(:episode, podcast: podcast, published_at: nil) }
     let(:apple_episode_api_response) { build(:apple_episode_api_response, publishing_state: "PUBLISHED") }

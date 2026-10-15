@@ -12,6 +12,7 @@ module Apple
 
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
+    REMOTE_REQUIRED_ATTRIBUTES = %w[title originalReleaseDate].freeze
 
     # Cleans up old delivery/delivery files iff the episode is to be uploaded
     def self.prepare_for_delivery(episodes)
@@ -434,6 +435,15 @@ module Apple
 
     def drafting?
       publishing_state == "DRAFTING"
+    end
+
+    # Required remote attributes that are blank on Apple's side. An episode
+    # without a remote pair is not considered to be missing anything.
+    def remote_missing_required_attributes
+      attributes = apple_json&.dig("attributes")
+      return [] if attributes.nil?
+
+      REMOTE_REQUIRED_ATTRIBUTES.select { |key| attributes[key].blank? }
     end
 
     def archived?
