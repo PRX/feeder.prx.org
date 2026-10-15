@@ -9,7 +9,7 @@ describe PublishingQueueItem do
       assert_equal [], pqi.publishing_pipeline_states
 
       pps = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pqi)
-      pps2 = PublishingPipelineState.complete!(podcast)
+      pps2 = PublishingPipelineState.complete!(pqi)
 
       assert_equal [pps, pps2].sort, pqi.reload.publishing_pipeline_states.sort
     end
@@ -17,7 +17,7 @@ describe PublishingQueueItem do
 
   describe ".latest_complete" do
     it "returns the most recent queue items for each podcast that is complete" do
-      _pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
+      _pa1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast), status: :complete)
       pa2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast))
       complete_pa = pa2.complete_publishing!
 
@@ -44,24 +44,24 @@ describe PublishingQueueItem do
   describe ".latest_failed" do
     it "returns the most recent failed publishing attempt for each podcast" do
       pqi1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
-      PublishingPipelineState.error!(podcast)
+      PublishingPipelineState.error!(pqi1)
 
-      _pqi2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
-      PublishingPipelineState.complete!(podcast)
+      pqi2 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
+      PublishingPipelineState.complete!(pqi2)
 
       pqi3 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
 
       assert_equal [pqi3].sort, PublishingQueueItem.unfinished_items(podcast).sort
       assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
 
-      PublishingPipelineState.error!(podcast)
+      PublishingPipelineState.error!(pqi3)
       assert_equal [pqi3].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
     end
 
     it "can be combined with other scopes to query the current failed item" do
       # create a failed item, transition to `created` pipeline state and then transition to `error`
       pqi1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
-      PublishingPipelineState.error!(podcast)
+      PublishingPipelineState.error!(pqi1)
 
       assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
       assert_equal [pqi1].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
@@ -71,7 +71,7 @@ describe PublishingQueueItem do
       assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
       assert_equal [].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
 
-      PublishingPipelineState.error!(podcast)
+      PublishingPipelineState.error!(pqi2)
 
       assert_equal [pqi2].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
       assert_equal [pqi2].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
@@ -97,7 +97,7 @@ describe PublishingQueueItem do
 
     it "includes intermediate states like error_integration" do
       pqi1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
-      PublishingPipelineState.error_integration!(podcast)
+      PublishingPipelineState.error_integration!(pqi1)
 
       assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
       assert_equal [pqi1].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)
@@ -196,14 +196,14 @@ describe PublishingQueueItem do
 
       pod1_pqi1 = PublishingQueueItem.create!(podcast: podcast)
       PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pod1_pqi1)
-      PublishingPipelineState.complete!(podcast)
+      PublishingPipelineState.complete!(pod1_pqi1)
 
       # create a new request that was debounced
       pod1_pqi2 = PublishingQueueItem.create!(podcast: podcast)
 
       pod1_pqi3 = PublishingQueueItem.create!(podcast: podcast)
       PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: pod1_pqi3)
-      PublishingPipelineState.start!(podcast)
+      PublishingPipelineState.start!(pod1_pqi3)
 
       podcast2 = create(:podcast)
       pod2_pqi1 = PublishingQueueItem.create!(podcast: podcast2)
@@ -217,7 +217,7 @@ describe PublishingQueueItem do
         {"id" => pod1_pqi2.id, "podcast_id" => podcast.id, "last_pipeline_state" => nil, "status" => nil},
         {"id" => pod1_pqi3.id, "podcast_id" => podcast.id, "last_pipeline_state" => "started", "status" => 1},
         {"id" => pod2_pqi1.id, "podcast_id" => podcast2.id, "last_pipeline_state" => "created", "status" => 0}
-      ], PublishingQueueItem.delivery_status.order(podcast_id: :asc, created_at: :asc).as_json(except: [:created_at, :updated_at, :job_id])
+      ], PublishingQueueItem.delivery_status.order(podcast_id: :asc, created_at: :asc).as_json(except: [:created_at, :updated_at, :job_id, :heartbeat_at])
     end
   end
 end

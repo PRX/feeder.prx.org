@@ -380,6 +380,26 @@ describe Feeds::AppleSubscription do
     end
   end
 
+  describe "#publish_integration!" do
+    it "builds the Apple publisher with the heartbeat block" do
+      publisher = Minitest::Mock.new
+      publisher.expect(:publish!, :published)
+      heartbeat_block = -> {}
+      build = ->(heartbeat:) {
+        assert_same heartbeat_block, heartbeat
+        publisher
+      }
+
+      apple_feed.stub(:publish_integration?, true) do
+        apple_feed.delegated_delivery_config.stub(:build_publisher, build) do
+          assert_equal :published, apple_feed.publish_integration!(&heartbeat_block)
+        end
+      end
+
+      publisher.verify
+    end
+  end
+
   describe "#publish_to_apple?" do
     it "returns true if the feed has apple credentials" do
       apple_feed.save!

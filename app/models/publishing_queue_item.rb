@@ -76,8 +76,4 @@ class PublishingQueueItem < ApplicationRecord
   def complete?
     most_recent_state&.complete?
   end
-
-  def create_publish_job
-    PublishFeedJob.perform_later(self)
-  end
 end

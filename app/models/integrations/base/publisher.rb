@@ -3,11 +3,13 @@ module Integrations
     class Publisher
       PUBLISH_CHUNK_LEN = 25
       include EpisodeSetOperations
+      include PublishingHeartbeat
 
       attr_accessor :show
 
-      def initialize(show:)
+      def initialize(show:, heartbeat: nil)
         @show = show
+        @heartbeat = heartbeat
       end
 
       def episodes_to_sync

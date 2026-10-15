@@ -6,9 +6,10 @@ module Megaphone
     attr_reader :feed
     attr_accessor :wait_interval
 
-    def initialize(feed)
+    def initialize(feed, heartbeat: nil)
       @feed = feed
       @wait_interval = WAIT_INTERVAL
+      @heartbeat = heartbeat
     end
 
     def megaphone_podcast
@@ -151,5 +152,7 @@ module Megaphone
     def podcast
       feed&.podcast
     end
+
+    heartbeat_around_all_methods
   end
 end
