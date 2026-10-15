@@ -2,7 +2,9 @@
 <% binding = settings.binding %>
 <% config = settings.config %>
 <% config = nil if config&.marked_for_destruction? %>
-<% invalid = settings.errors.any? || feed.errors.attribute_names.any? { |name| name.to_s.start_with?("delegated_delivery_config") } %>
+<% config_errors = feed.errors.select { |error| error.attribute.to_s.start_with?("delegated_delivery_config") }.map(&:full_message) %>
+<% alerts = settings.errors[:connection] + config_errors %>
+<% invalid = settings.errors.any? || config_errors.any? %>
 <% expanded = binding.present? || config.present? || settings.delivering? || invalid %>
 
 <div class="card collapsible_card shadow border-0 mt-3 mb-0" data-controller="apple-settings"
@@ -18,8 +20,8 @@
 
   <div id="apple-settings-card" class="collapse <%= "show" if expanded %>">
     <div class="card-body">
-      <% if settings.errors[:connection].any? %>
-        <div class="alert alert-danger lh-sm" role="alert"><%= settings.errors[:connection].to_sentence %></div>
+      <% if alerts.any? %>
+        <div class="alert alert-danger lh-sm" role="alert"><%= alerts.to_sentence %></div>
       <% end %>
 
       <%= form.fields_for :apple_settings, settings do |apple| %>

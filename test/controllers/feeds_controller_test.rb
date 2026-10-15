@@ -743,6 +743,17 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_nil Feed.last.apple_show_feed_binding
   end
 
+  test "shows delivery config errors on the Apple settings panel" do
+    binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
+    create(:delegated_delivery_config, feed: private_feed, show_feed_binding: binding)
+    feed.update_column(:private, true)
+
+    patch podcast_feed_url(podcast, private_feed), params: {feed: {apple_settings: {publish_enabled: "0"}}}
+
+    assert_response :unprocessable_entity
+    assert_select '.card-body > .alert-danger[role="alert"]', text: /must belong to a public feed or this feed/
+  end
+
   test "does not connect without a selected podcast credential" do
     patch podcast_feed_url(podcast, feed), params: {
       feed: {apple_settings: {connection: "show-1"}}

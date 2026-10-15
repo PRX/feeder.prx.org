@@ -157,6 +157,9 @@ module Apple
       return true unless connection_change == :connect
 
       connection_changed(connection_binding.connect_existing(connection))
+    rescue ActiveRecord::RecordInvalid => error
+      error.record.errors.full_messages.each { |message| errors.add(:connection, message) }
+      false
     end
 
     # Disconnect after the feed saves so its config no longer selects the

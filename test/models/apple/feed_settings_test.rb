@@ -25,6 +25,19 @@ describe Apple::FeedSettings do
       assert_equal "show-1", binding.reload.apple_show_id
     end
 
+    it "reports a connection that fails to save" do
+      public_feed = binding.feed
+      stub_show("show-2")
+      invalid = Apple::ShowFeedBinding.new
+      invalid.errors.add(:base, "could not be saved")
+
+      Apple::ShowFeedBinding.stub_any_instance(:connect!, -> { raise ActiveRecord::RecordInvalid, invalid }) do
+        refute public_feed.update(apple_settings: {connection: "show-2"})
+      end
+      assert_equal ["could not be saved"], public_feed.apple_settings.errors[:connection]
+      assert_equal "show-1", binding.reload.apple_show_id
+    end
+
     it "reads the requested show before the feed row is written" do
       public_feed = binding.feed
       public_feed.title = "Changed"
