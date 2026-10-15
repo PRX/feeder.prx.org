@@ -50,13 +50,15 @@ module Apple
       @connection_was ||= binding&.apple_show_id.to_s
     end
 
+    # Read from the database, since applying a delivery repoints the config
+    # in memory, and a failed save re-renders the form with it.
     def delivery_was
-      if config.nil?
+      if saved_binding_id.nil?
         (binding && feed.private?) ? OWN : ""
-      elsif binding && config.show_feed_binding_id == binding.id
+      elsif binding && saved_binding_id == binding.id
         OWN
       else
-        config.show_feed_binding_id.to_s
+        saved_binding_id.to_s
       end
     end
 
@@ -180,21 +182,28 @@ module Apple
       delivery.to_i if delivery.match?(/\A\d+\z/)
     end
 
-    # The other feed's binding the saved config points at. Read from the
-    # database, since applying a delivery repoints the config in memory.
-    def saved_mapped_binding
-      saved_id = config&.show_feed_binding_id_in_database
-      return if saved_id.nil? || saved_id == binding&.id
+    # The binding the saved config points at. Nil for no config, or one not
+    # saved yet.
+    def saved_binding_id
+      config&.show_feed_binding_id_in_database
+    end
 
-      Apple::ShowFeedBinding.includes(:feed).find_by(id: saved_id)
+    # The other feed's binding the saved config points at.
+    def saved_mapped_binding
+      return if saved_binding_id.nil? || saved_binding_id == binding&.id
+
+      Apple::ShowFeedBinding.includes(:feed).find_by(id: saved_binding_id)
     end
 
     # Point the feed's config at the submitted binding, or remove it. The
-    # config saves with the feed. Read disconnects? first, since pointing the
-    # config changes the saved delivery it compares against.
+    # config saves with the feed. Read disconnects? first, since saving the
+    # config changes the saved delivery it compares against before the feed
+    # disconnects. The submitted connection is kept, so a failed save
+    # re-renders it rather than a blank one that would disconnect when
+    # resubmitted with a delivery that doesn't.
     def apply_delivery
       if delivery_submitted?
-        disconnect = disconnects?
+        @disconnecting = disconnects?
 
         if delivery.blank?
           config&.mark_for_destruction
@@ -203,8 +212,6 @@ module Apple
         elsif mapped_binding
           point_config_at(mapped_binding)
         end
-
-        @submitted[:connection] = "" if disconnect
       end
 
       apply_config_flags
@@ -236,9 +243,13 @@ module Apple
     end
 
     def connection_change
-      return unless connectable? && connection_changed?
+      return unless connectable?
 
-      connection.present? ? :connect : :disconnect
+      if @disconnecting
+        :disconnect if binding
+      elsif connection_changed?
+        connection.present? ? :connect : :disconnect
+      end
     end
 
     def connection_binding

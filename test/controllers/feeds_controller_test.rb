@@ -511,6 +511,28 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     refute Apple::ShowFeedBinding.exists?(binding.id)
   end
 
+  test "keeps a public feed's connection after a failed save that would disconnect it" do
+    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
+    binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
+    other_feed = create(:feed, podcast: podcast, private: false)
+    other_binding = create(:apple_show_feed_binding, feed: other_feed, apple_show_id: "show-2")
+
+    patch podcast_feed_url(podcast, feed), params: {
+      feed: {slug: other_feed.slug, apple_settings: {delivery: other_binding.id, connection: "show-1"}}
+    }
+
+    assert_response :unprocessable_entity
+    assert_select "[data-apple-settings-delivery-was-value='']"
+    assert_select "input[name='feed[apple_settings][connection]'][value='show-1']"
+
+    patch podcast_feed_url(podcast, feed), params: {
+      feed: {apple_settings: {delivery: "", connection: "show-1"}}
+    }
+
+    assert_redirected_to podcast_feed_url(podcast, feed)
+    assert_equal binding, feed.reload.apple_show_feed_binding
+  end
+
   test "keeps a connected public feed without delivery connected when saved" do
     podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
     binding = create(:apple_show_feed_binding, feed: feed, apple_show_id: "show-1")
