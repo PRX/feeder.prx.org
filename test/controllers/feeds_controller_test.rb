@@ -730,6 +730,19 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_equal [Apple::DelegatedDeliveryConfig::DEFAULT_TOKEN_LABEL], new_feed.tokens.map(&:label)
   end
 
+  test "ignores an Apple connection submitted with a new feed" do
+    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
+
+    assert_difference("Feed.count") do
+      post podcast_feeds_url(podcast), params: {
+        feed: {label: "New", slug: "new_feed", private: false, apple_settings: {connection: "show-1"}}
+      }
+    end
+
+    assert_redirected_to podcast_feed_url(podcast, Feed.last)
+    assert_nil Feed.last.apple_show_feed_binding
+  end
+
   test "does not connect without a selected podcast credential" do
     patch podcast_feed_url(podcast, feed), params: {
       feed: {apple_settings: {connection: "show-1"}}

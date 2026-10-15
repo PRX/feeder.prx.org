@@ -27,9 +27,12 @@ module Apple
 
     validate :delivery_requirements, if: :delivery_submitted?
 
+    # A new feed can't connect, since saving its binding would save the feed
+    # again from inside the feed's own save.
     def initialize(feed, attributes = {})
       @feed = feed
       @submitted = attributes.to_h.symbolize_keys.slice(*ATTRIBUTES)
+      @submitted.delete(:connection) if feed.new_record?
     end
 
     # Field errors look for aliases on their model (bootstrap_field_errors.rb).
