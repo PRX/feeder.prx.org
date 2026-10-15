@@ -41,70 +41,9 @@ module FeedApple
     super
   end
 
-  # Settings are only applied once assigned, so other saves skip them.
-  private def apply_apple_settings
-    @apple_settings&.apply
-  end
-
-  private def apple_settings_must_be_valid
-    errors.add(:apple_settings, :invalid) if @apple_settings&.invalid?
-  end
-
-  private def connect_apple_show
-    return if @apple_settings.nil? || @apple_settings.connect
-
-    errors.add(:apple_settings, :invalid)
-    throw :abort
-  end
-
-  private def disconnect_apple_show
-    return unless @apple_settings
-
-    unless @apple_settings.disconnect
-      errors.add(:apple_settings, :invalid)
-      raise ActiveRecord::RecordInvalid, self
-    end
-    # A later save of this feed starts from the saved settings.
-    @apple_settings = nil
-  end
-
   # Megaphone handles its own distribution, so its feeds never connect to an Apple show here.
   def apple_connectable?
     !is_a?(Feeds::MegaphoneFeed)
-  end
-
-  # Other feeds' delivery depends on this feed's show staying public. A
-  # feed's own delivery through its own show can go private.
-  private def apple_public_dependents_block_private
-    return unless private? && private_changed? && apple_show_feed_binding
-
-    config = apple_show_feed_binding.delegated_delivery_config
-    if config && config.feed_id != id
-      label = config.feed&.label || "another feed"
-      errors.add(:private, "cannot be enabled while #{label} delivers to this feed's Apple show")
-    end
-  end
-
-  # A connection nothing delivers through would change from a public show
-  # to this feed's own show, so it must be disconnected or delivered
-  # through first.
-  private def apple_unused_connection_blocks_private
-    return unless private? && private_changed? && apple_show_feed_binding
-
-    # Reported by apple_public_dependents_block_private.
-    dependent = apple_show_feed_binding.delegated_delivery_config
-    return if dependent && dependent.feed_id != id
-    return if delivering_through_own_apple_show?
-
-    errors.add(:private, "cannot be enabled while this feed is connected to an Apple show. Disconnect it or publish this feed to its own Apple show first")
-  end
-
-  # Read from the feed's config, which holds this save's delivery changes.
-  # Compare bindings, since a binding connected in this save isn't on the
-  # config's foreign key until the config saves.
-  private def delivering_through_own_apple_show?
-    config = delegated_delivery_config
-    config.present? && !config.marked_for_destruction? && config.show_feed_binding&.id == apple_show_feed_binding.id
   end
 
   def publish_to_apple?
@@ -158,25 +97,88 @@ module FeedApple
     episodes.where("episodes.published_at IS NULL OR episodes.published_at > ?", Time.now - episode_offset_seconds.to_i)
   end
 
-  private def build_apple_delivery_token
+  def active_apple_tokens
+    tokens.reject { |token| token.marked_for_destruction? || token.destroyed? }
+  end
+
+  private
+
+  # Settings are only applied once assigned, so other saves skip them.
+  def apply_apple_settings
+    @apple_settings&.apply
+  end
+
+  def apple_settings_must_be_valid
+    errors.add(:apple_settings, :invalid) if @apple_settings&.invalid?
+  end
+
+  def connect_apple_show
+    return if @apple_settings.nil? || @apple_settings.connect
+
+    errors.add(:apple_settings, :invalid)
+    throw :abort
+  end
+
+  def disconnect_apple_show
+    return unless @apple_settings
+
+    unless @apple_settings.disconnect
+      errors.add(:apple_settings, :invalid)
+      raise ActiveRecord::RecordInvalid, self
+    end
+    # A later save of this feed starts from the saved settings.
+    @apple_settings = nil
+  end
+
+  # Other feeds' delivery depends on this feed's show staying public. A
+  # feed's own delivery through its own show can go private.
+  def apple_public_dependents_block_private
+    return unless private? && private_changed? && apple_show_feed_binding
+
+    config = apple_show_feed_binding.delegated_delivery_config
+    if config && config.feed_id != id
+      label = config.feed&.label || "another feed"
+      errors.add(:private, "cannot be enabled while #{label} delivers to this feed's Apple show")
+    end
+  end
+
+  # A connection nothing delivers through would change from a public show
+  # to this feed's own show, so it must be disconnected or delivered
+  # through first.
+  def apple_unused_connection_blocks_private
+    return unless private? && private_changed? && apple_show_feed_binding
+
+    # Reported by apple_public_dependents_block_private.
+    dependent = apple_show_feed_binding.delegated_delivery_config
+    return if dependent && dependent.feed_id != id
+    return if delivering_through_own_apple_show?
+
+    errors.add(:private, "cannot be enabled while this feed is connected to an Apple show. Disconnect it or publish this feed to its own Apple show first")
+  end
+
+  # Read from the feed's config, which holds this save's delivery changes.
+  # Compare bindings, since a binding connected in this save isn't on the
+  # config's foreign key until the config saves.
+  def delivering_through_own_apple_show?
+    config = delegated_delivery_config
+    config.present? && !config.marked_for_destruction? && config.show_feed_binding&.id == apple_show_feed_binding.id
+  end
+
+  def build_apple_delivery_token
     return unless private? && delegated_delivery_config&.new_record? && !delegated_delivery_config.marked_for_destruction?
 
     tokens.build(label: Apple::DelegatedDeliveryConfig::DEFAULT_TOKEN_LABEL) if active_apple_tokens.empty?
   end
 
-  private def apple_delivery_requires_token
+  def apple_delivery_requires_token
     delivering = delegated_delivery_config && !delegated_delivery_config.marked_for_destruction?
     return if public? || !(delivering || apple_show_feed_binding)
 
     errors.add(:tokens, "must have a token") if active_apple_tokens.empty?
   end
 
-  def active_apple_tokens
-    tokens.reject { |token| token.marked_for_destruction? || token.destroyed? }
-  end
-
   # A feed's own delivery through its own show goes with it.
-  private def protect_apple_delivery_connection
+  def protect_apple_delivery_connection
     return if destroyed_by_association
 
     config = apple_show_feed_binding&.delegated_delivery_config

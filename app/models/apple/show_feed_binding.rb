@@ -83,35 +83,6 @@ module Apple
       self
     end
 
-    private def verify_show_access
-      Apple::Show.get_show(Apple::Api.from_key(feed.podcast.apple_key), apple_show_id)
-      true
-    rescue => error
-      Rails.logger.error("Unable to connect Apple show feed binding", feed_id: feed_id, apple_show_id: apple_show_id, error: error)
-      errors.add(:apple_show_id, "could not be read with the selected Apple credential")
-      false
-    end
-
-    private def mirror_legacy_routing
-      Apple::SyncLog.log!(feeder_id: feed_id, feeder_type: :feeds, external_id: apple_show_id)
-      return unless delegated_delivery_config
-
-      delegated_delivery_config.update!(key: feed.podcast.apple_key)
-    end
-
-    private def protect_delegated_delivery
-      return if destroyed_by_association
-      return unless delegated_delivery_config
-
-      errors.add(:base, "cannot be removed while delegated-delivery feeds use it")
-      throw :abort
-    end
-
-    private def clear_feed_sync_log
-      Apple::SyncLog.feeds.where(feeder_id: feed_id).destroy_all
-      feed.association(:apple_sync_log).reset
-    end
-
     # Shows bound to other feeds are omitted, since a show connects to one feed.
     def self.connection_options(apple_key, feed:)
       return [] unless apple_key
@@ -142,6 +113,37 @@ module Apple
       elsif feed&.private? && feed.active_apple_tokens.empty?
         errors.add(:feed, "must have a token when private")
       end
+    end
+
+    private
+
+    def verify_show_access
+      Apple::Show.get_show(Apple::Api.from_key(feed.podcast.apple_key), apple_show_id)
+      true
+    rescue => error
+      Rails.logger.error("Unable to connect Apple show feed binding", feed_id: feed_id, apple_show_id: apple_show_id, error: error)
+      errors.add(:apple_show_id, "could not be read with the selected Apple credential")
+      false
+    end
+
+    def mirror_legacy_routing
+      Apple::SyncLog.log!(feeder_id: feed_id, feeder_type: :feeds, external_id: apple_show_id)
+      return unless delegated_delivery_config
+
+      delegated_delivery_config.update!(key: feed.podcast.apple_key)
+    end
+
+    def protect_delegated_delivery
+      return if destroyed_by_association
+      return unless delegated_delivery_config
+
+      errors.add(:base, "cannot be removed while delegated-delivery feeds use it")
+      throw :abort
+    end
+
+    def clear_feed_sync_log
+      Apple::SyncLog.feeds.where(feeder_id: feed_id).destroy_all
+      feed.association(:apple_sync_log).reset
     end
   end
 end
