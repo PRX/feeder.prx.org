@@ -1,0 +1,44 @@
+<% mapped_binding = settings.mapped_binding %>
+<% options = apple_delivery_options(settings) %>
+<% delivery_data = {apple_settings_target: "deliverySelect", action: "apple-settings#sync"} %>
+<% if settings.confirm_leaving_own_show? %>
+  <% delivery_data.merge!(confirm_field_target: "field", confirm_with: t("feeds.form_apple_settings.confirm_leave_own_show")) %>
+<% end %>
+
+<% if settings.mappable_bindings.empty? && !settings.delivering? %>
+  <% no_mappings = (feed.persisted? && settings.binding&.persisted?) ? "no_mappings_own_show" : "no_mappings" %>
+  <div class="alert alert-info lh-sm" role="status"><%= t("feeds.form_apple_settings.#{no_mappings}") %></div>
+<% end %>
+
+<div class="form-floating input-group mb-3">
+  <%= apple.select :delivery, options, {}, data: delivery_data %>
+  <%= apple.label :delivery %>
+  <%= field_help_text t("feeds.form_apple_settings.help.delivery") %>
+</div>
+
+<p class="small mb-3 <%= "d-none" unless mapped_binding %>" data-apple-settings-target="mappedOnly">
+  <%= link_to (mapped_binding ? podcast_feed_path(feed.podcast, mapped_binding.feed) : "#"),
+        class: "btn btn-sm text-primary p-0 align-items-center",
+        data: {apple_settings_target: "mappedLink", turbo_frame: "_top"} do %>
+    <%= t("feeds.form_apple_settings.view_mapped_feed") %>
+    <span class="material-icons fs-6 ms-1">arrow_forward</span>
+  <% end %>
+</p>
+
+<div class="<%= "d-none" unless settings.delivering? %> mb-3" data-apple-settings-target="deliverySettings">
+  <div class="form-check mb-2 lh-sm">
+    <%= apple.check_box :publish_enabled %>
+    <div class="d-flex align-items-center">
+      <%= apple.label :publish_enabled %>
+      <%= help_text t("feeds.form_apple_settings.help.publish_enabled") %>
+    </div>
+  </div>
+
+  <div class="form-check mb-2 lh-sm">
+    <%= apple.check_box :sync_blocks_rss %>
+    <div class="d-flex align-items-center">
+      <%= apple.label :sync_blocks_rss %>
+      <%= help_text t("feeds.form_apple_settings.help.sync_blocks_rss") %>
+    </div>
+  </div>
+</div>

@@ -18,15 +18,33 @@ describe Podcast do
   it "clears its Apple credential when destroyed so the key can be removed" do
     key = create(:apple_key, account_id: podcast.account_id)
     podcast.update!(apple_key: key)
-    feed = create(:public_feed, podcast: podcast)
-    binding = create(:apple_show_feed_binding, feed: feed)
-    create(:delegated_delivery_config, feed: feed, show_feed_binding: binding, key: key)
+    binding = create(:apple_show_feed_binding, feed: podcast.default_feed)
+    config = create(:delegated_delivery_config, feed: podcast.default_feed, show_feed_binding: binding, key: key)
 
     podcast.destroy!
 
     assert podcast.reload.deleted?
     assert_nil podcast.apple_key
+    refute Apple::DelegatedDeliveryConfig.exists?(config.id)
     assert key.reload.destroy
+  end
+
+  describe "#apple_key_locked?" do
+    it "is locked only by a locked feed connected to Apple" do
+      create(:feed, podcast: podcast, edit_locked: true)
+      feed = create(:public_feed, podcast: podcast)
+      create(:apple_show_feed_binding, feed: feed)
+      refute podcast.apple_key_locked?
+
+      feed.update_column(:edit_locked, true)
+      assert podcast.apple_key_locked?
+    end
+
+    it "is locked by a locked feed delivering to Apple" do
+      create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast, edit_locked: true))
+
+      assert podcast.apple_key_locked?
+    end
   end
 
   it "has a default feed" do

@@ -4,6 +4,7 @@ require_relative "../../../support/apple_pre_cutover_schema"
 module Apple
   describe ShowFeedBinding::Backfill do
     include ApplePreCutoverSchema
+    around { |test| with_apple_pre_cutover_schema { test.call } }
 
     describe ".backfill!" do
       it "creates a binding and sets the config from a public feed sync log" do
@@ -156,8 +157,6 @@ module Apple
     end
 
     describe ".verify_episode_show_consistency!" do
-      around { |test| with_apple_pre_cutover_schema { test.call } }
-
       it "reports zero mismatches when every legacy episode id belongs to the bound show" do
         config = create_config_with_legacy_show_id(sync_log_show_id: "show-1")
         ShowFeedBinding::Backfill.backfill!
@@ -207,7 +206,9 @@ module Apple
       podcast_attributes = key ? {prx_account_uri: "/api/v1/accounts/#{key.account_id}"} : {}
       podcast = create(:podcast, **podcast_attributes)
       private_feed = create(:private_feed, podcast: podcast, apple_show_id: private_show_id)
-      config = create(:delegated_delivery_config, :legacy_routing, feed: private_feed, key: key)
+      config = build(:delegated_delivery_config, :legacy_routing, feed: private_feed, key: key)
+      # Reproduce an unfinished setup saved before bindings were required.
+      config.save!(validate: false)
       podcast.update_column(:apple_key_id, nil)
 
       if sync_log_show_id

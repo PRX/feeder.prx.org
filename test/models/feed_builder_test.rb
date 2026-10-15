@@ -36,6 +36,31 @@ describe FeedBuilder do
     _(rss[0, 38]).must_equal '<?xml version="1.0" encoding="UTF-8"?>'
   end
 
+  [false, true].each do |has_apple_feed|
+    it "loads Apple configs once regardless of episode count with has_apple_feed=#{has_apple_feed}" do
+      create(:apple_feed, podcast: podcast) if has_apple_feed
+      query_counts = [1, 4].map do |episode_count|
+        create_list(:episode, episode_count - 1, podcast: podcast) if episode_count > 1
+        feed.episodes = podcast.episodes.reload
+        queries = []
+        subscriber = ->(event) do
+          queries << event.payload[:sql] if event.payload[:sql].match?(/\bFROM "apple_configs"/i)
+        end
+
+        rendered = ActiveRecord::Base.uncached do
+          ActiveSupport::Notifications.subscribed(subscriber, "sql.active_record") do
+            FeedBuilder.new(podcast, feed).to_feed_xml
+          end
+        end
+
+        _(Nokogiri::XML(rendered).css("item").count).must_equal episode_count
+        queries.count
+      end
+
+      _(query_counts).must_equal [1, 1], "Apple config queries for 1 and 4 episodes"
+    end
+  end
+
   it "returns an rss feed with correct podcast information" do
     assert_equal rss_feed.at_css("link").text, podcast.link
     assert_equal rss_feed.at_css("title").text, podcast.title
