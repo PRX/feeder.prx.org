@@ -5,10 +5,8 @@ module Integrations::EpisodeIntegrations
 
   included do
     has_many :episode_delivery_statuses, -> { order(created_at: :desc) }, class_name: "Integrations::EpisodeDeliveryStatus"
-  end
 
-  def publish_to_integration?(integration)
-    podcast.publish_to_integration?(integration)
+    delegate :publish_to_integration?, to: :podcast
   end
 
   # Enabled integration feeds this episode is actually delivered through. A
