@@ -62,10 +62,12 @@ module Apple
     end
 
     describe ".available_for_delivery" do
-      it "lists unassigned public bindings and the delivery feed's own binding" do
+      it "lists the podcast's public bindings that are free or already mapped to this feed" do
         podcast = create(:podcast)
         delivery_feed = create(:private_feed, podcast: podcast)
         public_binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+        mapped_binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+        create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: mapped_binding)
         own_binding = create(:apple_show_feed_binding, feed: delivery_feed)
         other_private = create(:apple_show_feed_binding, feed: create(:private_feed, podcast: podcast))
         assigned = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
@@ -74,8 +76,16 @@ module Apple
 
         available = ShowFeedBinding.available_for_delivery(delivery_feed).to_a
 
-        assert_equal [public_binding, own_binding].sort_by(&:id), available.sort_by(&:id)
+        assert_equal [public_binding, mapped_binding].sort_by(&:id), available.sort_by(&:id)
+        refute_includes available, own_binding
         refute_includes available, other_private
+      end
+
+      it "leaves out a public delivery feed's own binding" do
+        delivery_feed = create(:public_feed)
+        create(:apple_show_feed_binding, feed: delivery_feed)
+
+        assert_empty ShowFeedBinding.available_for_delivery(delivery_feed)
       end
     end
 

@@ -123,7 +123,7 @@ module Apple
     # selectable so a save doesn't clear it when its feed is no longer
     # available.
     def mappable_bindings
-      @mappable_bindings ||= Apple::ShowFeedBinding.available_for_delivery(feed).where.not(feed_id: feed.id).to_a |
+      @mappable_bindings ||= Apple::ShowFeedBinding.available_for_delivery(feed).to_a |
         [saved_mapped_binding].compact
     end
 

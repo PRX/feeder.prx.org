@@ -21,13 +21,17 @@ module Apple
 
     scope :active, -> { joins(:feed).where(feeds: {deleted_at: nil}) }
 
-    # Unassigned public-feed bindings, plus the delivery feed's own binding.
+    # The podcast's public bindings that are free or already mapped to the
+    # delivery feed, not counting the delivery feed's own binding.
     def self.available_for_delivery(delivery_feed)
-      candidates = active.left_outer_joins(:delegated_delivery_config)
-        .where(feeds: {podcast_id: delivery_feed.podcast_id})
+      # apple_configs.feed_id is the feed that delivers through the binding.
+      # nil means nobody does. The delivery feed's id means it's the current
+      # mapping, which has to stay in the list.
+      active.left_outer_joins(:delegated_delivery_config)
+        .where(feeds: {podcast_id: delivery_feed.podcast_id, private: false})
+        .where.not(feed_id: delivery_feed.id)
         .where(apple_configs: {feed_id: [nil, delivery_feed.id]})
-
-      candidates.where(feeds: {private: false}).or(candidates.where(feed_id: delivery_feed.id)).includes(:feed)
+        .includes(:feed)
     end
 
     def self.connect_existing(feed:, apple_show_id:)
