@@ -37,6 +37,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
     end
 
     xml.atom :link, href: @feed.public_url, rel: "self", type: "application/rss+xml"
+    xml.atom :link, href: websub_hub_url, rel: "hub" if websub_enabled?(@feed)
 
     unless @feed.new_feed_url.blank?
       xml.itunes :"new-feed-url", @feed.new_feed_url
