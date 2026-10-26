@@ -7,6 +7,15 @@ describe Apple::DelegatedDeliveryConfig do
   end
 
   describe "#valid?" do
+    it "rejects clearing an existing binding" do
+      config = create(:delegated_delivery_config)
+      binding = config.show_feed_binding
+
+      refute config.update(show_feed_binding: nil)
+      assert config.errors.of_kind?(:show_feed_binding, :blank)
+      assert_equal binding, config.reload.show_feed_binding
+    end
+
     it "allows only one config per show feed binding" do
       podcast = create(:podcast)
       binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
@@ -28,46 +37,50 @@ describe Apple::DelegatedDeliveryConfig do
       assert_equal ["has already been taken"], config.errors[:show_feed_binding_id]
     end
 
-    it "requires the show feed binding to belong to the same podcast" do
-      binding = create(:apple_show_feed_binding)
-      config = build(
-        :delegated_delivery_config,
-        feed: create(:private_feed, podcast: create(:podcast)),
-        show_feed_binding: binding
-      )
+    it "allows only one config per configured feed" do
+      podcast = create(:podcast)
+      first_binding = create(:apple_show_feed_binding, feed: podcast.default_feed)
+      second_binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+      delivery_feed = create(:private_feed, podcast: podcast)
+      create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: first_binding)
+
+      duplicate = build(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: second_binding)
+
+      refute duplicate.valid?
+      assert_equal ["has already been taken"], duplicate.errors[:feed_id]
+    end
+
+    it "requires the binding and configured feed to belong to the same podcast" do
+      delivery_feed = create(:private_feed, podcast: create(:podcast))
+      other_binding = create(:apple_show_feed_binding, feed: create(:podcast).default_feed)
+
+      config = build(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: other_binding)
 
       refute config.valid?
-      assert_equal ["must belong to the same podcast as feed"], config.errors[:show_feed_binding]
+      assert_equal ["must belong to the configured feed's podcast"], config.errors[:show_feed_binding]
     end
 
-    it "is unique to a podcast" do
-      podcast = create(:podcast)
-      f1 = create(:feed, podcast: podcast)
-      c1 = create(:delegated_delivery_config, feed: f1)
-      assert c1.valid?
+    it "allows a private feed to deliver through its own binding" do
+      delivery_feed = create(:private_feed, podcast: create(:podcast))
+      own_binding = create(:apple_show_feed_binding, feed: delivery_feed)
 
-      f2 = create(:feed, podcast: podcast)
-      c2 = build(:delegated_delivery_config, feed: f2)
-      refute c2.valid?
-      assert_equal ["podcast already has an Apple delegated delivery config"], c2.errors[:feed]
-
-      # can't have 2 on same feed either
-      c3 = build(:delegated_delivery_config, feed: f1)
-      refute c3.valid?
-      assert_equal ["podcast already has an Apple delegated delivery config"], c2.errors[:feed]
+      assert build(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: own_binding).valid?
     end
 
-    it "cannot be the default feed" do
+    it "rejects another private feed's binding" do
       podcast = create(:podcast)
-      c1 = build(:delegated_delivery_config, feed: podcast.default_feed)
-      refute c1.valid?
-      assert_equal ["cannot use default feed"], c1.errors[:feed]
+      other_binding = create(:apple_show_feed_binding, feed: create(:private_feed, podcast: podcast))
+
+      config = build(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), show_feed_binding: other_binding)
+
+      refute config.valid?
+      assert_equal ["must belong to a public feed or this feed"], config.errors[:show_feed_binding]
     end
 
     it "requires a persisted key to belong to the podcast account" do
       podcast = create(:podcast, prx_account_uri: "/api/v1/accounts/456")
       key = create(:apple_key, account_id: 123)
-      config = build(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), key: key)
+      config = Apple::DelegatedDeliveryConfig.new(feed: create(:private_feed, podcast: podcast), key: key)
 
       refute config.valid?
       assert_equal ["must belong to the podcast's PRX account"], config.errors[:key]
@@ -97,10 +110,27 @@ describe Apple::DelegatedDeliveryConfig do
   end
 
   describe "Apple routing" do
-    it "uses legacy routing by default" do
-      config, legacy, _binding = build_routing_config
+    it "uses show-feed-binding routing by default" do
+      config, _legacy, binding = build_routing_config
 
       with_apple_routing_source(nil) do
+        assert_equal :show_feed_binding, config.routing_source
+        assert_equal config.podcast.apple_key, config.routing_key
+        assert_equal binding.feed, config.public_feed
+        assert_equal binding.apple_show_id, config.apple_show_id
+
+        publisher = config.build_publisher
+        assert_equal config.podcast.apple_key.key_id, publisher.api.key_id
+        assert_equal binding.feed, publisher.public_feed
+        assert_equal config.private_feed, publisher.private_feed
+        assert_equal binding.apple_show_id, publisher.show.apple_id
+      end
+    end
+
+    it "uses legacy routing when selected" do
+      config, legacy, _binding = build_routing_config
+
+      with_apple_routing_source("legacy") do
         assert_equal :legacy, config.routing_source
         assert_equal legacy[:key], config.routing_key
         assert_equal legacy[:public_feed], config.public_feed
@@ -112,24 +142,6 @@ describe Apple::DelegatedDeliveryConfig do
         assert_equal legacy[:public_feed], publisher.public_feed
         assert_equal legacy[:private_feed], publisher.private_feed
         assert_equal legacy[:show_id], publisher.show.apple_id
-      end
-    end
-
-    it "uses show-feed-binding routing when selected" do
-      config, legacy, binding = build_routing_config
-
-      with_apple_routing_source("show_feed_binding") do
-        assert_equal :show_feed_binding, config.routing_source
-        assert_equal config.podcast.apple_key, config.routing_key
-        assert_equal binding.feed, config.public_feed
-        assert_equal binding.apple_show_id, config.apple_show_id
-        assert_equal legacy[:private_feed], config.private_feed
-
-        publisher = config.build_publisher
-        assert_equal config.podcast.apple_key.key_id, publisher.api.key_id
-        assert_equal binding.feed, publisher.public_feed
-        assert_equal legacy[:private_feed], publisher.private_feed
-        assert_equal binding.apple_show_id, publisher.show.apple_id
       end
     end
 
@@ -167,6 +179,29 @@ describe Apple::DelegatedDeliveryConfig do
     end
   end
 
+  describe "legacy routing synchronization" do
+    it "mirrors podcast credential changes to the legacy config key" do
+      podcast = create(:podcast)
+      original_key = create(:apple_key, account_id: podcast.account_id)
+      podcast.update!(apple_key: original_key)
+      config = create(
+        :delegated_delivery_config,
+        feed: create(:private_feed, podcast: podcast),
+        key: original_key,
+        show_feed_binding: create(:apple_show_feed_binding, feed: podcast.default_feed)
+      )
+      replacement_key = create(:apple_key, account_id: podcast.account_id)
+
+      podcast.update!(apple_key: replacement_key)
+
+      assert_equal replacement_key, config.reload.key
+
+      podcast.update!(apple_key: nil)
+
+      assert_nil config.reload.key
+    end
+  end
+
   def build_routing_config
     podcast = create(:podcast)
     public_feed = podcast.public_feed
@@ -192,6 +227,8 @@ describe Apple::DelegatedDeliveryConfig do
       feeder_id: public_feed.id,
       external_id: "legacy-sync-show"
     )
+    config.update_column(:key_id, legacy_key.id)
+    config.reload
 
     legacy = {
       key: legacy_key,

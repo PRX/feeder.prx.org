@@ -124,21 +124,16 @@ class Episode < ApplicationRecord
   end
 
   def publish_to_apple?
-    !!podcast.delegated_delivery_config&.publish_to_apple?
+    podcast.delegated_delivery_configs.any?(&:publish_to_apple?)
+  end
+
+  # Apple episodes, one per feed this episode is delivered through.
+  def apple_episodes
+    integration_feeds(:apple).filter_map { |feed| feed.integration_episode(self, :apple) }
   end
 
   def megaphone_episode
     Megaphone::Episode.new.tap { |episode| episode.feeder_episode = self }
-  end
-
-  def apple_episode
-    return nil if !persisted? || !publish_to_apple?
-
-    if (show = podcast.delegated_delivery_config&.build_publisher&.show)
-      return nil unless show.apple_id.present?
-
-      Apple::Episode.new(api: show.api, show: show, feeder_episode: self)
-    end
   end
 
   def published?

@@ -15,6 +15,10 @@ class Apple::KeyPolicy < ApplicationPolicy
     authorized?(:podcast_edit)
   end
 
+  def destroy?
+    authorized?(:podcast_edit)
+  end
+
   class Scope < Scope
     def resolve
       scope.where(account_id: token.authorized_account_ids(:read_private))
