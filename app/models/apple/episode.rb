@@ -436,10 +436,9 @@ module Apple
       publishing_state == "DRAFTING"
     end
 
-    # Required remote attributes that are blank on Apple's side. An episode
-    # without a remote pair is not considered to be missing anything.
     def remote_missing_required_attributes
       attributes = apple_json&.dig("attributes")
+      # Return if there is no remote resource
       return [] if attributes.nil?
 
       REMOTE_REQUIRED_ATTRIBUTES.select { |key| attributes[key].blank? }
