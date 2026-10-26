@@ -254,7 +254,7 @@ module Apple
         parsed.select { |row_operation| row_operation["api_response"][key] == true }
       end
 
-      # ignore errors if requested, but log them so they aren't silently dropped
+      # ignore errors if requested
       (ignored_errs, errs) = errs.partition { |err| ignore_errors.map(&:to_i).include?(err.dig("api_response", "val", "data", "status").to_i) }
       ignored_errs.each { |err| log_ignored_bridge_error(err) }
 
