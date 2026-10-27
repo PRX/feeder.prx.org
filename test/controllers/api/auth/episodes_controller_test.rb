@@ -235,6 +235,28 @@ describe Api::Auth::EpisodesController do
       assert_nil episode_update.uncut
       assert_nil episode_update.medium
     end
+
+    it "keeps the uncut when updating only segmentation on a video episode" do
+      video = create(:video_episode, podcast: podcast, published_at: nil)
+      uncut = create(:uncut, episode: video, status: "complete", medium: "video", mime_type: "video/mp4",
+        original_url: "https://s3.amazonaws.com/prx-testing/test/video.mp4")
+      alt_id = video.alternate_media_resource.id
+      content_ids = video.contents.map(&:id).sort
+      update_hash = {segment_count: 2, uncut: {segmentation: [[nil, 4.0], [4.0, nil]]}}
+
+      @controller.stub(:process_media, true) do
+        put(:update, body: update_hash.to_json, as: :json,
+          params: {id: video.guid, api_version: "v1", format: "json"})
+      end
+      assert_response :success
+
+      video.reload
+      assert_equal uncut.id, video.uncut&.id
+      assert_equal [[nil, 4.0], [4.0, nil]], video.uncut.segmentation
+      assert_equal "video", video.medium
+      assert_equal alt_id, video.alternate_media_resource&.id
+      assert_equal content_ids, video.contents.map(&:id).sort
+    end
   end
 
   describe "with wildcard token" do
