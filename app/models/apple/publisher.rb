@@ -456,10 +456,8 @@ module Apple
         # then we can try to update the episode attributes
         draft_apple_episodes = eps.select(&:drafting?)
         updated = Apple::Episode.update_episodes(api, draft_apple_episodes)
-        Rails.logger.info("Updated remote episodes", {attempted_count: draft_apple_episodes.length, updated_count: Array(updated).length})
+        Rails.logger.info("Updated remote episodes", {count: draft_apple_episodes.length, updated_count: updated.length})
 
-        # The sync logs now hold the latest remote state (from the update, or
-        # from the poll above if the update was rejected).
         warn_missing_required_metadata(draft_apple_episodes)
 
         show.reload

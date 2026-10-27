@@ -282,7 +282,7 @@ describe Apple::Publisher do
         end
 
         log = logs.find { |l| l[:msg] == "Updated remote episodes" }
-        assert_equal 2, log[:attempted_count]
+        assert_equal 2, log[:count]
         assert_equal 1, log[:updated_count]
       end
     end
