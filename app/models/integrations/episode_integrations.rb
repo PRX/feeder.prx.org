@@ -12,7 +12,7 @@ module Integrations::EpisodeIntegrations
   # Enabled integration feeds this episode is actually delivered through. A
   # podcast can have several, so membership is resolved per episode.
   def integration_feeds(integration)
-    podcast.feeds.select do |feed|
+    podcast.feeds.sort_by(&:id).select do |feed|
       feed.integration_types.include?(integration) &&
         feed.publish_integration?(integration) &&
         feed.integration_episode?(self, integration)
