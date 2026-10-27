@@ -122,7 +122,7 @@ module FeedApple
   def disconnect_apple_show
     return unless @apple_settings
 
-    unless @apple_settings.disconnect
+    unless @apple_settings.disconnect && @apple_settings.save_hls_config
       errors.add(:apple_settings, :invalid)
       raise ActiveRecord::RecordInvalid, self
     end
@@ -130,8 +130,8 @@ module FeedApple
     @apple_settings = nil
   end
 
-  # Other feeds' delivery depends on this feed's show staying public. A
-  # feed's own delivery through its own show can go private.
+  # Other feeds' delivery and HLS video depend on this feed's show staying
+  # public. A feed's own delivery through its own show can go private.
   def apple_public_dependents_block_private
     return unless private? && private_changed? && apple_show_feed_binding
 
@@ -139,6 +139,10 @@ module FeedApple
     if config && config.feed_id != id
       label = config.feed&.label || "another feed"
       errors.add(:private, "cannot be enabled while #{label} delivers to this feed's Apple show")
+    end
+
+    if apple_show_feed_binding.hls_config&.enabled?
+      errors.add(:private, "cannot be enabled while HLS video is enabled")
     end
   end
 
