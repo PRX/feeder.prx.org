@@ -70,7 +70,8 @@ describe FeedBuilder do
     assert_equal rss_feed.css("managingEditor").text, podcast.managing_editor
     assert_equal rss_feed.at_css("pubDate").text, podcast.pub_date.utc.rfc2822
     assert_equal rss_feed.css("lastBuildDate").text, podcast.last_build_date.utc.rfc2822
-    assert_equal rss_feed.at_css("atom|link").attributes["href"].value, "http://feeds.feedburner.com/thornmorris"
+    assert_equal rss_feed.at_css("atom|link[rel=self]").attributes["href"].value, "http://feeds.feedburner.com/thornmorris"
+    assert_equal rss_feed.at_css("atom|link[rel=hub]").attributes["href"].value, "https://pubsubhubbub.appspot.com/"
     assert_equal rss_feed.at_css("itunes|author").text, podcast.author_name
     assert_equal rss_feed.at_css("itunes|explicit").text, "true"
     assert_equal rss_feed.at_css("itunes|new-feed-url").text, "http://feeds.feedburner.com/newthornmorris"

@@ -20,6 +20,7 @@ describe PublishFeedJob do
     before do
       stub_request(:head, episode.enclosure_url).to_return(status: 200)
       stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
+      stub_request(:post, /pubsubhubbub/).to_return(status: 204)
     end
 
     describe "#perform" do
@@ -449,6 +450,7 @@ describe PublishFeedJob do
 
         it "does not raise an error if the apple publishing fails and apple sync does not block rss publishing" do
           stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
+          stub_request(:post, /pubsubhubbub/).to_return(status: 204)
           assert apple_feed.delegated_delivery_config.present?
           assert apple_feed.delegated_delivery_config.publish_enabled
           apple_feed.delegated_delivery_config.update!(sync_blocks_rss: false)
@@ -481,6 +483,7 @@ describe PublishFeedJob do
 
         it "does not raise when timeout occurs with sync_blocks_rss disabled" do
           stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
+          stub_request(:post, /pubsubhubbub/).to_return(status: 204)
           assert apple_feed.delegated_delivery_config.present?
           assert apple_feed.delegated_delivery_config.publish_enabled
           apple_feed.delegated_delivery_config.update!(sync_blocks_rss: false)
@@ -499,6 +502,7 @@ describe PublishFeedJob do
 
         it "logs timeout even when sync_blocks_rss is disabled" do
           stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
+          stub_request(:post, /pubsubhubbub/).to_return(status: 204)
           assert apple_feed.delegated_delivery_config.present?
           assert apple_feed.delegated_delivery_config.publish_enabled
           apple_feed.delegated_delivery_config.update!(sync_blocks_rss: false)
