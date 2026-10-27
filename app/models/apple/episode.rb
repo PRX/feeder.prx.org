@@ -12,6 +12,7 @@ module Apple
 
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
+    REMOTE_REQUIRED_ATTRIBUTES = %w[title originalReleaseDate].freeze
 
     # Cleans up old delivery/delivery files iff the episode is to be uploaded
     def self.prepare_for_delivery(episodes)
@@ -73,8 +74,9 @@ module Apple
       end
     end
 
+    # Returns the sync logs for the successfully updated episodes
     def self.update_episodes(api, episodes)
-      return if episodes.empty?
+      return [] if episodes.empty?
 
       (episode_bridge_results, errs) =
         api.bridge_remote_and_retry("updateEpisodes",
@@ -432,6 +434,14 @@ module Apple
 
     def drafting?
       publishing_state == "DRAFTING"
+    end
+
+    def remote_missing_required_attributes
+      attributes = apple_json&.dig("attributes")
+      # Return if there is no remote resource
+      return [] if attributes.nil?
+
+      REMOTE_REQUIRED_ATTRIBUTES.select { |key| attributes[key].blank? }
     end
 
     def archived?

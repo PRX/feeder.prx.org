@@ -269,6 +269,75 @@ describe Apple::Publisher do
         assert mock.verify
       end
     end
+
+    it "logs attempted and updated counts for draft episodes" do
+      apple_publisher.stub(:poll_episodes!, []) do
+        draft_ep_1 = OpenStruct.new(drafting?: true, apple_new?: false)
+        draft_ep_2 = OpenStruct.new(drafting?: true, apple_new?: false)
+
+        logs = capture_json_logs do
+          Apple::Episode.stub(:update_episodes, [:sync_log]) do
+            apple_publisher.sync_episodes!([draft_ep_1, draft_ep_2])
+          end
+        end
+
+        log = logs.find { |l| l[:msg] == "Updated remote episodes" }
+        assert_equal 2, log[:count]
+        assert_equal 1, log[:updated_count]
+      end
+    end
+
+    it "warns for draft episodes whose remote is missing required metadata" do
+      apple_publisher.stub(:poll_episodes!, []) do
+        hollow_ep = OpenStruct.new(drafting?: true, apple_new?: false, feeder_id: 1, apple_id: "apple-1",
+          guid: "guid-1", publishing_state: "DRAFTING", remote_missing_required_attributes: ["title", "originalReleaseDate"])
+        complete_ep = OpenStruct.new(drafting?: true, apple_new?: false, feeder_id: 2, apple_id: "apple-2",
+          guid: "guid-2", publishing_state: "DRAFTING", remote_missing_required_attributes: [])
+        new_ep = OpenStruct.new(drafting?: false, apple_new?: true, remote_missing_required_attributes: ["title"])
+
+        logs = capture_json_logs do
+          Apple::Episode.stub(:create_episodes, []) do
+            Apple::Episode.stub(:update_episodes, []) do
+              apple_publisher.sync_episodes!([hollow_ep, complete_ep, new_ep])
+            end
+          end
+        end
+
+        warnings = logs.select { |l| l[:msg] == "Apple episode missing required metadata" }
+        assert_equal 1, warnings.length
+
+        log = warnings.first
+        assert_equal 40, log[:level]
+        assert_equal 1, log[:episode_id]
+        assert_equal "apple-1", log[:apple_episode_id]
+        assert_equal "guid-1", log[:guid]
+        assert_equal "DRAFTING", log[:publishing_state]
+        assert_equal ["title", "originalReleaseDate"], log[:missing_attributes]
+      end
+    end
+
+    it "checks the remote state written by the episode update" do
+      feeder_episode = create(:episode)
+      # The default response has no title or originalReleaseDate
+      draft_ep = build(:apple_episode, show: apple_publisher.show, feeder_episode: feeder_episode)
+      assert_equal ["title", "originalReleaseDate"], draft_ep.remote_missing_required_attributes
+
+      updated_response = build(:apple_episode_api_response, item_guid: feeder_episode.item_guid)["api_response"]
+      updated_response["api_response"]["val"]["data"]["attributes"].merge!(
+        "title" => "A title", "originalReleaseDate" => "2024-01-01T00:00:00Z"
+      )
+      update_episodes = ->(_api, eps) { eps.map { |ep| Apple::Episode.upsert_sync_log(ep, updated_response) } }
+
+      apple_publisher.stub(:poll_episodes!, []) do
+        logs = capture_json_logs do
+          Apple::Episode.stub(:update_episodes, update_episodes) do
+            apple_publisher.sync_episodes!([draft_ep])
+          end
+        end
+
+        assert_empty logs.select { |l| l[:msg] == "Apple episode missing required metadata" }
+      end
+    end
   end
 
   describe "Archive and Unarchive flows" do

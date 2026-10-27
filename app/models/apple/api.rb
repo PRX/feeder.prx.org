@@ -255,7 +255,8 @@ module Apple
       end
 
       # ignore errors if requested
-      errs = errs.reject { |err| ignore_errors.map(&:to_i).include?(err.dig("api_response", "val", "data", "status").to_i) }
+      (ignored_errs, errs) = errs.partition { |err| ignore_errors.map(&:to_i).include?(err.dig("api_response", "val", "data", "status").to_i) }
+      ignored_errs.each { |err| log_ignored_bridge_error(err) }
 
       (fixed_errs, remaining_errors) =
         if block_given?
@@ -265,6 +266,19 @@ module Apple
         end
 
       [oks + fixed_errs, remaining_errors]
+    end
+
+    def log_ignored_bridge_error(err)
+      data = err.dig("api_response", "val", "data")
+      body = data["body"] if data.is_a?(Hash)
+      errors = body["errors"] if body.is_a?(Hash)
+
+      Rails.logger.warn("Apple::Api ignored bridge error", {
+        request_metadata: err["request_metadata"],
+        api_url: err["api_url"],
+        status: data.is_a?(Hash) ? data["status"] : nil,
+        errors: errors
+      })
     end
 
     def bridge_remote(bridge_resource, bridge_options, batch_size: DEFAULT_BATCH_SIZE)
