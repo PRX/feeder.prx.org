@@ -48,6 +48,38 @@ class EpisodeAppleHlsTest < ActiveSupport::TestCase
 
       refute video.hls_eligible_for_apple?
     end
+
+    it "is failed when the current upload or its HLS transcode failed" do
+      refute video.hls_failed_for_apple?
+
+      hls.status = "error"
+      assert video.hls_failed_for_apple?
+      refute video.hls_processing_for_apple?
+
+      hls.status = "complete"
+      uncut.status = "invalid"
+      assert video.hls_failed_for_apple?
+    end
+
+    it "is processing while the current upload or its HLS transcode is in progress" do
+      refute video.hls_processing_for_apple?
+
+      hls.status = "processing"
+      assert video.hls_processing_for_apple?
+
+      hls.status = "complete"
+      uncut.status = "processing"
+      assert video.hls_processing_for_apple?
+    end
+
+    it "is neither processing nor failed when a replaced upload's transcode never started" do
+      hls.status = "processing"
+      video.association(:uncut).target = build_stubbed(:uncut_video, episode: video, original_url: "s3://prx-testing/test/new.mp4", status: "complete")
+
+      refute video.hls_processing_for_apple?
+      refute video.hls_failed_for_apple?
+      refute video.hls_eligible_for_apple?
+    end
   end
 
   it "uses the feed's HLS URL without its enclosure prefix" do
