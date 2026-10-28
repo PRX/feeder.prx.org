@@ -38,7 +38,7 @@ module EpisodeAppleHls
     return false unless video? && uncut.present?
     return true if statuses.include?(uncut.status)
 
-    hls = alt_media
+    hls = alternate_media_resource
     hls.present? && hls.same_uncut?(uncut) && statuses.include?(hls.status)
   end
 end
