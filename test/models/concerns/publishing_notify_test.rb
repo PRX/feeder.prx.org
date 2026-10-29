@@ -25,6 +25,18 @@ class PublishingStatusTest < ActiveSupport::TestCase
     assert_requested :get, podping_url
   end
 
+  test "notify_podping filters the Authorization header from logs" do
+    stub_request(:get, /podping.cloud/)
+    log = StringIO.new
+
+    Rails.stub(:logger, Logger.new(log)) do
+      notify_podping(feed)
+    end
+
+    _(log.string).must_include "Authorization: \"[FILTERED]\""
+    _(log.string).wont_include "test_token"
+  end
+
   test "notify_rss_published sends WebSub notification" do
     stub_request(:get, /podping.cloud/)
     websub = stub_request(:post, websub_url)
