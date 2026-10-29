@@ -2,7 +2,7 @@
 # with the app's filter_parameters in every `builder.response :logger`.
 class FilteredFaradayFormatter < Faraday::Logging::Formatter
   def request(env)
-    super(env.dup.tap { |e| e.url = filter_url(e.url) })
+    super(env.merge(url: filter_url(env.url)))
   end
 
   private
