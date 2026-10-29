@@ -21,9 +21,7 @@ module PublishingNotify
 
     connection = Faraday.new(url: url, headers: headers, params: params) do |builder|
       builder.response :raise_error
-      builder.response :logger, Rails.logger do |logger|
-        logger.filter(/(Authorization: )"[^"]*"/, '\1"[FILTERED]"')
-      end
+      builder.response :logger, Rails.logger
     end
 
     connection.get
