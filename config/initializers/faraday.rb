@@ -8,23 +8,20 @@ class FilteredFaradayFormatter < Faraday::Logging::Formatter
   private
 
   def dump_headers(headers)
-    super(headers.to_h { |key, value| [key, filter_value(key.tr("-", "_"), value)] })
+    super(headers.to_h { |key, value| [key, filter_param(key.tr("-", "_"), value)] })
   end
 
   def filter_url(url)
     return url if url.query.blank?
 
     url.dup.tap do |filtered|
-      filtered.query = url.query.gsub(/([^&=]+)=([^&]*)/) { "#{$1}=#{filter_value(CGI.unescape($1), $2)}" }
+      filtered.query = url.query.gsub(/([^&=]+)=([^&]*)/) { "#{$1}=#{filter_param(CGI.unescape($1), $2)}" }
     end
   end
 
-  def filter_value(key, value)
-    parameter_filter.filter_param(key, value)
-  end
-
-  def parameter_filter
+  def filter_param(key, value)
     @parameter_filter ||= ActiveSupport::ParameterFilter.new(Rails.application.config.filter_parameters)
+    @parameter_filter.filter_param(key, value)
   end
 end
 
