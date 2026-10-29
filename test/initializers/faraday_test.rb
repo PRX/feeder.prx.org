@@ -31,7 +31,7 @@ describe FilteredFaradayFormatter do
   it "filters query params matching filter_parameters" do
     log_request(params: {token: "secret-token", url: "https://feed.example.com"})
 
-    _(log.string).must_include "token=[FILTERED]"
+    _(log.string).must_include "token=%5BFILTERED%5D"
     _(log.string).must_include "url=https%3A%2F%2Ffeed.example.com"
     _(log.string).wont_include "secret-token"
   end

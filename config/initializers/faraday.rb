@@ -15,7 +15,7 @@ class FilteredFaradayFormatter < Faraday::Logging::Formatter
     return url if url.query.blank?
 
     url.dup.tap do |filtered|
-      filtered.query = url.query.gsub(/([^&=]+)=([^&]*)/) { "#{$1}=#{filter_param(CGI.unescape($1), $2)}" }
+      filtered.query = URI.encode_www_form(URI.decode_www_form(url.query).map { |key, value| [key, filter_param(key, value)] })
     end
   end
 
