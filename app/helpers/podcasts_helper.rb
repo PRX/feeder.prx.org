@@ -28,7 +28,7 @@ module PodcastsHelper
   end
 
   def episode_description(episode, feed)
-    description = if episode.podcast.has_apple_feed?
+    description = if episode.podcast.apple_delegated_delivery?
       episode.description_safe
     else
       episode.description_with_default
@@ -44,7 +44,7 @@ module PodcastsHelper
   end
 
   def episode_title(episode, feed)
-    if episode.podcast.has_apple_feed?
+    if episode.podcast.apple_delegated_delivery?
       episode.title_safe
     else
       episode.title

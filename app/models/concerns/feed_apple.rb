@@ -92,8 +92,7 @@ module FeedApple
   def integration_episode(episode, integration)
     return unless integration == :apple && delegated_delivery_config
 
-    show = delegated_delivery_config.build_show
-    show.build_integration_episode(episode) if show.apple_id.present?
+    delegated_delivery_config.build_show.build_integration_episode(episode)
   end
 
   # Only select pre-release uploads when the feed can serve their audio.

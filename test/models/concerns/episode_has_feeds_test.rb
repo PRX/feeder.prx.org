@@ -71,10 +71,10 @@ class EpisodeHasFeedsTest < ActiveSupport::TestCase
   end
 
   describe "#set_default_feeds" do
-    [:apple_feed, :megaphone_feed].each do |factory|
+    [:delegated_delivery_feed, :megaphone_feed].each do |factory|
       it "keeps new episodes in a paused #{factory}" do
         integration_feed = create(factory, podcast: podcast)
-        integration = (factory == :apple_feed) ? :apple : :megaphone
+        integration = (factory == :delegated_delivery_feed) ? :apple : :megaphone
         config = integration_feed.integration_config(integration)
         config.update!(publish_enabled: false)
         assert_includes integration_feed.integration_types, integration

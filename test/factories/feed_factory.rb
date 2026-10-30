@@ -42,12 +42,23 @@ FactoryBot.define do
       private { false }
     end
 
-    factory :apple_feed do
+    factory :delegated_delivery_feed do
       private { true }
       tokens { [FeedToken.new(label: "apple-private")] }
 
-      after(:build) do |feed, _evaluator|
-        feed.delegated_delivery_config = build(:delegated_delivery_config, :with_show_feed_binding, feed: feed)
+      transient do
+        # The bound Apple show, passed to the delegated delivery config.
+        apple_show_id { nil }
+      end
+
+      after(:build) do |feed, evaluator|
+        feed.delegated_delivery_config = build(:delegated_delivery_config, feed: feed, apple_show_id: evaluator.apple_show_id)
+      end
+
+      # Saving the feed does not save an existing podcast's newly selected key.
+      after(:create) do |feed, _evaluator|
+        podcast = feed.podcast
+        podcast.save! if podcast.changed? || podcast.apple_key&.new_record?
       end
     end
 

@@ -29,16 +29,16 @@ describe EpisodesHelper do
     end
 
     describe "with apple feed" do
-      let(:apple_feed) { create(:apple_feed, podcast: podcast, apple_show_id: "show-1") }
+      let(:delegated_delivery_feed) { create(:delegated_delivery_feed, podcast: podcast, apple_show_id: "show-1") }
       let(:episode) { create(:episode, podcast: podcast, published_at: 1.hour.ago) }
       let(:draft_episode) { create(:episode_with_media, podcast: podcast, published_at: nil) }
       let(:scheduled_episode) { create(:episode_with_media, podcast: podcast, published_at: 1.hour.from_now) }
       let(:scheduled_episode_without_media) { create(:episode, podcast: podcast, published_at: 1.hour.from_now) }
 
-      before { apple_feed }
+      before { delegated_delivery_feed }
 
       it "returns 'new' when episode has no delivery status yet" do
-        assert_equal({apple_feed => "new"}, helper.episode_integration_statuses(episode, :apple))
+        assert_equal({delegated_delivery_feed => "new"}, helper.episode_integration_statuses(episode, :apple))
       end
 
       describe "with a second Apple feed" do
@@ -53,10 +53,10 @@ describe EpisodesHelper do
         before { other_config }
 
         it "shows the delivery status of the only feed the episode belongs to" do
-          episode.feeds = [apple_feed]
+          episode.feeds = [delegated_delivery_feed]
           create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-1", uploaded: true, delivered: true)
 
-          assert_equal({apple_feed => "complete"}, helper.episode_integration_statuses(episode, :apple))
+          assert_equal({delegated_delivery_feed => "complete"}, helper.episode_integration_statuses(episode, :apple))
         end
 
         it "shows the delivery status of the second feed when the episode belongs only to it" do
@@ -70,16 +70,16 @@ describe EpisodesHelper do
           create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-1", uploaded: true, delivered: true)
           create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-2", uploaded: true, delivered: false)
 
-          assert_equal [apple_feed, other_feed], episode.integration_feeds(:apple)
-          assert_equal({apple_feed => "complete", other_feed => "processing"}, helper.episode_integration_statuses(episode, :apple))
+          assert_equal [delegated_delivery_feed, other_feed], episode.integration_feeds(:apple)
+          assert_equal({delegated_delivery_feed => "complete", other_feed => "processing"}, helper.episode_integration_statuses(episode, :apple))
         end
 
         it "omits paused feeds from delivery statuses" do
           other_config.update!(publish_enabled: false)
           create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-1", uploaded: true, delivered: true)
 
-          assert_equal [apple_feed], episode.integration_feeds(:apple)
-          assert_equal({apple_feed => "complete"}, helper.episode_integration_statuses(episode, :apple))
+          assert_equal [delegated_delivery_feed], episode.integration_feeds(:apple)
+          assert_equal({delegated_delivery_feed => "complete"}, helper.episode_integration_statuses(episode, :apple))
 
           episode.feeds = [other_feed]
           assert_empty helper.episode_integration_statuses(episode, :apple)
@@ -89,7 +89,7 @@ describe EpisodesHelper do
           first = create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-1", created_at: 4.hours.ago)
           second = create(:apple_episode_delivery_status, episode: episode, apple_show_id: "show-2", created_at: 2.hours.ago)
 
-          assert_equal first.created_at, helper.episode_integration_updated_at(episode, :apple, apple_feed)
+          assert_equal first.created_at, helper.episode_integration_updated_at(episode, :apple, delegated_delivery_feed)
           assert_equal second.created_at, helper.episode_integration_updated_at(episode, :apple, other_feed)
         end
       end
@@ -114,12 +114,12 @@ describe EpisodesHelper do
 
       it "returns 'incomplete' when episode has delivery status but not uploaded" do
         create(:apple_episode_delivery_status, episode: episode, uploaded: false, delivered: false)
-        assert_equal({apple_feed => "incomplete"}, helper.episode_integration_statuses(episode, :apple))
+        assert_equal({delegated_delivery_feed => "incomplete"}, helper.episode_integration_statuses(episode, :apple))
       end
 
       it "returns 'processing' when episode is uploaded but not delivered" do
         create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: false)
-        assert_equal({apple_feed => "processing"}, helper.episode_integration_statuses(episode, :apple))
+        assert_equal({delegated_delivery_feed => "processing"}, helper.episode_integration_statuses(episode, :apple))
       end
 
       it "returns 'error' when apple episode has audio asset state error" do
@@ -129,26 +129,26 @@ describe EpisodesHelper do
           apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_FAILURE)
         build(:apple_episode, feeder_episode: episode, api_response: api_response)
 
-        assert_equal({apple_feed => "error"}, helper.episode_integration_statuses(episode, :apple))
+        assert_equal({delegated_delivery_feed => "error"}, helper.episode_integration_statuses(episode, :apple))
       end
 
       it "returns 'complete' when episode is delivered" do
         create(:apple_episode_delivery_status, episode: episode, uploaded: true, delivered: true)
-        assert_equal({apple_feed => "complete"}, helper.episode_integration_statuses(episode, :apple))
+        assert_equal({delegated_delivery_feed => "complete"}, helper.episode_integration_statuses(episode, :apple))
       end
 
       it "returns 'new' when draft episode has no delivery status yet" do
-        assert_equal({apple_feed => "new"}, helper.episode_integration_statuses(draft_episode, :apple))
+        assert_equal({delegated_delivery_feed => "new"}, helper.episode_integration_statuses(draft_episode, :apple))
       end
 
       it "returns 'incomplete' when draft episode has delivery status but not uploaded" do
         create(:apple_episode_delivery_status, episode: draft_episode, uploaded: false, delivered: false)
-        assert_equal({apple_feed => "incomplete"}, helper.episode_integration_statuses(draft_episode, :apple))
+        assert_equal({delegated_delivery_feed => "incomplete"}, helper.episode_integration_statuses(draft_episode, :apple))
       end
 
       it "returns 'uploaded' when draft episode is uploaded but not delivered" do
         create(:apple_episode_delivery_status, episode: draft_episode, uploaded: true, delivered: false)
-        assert_equal({apple_feed => "uploaded"}, helper.episode_integration_statuses(draft_episode, :apple))
+        assert_equal({delegated_delivery_feed => "uploaded"}, helper.episode_integration_statuses(draft_episode, :apple))
       end
 
       it "returns 'error' when draft apple episode has audio asset state error" do
@@ -158,28 +158,28 @@ describe EpisodesHelper do
           apple_hosted_audio_state: Apple::Episode::AUDIO_ASSET_FAILURE)
         build(:apple_episode, feeder_episode: draft_episode, api_response: api_response)
 
-        assert_equal({apple_feed => "error"}, helper.episode_integration_statuses(draft_episode, :apple))
+        assert_equal({delegated_delivery_feed => "error"}, helper.episode_integration_statuses(draft_episode, :apple))
       end
 
       it "returns 'new' when scheduled episode has no delivery status yet" do
-        assert_equal({apple_feed => "new"}, helper.episode_integration_statuses(scheduled_episode, :apple))
+        assert_equal({delegated_delivery_feed => "new"}, helper.episode_integration_statuses(scheduled_episode, :apple))
       end
 
       it "returns 'uploaded' when scheduled episode is uploaded but not delivered" do
         create(:apple_episode_delivery_status, episode: scheduled_episode, uploaded: true, delivered: false)
-        assert_equal({apple_feed => "uploaded"}, helper.episode_integration_statuses(scheduled_episode, :apple))
+        assert_equal({delegated_delivery_feed => "uploaded"}, helper.episode_integration_statuses(scheduled_episode, :apple))
       end
 
       it "shows uploaded during a delayed release and processing when the delay expires" do
         freeze_time do
-          apple_feed.update!(episode_offset_seconds: 1.day.to_i)
+          delegated_delivery_feed.update!(episode_offset_seconds: 1.day.to_i)
           draft_episode.update!(published_at: 1.hour.ago)
           create(:apple_episode_delivery_status, episode: draft_episode, uploaded: true, delivered: false)
 
-          assert_equal({apple_feed => "uploaded"}, helper.episode_integration_statuses(draft_episode, :apple))
+          assert_equal({delegated_delivery_feed => "uploaded"}, helper.episode_integration_statuses(draft_episode, :apple))
 
           travel 23.hours
-          assert_equal({apple_feed => "processing"}, helper.episode_integration_statuses(draft_episode, :apple))
+          assert_equal({delegated_delivery_feed => "processing"}, helper.episode_integration_statuses(draft_episode, :apple))
         end
       end
 
@@ -276,7 +276,7 @@ describe EpisodesHelper do
 
   describe "#episode_integration_updated_at" do
     let(:episode) { create(:episode, podcast: podcast, updated_at: 1.day.ago) }
-    let(:apple_feed) { create(:apple_feed, podcast: podcast, apple_show_id: "show-1") }
+    let(:delegated_delivery_feed) { create(:delegated_delivery_feed, podcast: podcast, apple_show_id: "show-1") }
     let(:megaphone_feed) { create(:megaphone_feed, podcast: podcast) }
 
     it "returns episode updated_at when no sync logs or delivery status exist" do
@@ -284,8 +284,8 @@ describe EpisodesHelper do
     end
 
     it "returns episode updated_at when the integration facade is unavailable" do
-      apple_feed.stub(:integration_episode, nil) do
-        assert_equal episode.updated_at, helper.episode_integration_updated_at(episode, :apple, apple_feed)
+      delegated_delivery_feed.stub(:integration_episode, nil) do
+        assert_equal episode.updated_at, helper.episode_integration_updated_at(episode, :apple, delegated_delivery_feed)
       end
     end
 
@@ -300,7 +300,7 @@ describe EpisodesHelper do
         updated_at: 2.hours.ago
       )
 
-      assert_equal sync_log.updated_at, helper.episode_integration_updated_at(episode, :apple, apple_feed)
+      assert_equal sync_log.updated_at, helper.episode_integration_updated_at(episode, :apple, delegated_delivery_feed)
     end
 
     it "returns sync_log updated_at for non-apple integrations" do
@@ -313,7 +313,7 @@ describe EpisodesHelper do
     it "returns delivery status created_at for apple integration" do
       delivery_status = create(:apple_episode_delivery_status, episode: episode, created_at: 4.hours.ago)
 
-      assert_equal delivery_status.created_at, helper.episode_integration_updated_at(episode, :apple, apple_feed)
+      assert_equal delivery_status.created_at, helper.episode_integration_updated_at(episode, :apple, delegated_delivery_feed)
     end
 
     it "returns delivery status created_at for non-apple integrations" do

@@ -313,7 +313,7 @@ describe PublishingPipelineState do
 
     describe "error!" do
       it 'sets the status to "error"' do
-        create(:apple_feed, podcast: podcast)
+        create(:delegated_delivery_feed, podcast: podcast)
         pqi = nil
         PublishFeedJob.stub_any_instance(:save_file, nil) do
           PublishFeedJob.stub_any_instance(:publish_integration, ->(*args) { raise "error" }) do
@@ -339,8 +339,8 @@ describe PublishingPipelineState do
     describe "retry!" do
       let(:podcast) { create(:podcast) }
       let(:public_feed) { podcast.default_feed }
-      let(:private_feed) { create(:apple_feed, podcast: podcast) }
-      let(:apple_feed) { private_feed }
+      let(:private_feed) { create(:delegated_delivery_feed, podcast: podcast) }
+      let(:delegated_delivery_feed) { private_feed }
       let(:delegated_delivery_config) { private_feed.delegated_delivery_config }
       let(:apple_publisher) { delegated_delivery_config.build_publisher }
 
@@ -410,7 +410,7 @@ describe PublishingPipelineState do
     describe "Apple publishing" do
       let(:f1) { podcast.default_feed }
       let(:f2) { create(:private_feed, podcast: podcast) }
-      let(:f3) { create(:apple_feed, podcast: podcast) }
+      let(:f3) { create(:delegated_delivery_feed, podcast: podcast) }
 
       it "can publish via the delegated delivery configs" do
         stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)

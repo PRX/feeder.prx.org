@@ -9,7 +9,7 @@ class Apple::PodcastDeliveryTest < ActiveSupport::TestCase
     let(:podcast) { create(:podcast) }
     let(:feed) { create(:feed, podcast: podcast, private: false) }
     let(:episode) { create(:episode, podcast: podcast) }
-    let(:apple_show) { Apple::Show.new(feed) }
+    let(:apple_show) { build(:apple_show, podcast: podcast, public_feed: feed) }
     let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
 
     let(:podcast_container) do

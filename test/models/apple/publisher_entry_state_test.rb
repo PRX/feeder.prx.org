@@ -95,11 +95,12 @@ end
 describe Apple::Publisher do
   let(:podcast) { create(:podcast) }
   let(:public_feed) { podcast.default_feed }
-  let(:private_feed) { create(:apple_feed, podcast: podcast) }
+  let(:private_feed) { create(:delegated_delivery_feed, podcast: podcast) }
   let(:delegated_delivery_config) { private_feed.delegated_delivery_config }
   let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
   let(:apple_publisher) do
-    show = Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed)
+    show = Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed,
+      show_feed_binding: delegated_delivery_config.show_feed_binding)
     Apple::Publisher.new(show: show)
   end
 

@@ -108,10 +108,10 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "warns and preserves the connected show when Apple rejects the lookup" do
-    apple_feed = connected_apple_feed
+    delegated_delivery_feed = connected_apple_feed
     stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 401, body: "Invalid credentials")
 
-    get podcast_feed_apple_connection_url(podcast, apple_feed)
+    get podcast_feed_apple_connection_url(podcast, delegated_delivery_feed)
 
     assert_response :success
     assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_settings.show_lookup_failed")
@@ -130,10 +130,10 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "does not warn when Apple returns no shows" do
-    apple_feed = connected_apple_feed
+    delegated_delivery_feed = connected_apple_feed
     stub_request(:get, "https://aardvark.prx.org/shows").to_return(status: 200, body: {data: [], links: {}}.to_json)
 
-    get podcast_feed_apple_connection_url(podcast, apple_feed)
+    get podcast_feed_apple_connection_url(podcast, delegated_delivery_feed)
 
     assert_response :success
     assert_select '.alert-danger[role="alert"]', text: I18n.t("feeds.form_apple_settings.show_lookup_failed"), count: 0

@@ -134,21 +134,20 @@ describe Apple::Api do
     it "creates an api from apple credentials" do
       creds = build(:delegated_delivery_config)
       api = Apple::Api.from_delegated_delivery_config(creds)
-      key = creds.routing_key
+      key = creds.apple_key
 
       assert_equal api.provider_id, key.provider_id
       assert_equal api.key_id, key.key_id
       assert_equal api.key, key.key_pem
     end
 
-    it "falls back on the environment if the apple credential attributes are not set" do
-      creds = create(:delegated_delivery_config, key: nil)
-      api = Apple::Api.from_delegated_delivery_config(creds)
-      assert_equal api.key_id, "apple key id from env"
+    it "raises when the podcast has no Apple key" do
+      creds = build(:delegated_delivery_config)
 
-      assert_equal api.key_id, ENV["APPLE_KEY_ID"]
-      assert_equal api.key, Base64.decode64(ENV["APPLE_KEY_PEM_B64"])
-      assert_equal api.provider_id, ENV["APPLE_PROVIDER_ID"]
+      creds.stub(:apple_key, nil) do
+        error = assert_raises(RuntimeError) { Apple::Api.from_delegated_delivery_config(creds) }
+        assert_equal "Missing Apple key for podcast", error.message
+      end
     end
   end
 
