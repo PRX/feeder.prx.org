@@ -65,7 +65,6 @@ class Podcast < ApplicationRecord
   validates :explicit, inclusion: {in: VALID_EXPLICITS}, allow_nil: false
 
   before_validation :set_defaults, :sanitize_text
-  after_update :sync_legacy_apple_key, if: :saved_change_to_apple_key_id?
   before_destroy :clear_apple_key, if: :apple_key_id?
   after_commit :set_guid!, if: -> { guid.blank? }
 
@@ -91,7 +90,7 @@ class Podcast < ApplicationRecord
     super || build_default_feed(podcast: self, private: false)
   end
 
-  def has_apple_feed?
+  def apple_delegated_delivery?
     delegated_delivery_configs.any?
   end
 
@@ -290,13 +289,8 @@ class Podcast < ApplicationRecord
 
   private
 
-  def sync_legacy_apple_key
-    Apple::DelegatedDeliveryConfig.sync_legacy_key_for!(self)
-  end
-
   def clear_apple_key
     self.apple_key = nil
     update_column(:apple_key_id, nil)
-    sync_legacy_apple_key
   end
 end

@@ -383,18 +383,6 @@ describe Episode do
         assert_raises(NoMethodError) { episode.apple_podcast_containers }
         assert_raises(NoMethodError) { episode.sync_logs }
       end
-
-      it "does not expose legacy Apple state methods" do
-        %i[
-          apple_episode_delivery_status
-          apple_episode_delivery_statuses
-          apple_mark_as_delivered!
-          apple_prepare_for_delivery!
-          apple_update_delivery_status
-        ].each do |method_name|
-          refute episode.respond_to?(method_name), method_name
-        end
-      end
     end
 
     describe "#publish_to_apple?" do

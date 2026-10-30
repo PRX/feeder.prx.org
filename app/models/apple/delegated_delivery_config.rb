@@ -3,103 +3,36 @@
 module Apple
   class DelegatedDeliveryConfig < ApplicationRecord
     self.table_name = "apple_configs"
+    self.ignored_columns += ["key_id"]
 
     DEFAULT_TOKEN_LABEL = "Apple Subscriptions"
 
-    ROUTING_SOURCES = {
-      "legacy" => :legacy,
-      "show_feed_binding" => :show_feed_binding
-    }.freeze
-
     belongs_to :feed
-    belongs_to :key, class_name: "Apple::Key", optional: true, validate: true, autosave: true
     belongs_to :show_feed_binding, class_name: "Apple::ShowFeedBinding", optional: false, inverse_of: :delegated_delivery_config
 
     validates :feed_id, uniqueness: true
-    validates :show_feed_binding_id, uniqueness: true, allow_nil: true
-    validate :key_belongs_to_podcast_account
+    validates :show_feed_binding_id, uniqueness: true
     validate :show_feed_binding_belongs_to_podcast
     validate :show_feed_binding_is_public_or_own
 
-    before_save :mirror_podcast_key_for_rollback
     after_create :ensure_private_feed_token
-    after_save :mirror_default_feed_show_for_rollback
 
-    # backwards-compatible associations
-    delegate :podcast, to: :feed, allow_nil: true
-    delegate :id, :title, to: :podcast, prefix: true, allow_nil: true
     alias_method :private_feed, :feed
 
-    accepts_nested_attributes_for :key
-
-    before_validation :assign_key_account
-
-    def self.routing_source
-      source = ENV.fetch("APPLE_ROUTING_SOURCE", "show_feed_binding")
-      ROUTING_SOURCES.fetch(source) do
-        raise ArgumentError,
-          "Unsupported APPLE_ROUTING_SOURCE=#{source.inspect}; expected one of #{ROUTING_SOURCES.keys.join(", ")}"
-      end
-    end
-
-    # TODO remove this method and its callers when legacy routing is removed.
-    def self.sync_legacy_key_for!(podcast)
-      where(feed_id: Feed.with_deleted.where(podcast_id: podcast.id).select(:id))
-        .update_all(key_id: podcast.apple_key_id, updated_at: Time.current)
-    end
-
-    def routing_source
-      self.class.routing_source
-    end
-
-    def routing_key
-      case routing_source
-      when :legacy
-        key
-      when :show_feed_binding
-        show_feed_binding&.feed&.podcast&.apple_key
-      end
+    def apple_key
+      show_feed_binding&.feed&.podcast&.apple_key
     end
 
     def public_feed
-      case routing_source
-      when :legacy
-        legacy_public_feed
-      when :show_feed_binding
-        show_feed_binding&.feed
-      end
+      show_feed_binding&.feed
     end
 
     def apple_show_id
-      case routing_source
-      when :legacy
-        legacy_apple_show_id
-      when :show_feed_binding
-        show_feed_binding&.apple_show_id
-      end
-    end
-
-    def legacy_public_feed
-      podcast&.public_feed
-    end
-
-    def legacy_apple_show_id
-      legacy_public_feed&.apple_sync_log&.external_id.presence || private_feed&.apple_show_id.presence
-    end
-
-    def key_belongs_to_podcast_account
-      return unless key && podcast
-      return if key.account_id == podcast.account_id
-
-      errors.add(:key, "must belong to the podcast's PRX account")
-    end
-
-    def assign_key_account
-      key.account_id = podcast&.account_id if key&.new_record?
+      show_feed_binding&.apple_show_id
     end
 
     def publish_to_apple?
-      !!routing_key&.valid? && publish_enabled?
+      !!apple_key&.valid? && publish_enabled?
     end
 
     def build_publisher
@@ -131,18 +64,6 @@ module Apple
       return if bound_feed.nil? || bound_feed.public? || bound_feed == feed
 
       errors.add(:show_feed_binding, "must belong to a public feed or this feed")
-    end
-
-    def mirror_podcast_key_for_rollback
-      podcast_key = feed&.podcast&.apple_key
-      self.key = podcast_key if podcast_key
-    end
-
-    def mirror_default_feed_show_for_rollback
-      return unless show_feed_binding&.feed&.default?
-      return if feed.apple_show_id == show_feed_binding.apple_show_id
-
-      feed.update_column(:apple_show_id, show_feed_binding.apple_show_id)
     end
   end
 end

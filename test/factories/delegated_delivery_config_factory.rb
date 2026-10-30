@@ -2,44 +2,30 @@ FactoryBot.define do
   factory :delegated_delivery_config, class: Apple::DelegatedDeliveryConfig do
     publish_enabled { true }
     sync_blocks_rss { true }
-    key { build(:apple_key) }
     feed
 
     transient do
-      routing_fixture { :show_feed_binding }
-    end
-
-    trait :with_show_feed_binding do
-      routing_fixture { :show_feed_binding }
-    end
-
-    trait :legacy_routing do
-      routing_fixture { :legacy }
+      # The podcast's Apple key; defaults to the podcast's existing key or a new one.
+      key { nil }
+      # The bound Apple show; defaults to the binding factory's sequence.
+      apple_show_id { nil }
     end
 
     after(:build) do |config, evaluator|
-      if config.key
-        config.key.account_id = config.feed&.podcast&.account_id || config.key.account_id
-      end
-
-      next unless evaluator.routing_fixture == :show_feed_binding
-
-      show_id = config.feed.apple_show_id.presence || "show-#{SecureRandom.uuid}"
-      config.feed.apple_show_id ||= show_id
       podcast = config.feed.podcast || build(:podcast)
       config.feed.podcast = podcast
-      podcast.apple_key = config.key
-      config.show_feed_binding ||= build(
-        :apple_show_feed_binding,
-        feed: podcast.public_feed,
-        apple_show_id: show_id
-      )
+
+      apple_key = evaluator.key || podcast.apple_key || build(:apple_key)
+      apple_key.account_id = podcast.account_id || apple_key.account_id
+      podcast.apple_key = apple_key
+
+      config.show_feed_binding ||= build(:apple_show_feed_binding,
+        {feed: podcast.public_feed, apple_show_id: evaluator.apple_show_id}.compact)
     end
 
-    after(:create) do |config, evaluator|
-      next unless evaluator.routing_fixture == :show_feed_binding
-
-      config.podcast.update!(apple_key: config.key) unless config.podcast.apple_key_id == config.key_id
+    after(:create) do |config|
+      podcast = config.feed.podcast
+      podcast.save! if podcast.changed? || podcast.apple_key&.new_record?
     end
   end
 end
