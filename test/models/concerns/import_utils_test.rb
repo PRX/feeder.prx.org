@@ -40,4 +40,48 @@ class ImportUtilsTest < ActiveSupport::TestCase
     acceptable_title = "a" * 256
     _(model.clean_title(acceptable_title).length).must_equal 256
   end
+
+  describe "#download_file" do
+    let(:io) { StringIO.new }
+    let(:url) { "https://storage.googleapis.com/bucket/object?GoogleAccessId=a%40b.com&Expires=1&Signature=a%2Bb%3D" }
+
+    it "keeps the query string for signed urls" do
+      stub_request(:get, url).to_return(status: 200, body: "audio")
+
+      model.download_file(io, url)
+      _(io.string).must_equal "audio"
+    end
+
+    it "appends to the io" do
+      stub_request(:get, url).to_return(status: 200, body: "audio")
+
+      io.write("first")
+      model.download_file(io, url)
+      _(io.string).must_equal "firstaudio"
+    end
+
+    it "follows absolute and relative redirects" do
+      stub_request(:get, "http://example.com/a.mp3").to_return(status: 301, headers: {location: "https://example.com/b.mp3"})
+      stub_request(:get, "https://example.com/b.mp3").to_return(status: 302, headers: {location: "/c.mp3?x=1"})
+      stub_request(:get, "https://example.com/c.mp3?x=1").to_return(status: 200, body: "audio")
+
+      model.download_file(io, "http://example.com/a.mp3")
+      _(io.string).must_equal "audio"
+    end
+
+    it "raises on too many redirects" do
+      stub_request(:get, "https://example.com/a.mp3").to_return(status: 302, headers: {location: "/a.mp3"})
+
+      err = assert_raises(ImportUtils::HttpError) { model.download_file(io, "https://example.com/a.mp3") }
+      _(err.message).must_match(/too many redirects/)
+    end
+
+    it "raises on errors without writing the body" do
+      stub_request(:get, url).to_return(status: 403, body: "<Error><Code>AccessDenied</Code></Error>")
+
+      err = assert_raises(ImportUtils::HttpError) { model.download_file(io, url) }
+      _(err.message).must_match(/403/)
+      _(io.string).must_be_empty
+    end
+  end
 end
