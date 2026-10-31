@@ -165,16 +165,30 @@ module ImportUtils
     end
   end
 
-  def download_file(io, url)
+  def download_file(io, url, redirect_limit = 10)
+    raise HttpError.new("too many redirects for #{url}") if redirect_limit <= 0
+
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true if uri.scheme == "https"
-    request = Net::HTTP::Get.new uri.path
+
+    # request_uri keeps the query string
+    request = Net::HTTP::Get.new(uri.request_uri)
+    request["User-Agent"] = "PRX-Feeder-Import/1.0 (Rails-#{Rails.env})"
+
+    location = nil
     http.request(request) do |response|
-      response.read_body do |chunk|
-        io.write chunk
+      case response
+      when Net::HTTPSuccess
+        response.read_body { |chunk| io.write chunk }
+      when Net::HTTPRedirection
+        location = (uri + response["location"]).to_s
+      else
+        raise HttpError.new("bad response #{response.code} from #{url}")
       end
     end
+
+    download_file(io, location, redirect_limit - 1) if location
   end
 
   private
