@@ -3,6 +3,7 @@
 module Apple
   class DelegatedDeliveryConfig < ApplicationRecord
     self.table_name = "apple_configs"
+    self.ignored_columns += ["key_id"]
 
     DEFAULT_TOKEN_LABEL = "Apple Subscriptions"
 
