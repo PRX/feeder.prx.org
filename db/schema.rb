@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_22_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_01_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "uuid-ossp"
@@ -18,13 +18,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_000002) do
   create_table "apple_configs", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "feed_id", null: false
-    t.bigint "key_id"
     t.boolean "publish_enabled", default: false, null: false
     t.bigint "show_feed_binding_id", null: false
     t.boolean "sync_blocks_rss", default: false, null: false
     t.datetime "updated_at", null: false
     t.index ["feed_id"], name: "index_apple_configs_on_feed_id", unique: true
-    t.index ["key_id"], name: "index_apple_configs_on_key_id"
     t.index ["show_feed_binding_id"], name: "index_apple_configs_on_show_feed_binding_id", unique: true
   end
 
@@ -75,9 +73,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_000002) do
     t.string "external_id"
     t.datetime "updated_at", null: false
     t.string "vendor_id", null: false
-    t.index ["apple_show_id"], name: "index_apple_podcast_containers_on_apple_show_id"
     t.index ["episode_id", "apple_show_id"], name: "idx_apple_podcast_containers_episode_show_unique", unique: true
-    t.index ["episode_id"], name: "idx_apple_podcast_containers_legacy_episode_unique", unique: true, where: "(apple_show_id IS NULL)"
     t.index ["external_id"], name: "index_apple_podcast_containers_on_external_id", unique: true
   end
 
@@ -240,7 +236,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_000002) do
   end
 
   create_table "feeds", id: :serial, force: :cascade do |t|
-    t.string "apple_show_id"
     t.string "apple_verify_token"
     t.text "audio_format"
     t.datetime "created_at", precision: nil, null: false
@@ -273,7 +268,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_000002) do
     t.boolean "unique_guids", default: false, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.string "url"
-    t.index ["apple_show_id"], name: "index_feeds_on_apple_show_id"
     t.index ["podcast_id", "slug"], name: "index_feeds_on_podcast_id_and_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id"
     t.index ["podcast_id"], name: "index_feeds_on_podcast_id_default", unique: true, where: "(slug IS NULL)"
@@ -293,7 +287,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_000002) do
     t.bigint "source_size"
     t.string "source_url"
     t.boolean "uploaded", default: false
-    t.index ["apple_show_id"], name: "index_integrations_episode_delivery_statuses_on_apple_show_id"
     t.index ["episode_id", "created_at"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at", include: ["delivered", "id"]
     t.index ["episode_id"], name: "index_integrations_episode_delivery_statuses_on_episode_id"
     t.check_constraint "integration IS DISTINCT FROM 0 OR apple_show_id IS NOT NULL", name: "apple_delivery_statuses_require_show"
