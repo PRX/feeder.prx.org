@@ -201,7 +201,7 @@ module Apple
     def initialize(show:, feeder_episode:, api:)
       @show = show
       @feeder_episode = feeder_episode
-      @api = api || Apple::Api.from_env
+      @api = api
     end
 
     def synced_with_integration?

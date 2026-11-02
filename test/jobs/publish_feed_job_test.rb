@@ -5,7 +5,7 @@ describe PublishFeedJob do
   let(:episode) { create(:episode, prx_uri: "/api/v1/stories/87683") }
   let(:podcast) { episode.podcast }
   let(:feed) { create(:feed, podcast: podcast, slug: "adfree") }
-  let(:private_feed) { create(:apple_feed, podcast: podcast) }
+  let(:private_feed) { create(:delegated_delivery_feed, podcast: podcast) }
 
   let(:job) { PublishFeedJob.new }
 
@@ -167,7 +167,7 @@ describe PublishFeedJob do
   end
 
   describe "publishing Apple and Megaphone from one feed" do
-    let(:podcast) { create(:podcast) }
+    let(:podcast) { create(:podcast, :with_apple_key) }
     let(:mixed_feed) { create(:megaphone_feed, podcast: podcast) }
     let(:apple_config) { create(:delegated_delivery_config, feed: mixed_feed) }
     let(:calls) { [] }
@@ -246,15 +246,13 @@ describe PublishFeedJob do
   end
 
   describe "publishing to two Apple feeds" do
-    let(:podcast) { create(:podcast) }
-    let(:key) { create(:apple_key, account_id: podcast.account_id) }
+    let(:podcast) { create(:podcast, :with_apple_key) }
     let(:delivery_feeds) do
-      podcast.update!(apple_key: key)
       2.times.map do
         public_feed = create(:public_feed, podcast: podcast)
         binding = create(:apple_show_feed_binding, feed: public_feed)
         delivery_feed = create(:private_feed, podcast: podcast)
-        create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: binding)
+        create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding)
         delivery_feed.reload
       end
     end
@@ -456,10 +454,10 @@ describe PublishFeedJob do
   end
 
   describe "publishing to apple" do
-    let(:podcast) { create(:podcast) }
+    let(:podcast) { create(:podcast, :with_apple_key) }
     let(:public_feed) { podcast.default_feed }
-    let(:private_feed) { create(:apple_feed, podcast: podcast) }
-    let(:apple_feed) { private_feed }
+    let(:private_feed) { create(:delegated_delivery_feed, podcast: podcast) }
+    let(:delegated_delivery_feed) { private_feed }
     let(:delegated_delivery_config) { private_feed.delegated_delivery_config }
     let(:apple_publisher) { delegated_delivery_config.build_publisher }
 
@@ -485,18 +483,18 @@ describe PublishFeedJob do
 
     describe "when the delegated delivery config is present" do
       it "does not schedule publishing to apple if the config is marked as not publishable" do
-        apple_feed.delegated_delivery_config.update!(publish_enabled: false)
+        delegated_delivery_feed.delegated_delivery_config.update!(publish_enabled: false)
 
         private_feed.stub(:publish_integration!, ->(*) { flunk "Published a disabled integration" }) do
-          assert_nil job.publish_integration(podcast, apple_feed, :apple)
+          assert_nil job.publish_integration(podcast, delegated_delivery_feed, :apple)
         end
       end
 
       it "does run the apple publishing if the config is present and marked as publishable" do
-        assert apple_feed.delegated_delivery_config.present?
-        assert apple_feed.delegated_delivery_config.publish_enabled
+        assert delegated_delivery_feed.delegated_delivery_config.present?
+        assert delegated_delivery_feed.delegated_delivery_config.publish_enabled
         private_feed.stub(:publish_integration!, :publishing_apple!) do
-          assert_equal :publishing_apple!, job.publish_integration(podcast, apple_feed, :apple)
+          assert_equal :publishing_apple!, job.publish_integration(podcast, delegated_delivery_feed, :apple)
         end
       end
 
@@ -511,8 +509,8 @@ describe PublishFeedJob do
         let(:episodes) { [episode1, episode2] }
 
         it "logs AssetStateTimeoutError with escalating levels based on duration" do
-          assert apple_feed.delegated_delivery_config.present?
-          assert apple_feed.delegated_delivery_config.publish_enabled
+          assert delegated_delivery_feed.delegated_delivery_config.present?
+          assert delegated_delivery_feed.delegated_delivery_config.publish_enabled
 
           # [duration_seconds, expected_log_level_int]
           # Bunyan log levels: 30=info, 40=warn, 50=error
@@ -550,8 +548,8 @@ describe PublishFeedJob do
         end
 
         it "ends in a terminal retry state if the apple publishing times out" do
-          assert apple_feed.delegated_delivery_config.present?
-          assert apple_feed.delegated_delivery_config.publish_enabled
+          assert delegated_delivery_feed.delegated_delivery_config.present?
+          assert delegated_delivery_feed.delegated_delivery_config.publish_enabled
 
           private_feed.stub(:publish_integration!, ->(_) { raise Apple::AssetStateTimeoutError.new([]) }) do
             podcast.stub(:feeds, [private_feed]) do
@@ -564,9 +562,9 @@ describe PublishFeedJob do
 
         it "does not raise an error if the apple publishing fails and apple sync does not block rss publishing" do
           stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
-          assert apple_feed.delegated_delivery_config.present?
-          assert apple_feed.delegated_delivery_config.publish_enabled
-          apple_feed.delegated_delivery_config.update!(sync_blocks_rss: false)
+          assert delegated_delivery_feed.delegated_delivery_config.present?
+          assert delegated_delivery_feed.delegated_delivery_config.publish_enabled
+          delegated_delivery_feed.delegated_delivery_config.update!(sync_blocks_rss: false)
           feed.reload
 
           PublishFeedJob.stub(:s3_client, stub_client) do
@@ -581,9 +579,9 @@ describe PublishFeedJob do
         end
 
         it "raises an error and blocks RSS when non-timeout error occurs with sync_blocks_rss enabled" do
-          assert apple_feed.delegated_delivery_config.present?
-          assert apple_feed.delegated_delivery_config.publish_enabled
-          apple_feed.delegated_delivery_config.update!(sync_blocks_rss: true)
+          assert delegated_delivery_feed.delegated_delivery_config.present?
+          assert delegated_delivery_feed.delegated_delivery_config.publish_enabled
+          delegated_delivery_feed.delegated_delivery_config.update!(sync_blocks_rss: true)
 
           private_feed.stub(:publish_integration!, ->(_) { raise StandardError.new("some apple error") }) do
             podcast.stub(:feeds, [private_feed]) do
@@ -596,9 +594,9 @@ describe PublishFeedJob do
 
         it "does not raise when timeout occurs with sync_blocks_rss disabled" do
           stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
-          assert apple_feed.delegated_delivery_config.present?
-          assert apple_feed.delegated_delivery_config.publish_enabled
-          apple_feed.delegated_delivery_config.update!(sync_blocks_rss: false)
+          assert delegated_delivery_feed.delegated_delivery_config.present?
+          assert delegated_delivery_feed.delegated_delivery_config.publish_enabled
+          delegated_delivery_feed.delegated_delivery_config.update!(sync_blocks_rss: false)
           feed.reload
 
           PublishFeedJob.stub(:s3_client, stub_client) do
@@ -614,9 +612,9 @@ describe PublishFeedJob do
 
         it "logs timeout even when sync_blocks_rss is disabled" do
           stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
-          assert apple_feed.delegated_delivery_config.present?
-          assert apple_feed.delegated_delivery_config.publish_enabled
-          apple_feed.delegated_delivery_config.update!(sync_blocks_rss: false)
+          assert delegated_delivery_feed.delegated_delivery_config.present?
+          assert delegated_delivery_feed.delegated_delivery_config.publish_enabled
+          delegated_delivery_feed.delegated_delivery_config.update!(sync_blocks_rss: false)
           feed.reload
 
           PublishFeedJob.stub(:s3_client, stub_client) do

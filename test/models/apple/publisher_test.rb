@@ -4,20 +4,18 @@ describe Apple::Publisher do
   let(:podcast) { create(:podcast) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:feed, podcast: podcast, private: true) }
-  let(:delegated_delivery_config) { build(:delegated_delivery_config, :with_show_feed_binding) }
+  let(:delegated_delivery_config) { build(:delegated_delivery_config) }
   let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
 
   let(:apple_publisher) do
-    show = Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed)
+    show = Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed,
+      show_feed_binding: build(:apple_show_feed_binding, feed: public_feed, apple_show_id: "show-1"))
     Apple::Publisher.new(show: show)
   end
 
   let(:publisher) { apple_publisher }
 
   before do
-    stub_request(:get, "https://aardvark.prx.org/countriesAndRegions?limit=200")
-      .to_return(status: 200, body: json_file(:apple_countries_and_regions), headers: {})
-
     public_feed.save!
   end
 
@@ -158,14 +156,15 @@ describe Apple::Publisher do
     let(:public_feed) { podcast.default_feed }
     let(:private_feed) { create(:private_feed, podcast: podcast) }
 
-    let(:delegated_delivery_config) { build(:delegated_delivery_config, :with_show_feed_binding) }
+    let(:delegated_delivery_config) { build(:delegated_delivery_config) }
     let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
 
     let(:episode) { create(:episode, podcast: podcast) }
     let(:apple_show) do
       Apple::Show.new(api: apple_api,
         public_feed: public_feed,
-        private_feed: private_feed)
+        private_feed: private_feed,
+        show_feed_binding: build(:apple_show_feed_binding, feed: public_feed, apple_show_id: "show-1"))
     end
     let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
     let(:apple_episode_api_response) { build(:apple_episode_api_response, apple_episode_id: "123") }
@@ -272,10 +271,11 @@ describe Apple::Publisher do
   end
 
   describe "Archive and Unarchive flows" do
-    let(:podcast) { create(:podcast) }
+    let(:podcast) { create(:podcast, :with_apple_key) }
     let(:public_feed) { podcast.default_feed }
-    let(:private_feed) { create(:private_feed, podcast: podcast, apple_show_id: "123") }
-    let(:delegated_delivery_config) { create(:delegated_delivery_config, :with_show_feed_binding, feed: private_feed) }
+    let(:private_feed) { create(:private_feed, podcast: podcast) }
+    let(:show_feed_binding) { build(:apple_show_feed_binding, feed: public_feed, apple_show_id: "123") }
+    let(:delegated_delivery_config) { create(:delegated_delivery_config, feed: private_feed, show_feed_binding: show_feed_binding) }
     let(:episode) { create(:episode, podcast: podcast) }
     let(:apple_episode_api_response) { build(:apple_episode_api_response, apple_episode_id: "123") }
     let(:apple_publisher) { delegated_delivery_config.build_publisher }
@@ -283,7 +283,7 @@ describe Apple::Publisher do
     let(:apple_episode) { Apple::Episode.new(show: apple_publisher.show, feeder_episode: episode, api: apple_api) }
 
     before do
-      Apple::Show.connect_existing("123", delegated_delivery_config)
+      delegated_delivery_config
       create_episode_sync_log(episode, external_id: "123", external_show_id: "123", **apple_episode_api_response)
     end
 
@@ -522,10 +522,10 @@ describe Apple::Publisher do
   end
 
   describe "Draft state reconciliation" do
-    let(:podcast) { create(:podcast) }
+    let(:podcast) { create(:podcast, :with_apple_key) }
     let(:public_feed) { podcast.default_feed }
-    let(:apple_feed) { create(:apple_feed, podcast: podcast) }
-    let(:delegated_delivery_config) { apple_feed.delegated_delivery_config }
+    let(:delegated_delivery_feed) { create(:delegated_delivery_feed, podcast: podcast) }
+    let(:delegated_delivery_config) { delegated_delivery_feed.delegated_delivery_config }
     let(:apple_publisher) { delegated_delivery_config.build_publisher }
     let(:draft_episode) { create(:episode_with_media, podcast: podcast, published_at: nil) }
 
@@ -553,10 +553,9 @@ describe Apple::Publisher do
     end
 
     before do
-      apple_feed
+      delegated_delivery_feed
       draft_episode
-      apple_feed.episodes << draft_episode unless apple_feed.episodes.exists?(draft_episode.id)
-      Apple::Show.connect_existing("123", delegated_delivery_config)
+      delegated_delivery_feed.episodes << draft_episode unless delegated_delivery_feed.episodes.exists?(draft_episode.id)
     end
 
     it "includes draft upload candidates in episodes to sync" do
@@ -566,7 +565,7 @@ describe Apple::Publisher do
     end
 
     it "keeps published early releases out of draft reconciliation" do
-      apple_feed.update!(episode_offset_seconds: -1.day.to_i)
+      delegated_delivery_feed.update!(episode_offset_seconds: -1.day.to_i)
       draft_episode.update!(published_at: 12.hours.from_now)
       create_apple_state.call(draft_episode, "PUBLISHED")
 
@@ -582,7 +581,7 @@ describe Apple::Publisher do
 
     it "preserves a prior upload during a delayed release and delivers it at the boundary" do
       freeze_time do
-        apple_feed.update!(episode_offset_seconds: 1.day.to_i)
+        delegated_delivery_feed.update!(episode_offset_seconds: 1.day.to_i)
         draft_episode.update!(published_at: 1.hour.ago)
         create_apple_state.call(draft_episode, "DRAFTING")
         uploaded_episode = apple_publisher.show.draft_upload_candidates.first
@@ -626,7 +625,7 @@ describe Apple::Publisher do
     end
 
     it "redrafts an Apple release rescheduled beyond the early release window" do
-      apple_feed.update!(episode_offset_seconds: -1.day.to_i)
+      delegated_delivery_feed.update!(episode_offset_seconds: -1.day.to_i)
       draft_episode.update!(published_at: 2.days.from_now)
       create_apple_state.call(draft_episode, "PUBLISHED")
       redrafted = []
@@ -676,7 +675,7 @@ describe Apple::Publisher do
 
     it "archives and unarchives published draft candidates for redelivery" do
       create_apple_state.call(draft_episode, "ARCHIVED")
-      apple_feed.integration_episode(draft_episode, :apple).update_delivery_status(
+      delegated_delivery_feed.integration_episode(draft_episode, :apple).update_delivery_status(
         uploaded: true,
         delivered: true,
         source_media_version_id: draft_episode.media_version_id,
@@ -707,15 +706,15 @@ describe Apple::Publisher do
         end
       end
 
-      status = apple_feed.integration_episode(draft_episode.reload, :apple).delivery_status(true)
+      status = delegated_delivery_feed.integration_episode(draft_episode.reload, :apple).delivery_status(true)
       assert poll_called
       assert archive_called
       assert unarchive_called
       refute status.uploaded
       refute status.delivered
       assert_equal 0, status.asset_processing_attempts
-      assert apple_feed.integration_episode(draft_episode, :apple).needs_upload?
-      assert apple_feed.integration_episode(draft_episode, :apple).needs_delivery_processing?
+      assert delegated_delivery_feed.integration_episode(draft_episode, :apple).needs_upload?
+      assert delegated_delivery_feed.integration_episode(draft_episode, :apple).needs_delivery_processing?
     end
 
     it "does not unarchive draft candidates when polling confirms Apple is already drafting" do
@@ -734,7 +733,7 @@ describe Apple::Publisher do
     it "keeps draft candidates out of generic archive and unarchive during publish" do
       published_draft = draft_episode
       archived_draft = create(:episode_with_media, podcast: podcast, published_at: nil)
-      apple_feed.episodes << archived_draft unless apple_feed.episodes.exists?(archived_draft.id)
+      delegated_delivery_feed.episodes << archived_draft unless delegated_delivery_feed.episodes.exists?(archived_draft.id)
 
       create_apple_state.call(published_draft, "PUBLISHED")
       create_apple_state.call(archived_draft, "ARCHIVED")
@@ -769,7 +768,7 @@ describe Apple::Publisher do
 
     it "marks unarchived draft episodes for redelivery" do
       create_apple_state.call(draft_episode, "ARCHIVED")
-      apple_feed.integration_episode(draft_episode, :apple).update_delivery_status(
+      delegated_delivery_feed.integration_episode(draft_episode, :apple).update_delivery_status(
         uploaded: true,
         delivered: true,
         source_media_version_id: draft_episode.media_version_id,
@@ -785,12 +784,12 @@ describe Apple::Publisher do
         apple_publisher.unarchive_draft_candidates!([apple_episode])
       end
 
-      status = apple_feed.integration_episode(draft_episode.reload, :apple).delivery_status(true)
+      status = delegated_delivery_feed.integration_episode(draft_episode.reload, :apple).delivery_status(true)
       refute status.uploaded
       refute status.delivered
       assert_equal 0, status.asset_processing_attempts
-      assert apple_feed.integration_episode(draft_episode, :apple).needs_upload?
-      assert apple_feed.integration_episode(draft_episode, :apple).needs_delivery_processing?
+      assert delegated_delivery_feed.integration_episode(draft_episode, :apple).needs_upload?
+      assert delegated_delivery_feed.integration_episode(draft_episode, :apple).needs_delivery_processing?
     end
   end
 

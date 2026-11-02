@@ -16,9 +16,6 @@ module Apple
       inverse_of: :show_feed_binding,
       dependent: :destroy
 
-    alias_method :config, :delegated_delivery_config
-    alias_method :config=, :delegated_delivery_config=
-
     validates :apple_show_id, presence: true, uniqueness: {message: "is already connected to another feed"}
     validates :feed_id, uniqueness: true
     validate :feed_must_support_apple
@@ -89,10 +86,7 @@ module Apple
     end
 
     def connect!
-      transaction do
-        save!
-        mirror_legacy_routing if feed.default?
-      end
+      save!
     end
 
     # Another feed's saved config that delivers through this show. Read from
@@ -129,13 +123,6 @@ module Apple
       Rails.logger.error("Unable to connect Apple show feed binding", feed_id: feed_id, apple_show_id: apple_show_id, error: error)
       errors.add(:apple_show_id, "could not be read with the selected Apple credential")
       false
-    end
-
-    def mirror_legacy_routing
-      Apple::SyncLog.log!(feeder_id: feed_id, feeder_type: :feeds, external_id: apple_show_id)
-      return unless delegated_delivery_config
-
-      delegated_delivery_config.update!(key: feed.podcast.apple_key)
     end
 
     def protect_delegated_delivery

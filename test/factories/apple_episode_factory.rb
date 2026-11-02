@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :apple_episode, class: Apple::Episode do
-    show { build(:apple_show) }
+    show { build(:apple_show, apple_show_id: apple_show_id) }
     api { build(:apple_api) }
 
     # set up transient api_response
@@ -10,13 +10,6 @@ FactoryBot.define do
       apple_hosted_audio_asset_container_id { "456" }
       apple_show_id { "show-1" }
       create_sync_log { true }
-    end
-
-    after(:build) do |apple_episode, evaluator|
-      if apple_episode.apple_show_id.blank?
-        apple_show_id = evaluator.apple_show_id
-        apple_episode.define_singleton_method(:apple_show_id) { apple_show_id }
-      end
     end
 
     # Episode with full delivery infrastructure but not yet uploaded
