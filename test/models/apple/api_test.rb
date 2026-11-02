@@ -142,12 +142,10 @@ describe Apple::Api do
     end
 
     it "raises when the podcast has no Apple key" do
-      creds = build(:delegated_delivery_config)
+      creds = build(:delegated_delivery_config, feed: build(:private_feed, podcast: build(:podcast)))
 
-      creds.stub(:apple_key, nil) do
-        error = assert_raises(RuntimeError) { Apple::Api.from_delegated_delivery_config(creds) }
-        assert_equal "Missing Apple key for podcast", error.message
-      end
+      error = assert_raises(RuntimeError) { Apple::Api.from_delegated_delivery_config(creds) }
+      assert_equal "Missing Apple key for podcast", error.message
     end
   end
 

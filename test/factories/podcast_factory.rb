@@ -23,9 +23,7 @@ FactoryBot.define do
     default_feed
 
     trait :with_apple_key do
-      after(:build) do |podcast|
-        podcast.apple_key ||= build(:apple_key, account_id: podcast.account_id)
-      end
+      apple_key { association(:apple_key, account_id: account_id) }
     end
   end
 end
