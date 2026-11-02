@@ -271,7 +271,7 @@ describe Apple::Publisher do
   end
 
   describe "Archive and Unarchive flows" do
-    let(:podcast) { create(:podcast) }
+    let(:podcast) { create(:podcast, :with_apple_key) }
     let(:public_feed) { podcast.default_feed }
     let(:private_feed) { create(:private_feed, podcast: podcast) }
     let(:show_feed_binding) { build(:apple_show_feed_binding, feed: public_feed, apple_show_id: "123") }
@@ -522,7 +522,7 @@ describe Apple::Publisher do
   end
 
   describe "Draft state reconciliation" do
-    let(:podcast) { create(:podcast) }
+    let(:podcast) { create(:podcast, :with_apple_key) }
     let(:public_feed) { podcast.default_feed }
     let(:delegated_delivery_feed) { create(:delegated_delivery_feed, podcast: podcast) }
     let(:delegated_delivery_config) { delegated_delivery_feed.delegated_delivery_config }

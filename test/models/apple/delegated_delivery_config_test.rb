@@ -14,17 +14,14 @@ describe Apple::DelegatedDeliveryConfig do
     it "allows only one config per show feed binding" do
       podcast = create(:podcast)
       binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
-      key = create(:apple_key, account_id: podcast.account_id)
       create(
         :delegated_delivery_config,
         feed: create(:private_feed, podcast: podcast),
-        key: key,
         show_feed_binding: binding
       )
       config = build(
         :delegated_delivery_config,
         feed: create(:private_feed, podcast: podcast),
-        key: key,
         show_feed_binding: binding
       )
 

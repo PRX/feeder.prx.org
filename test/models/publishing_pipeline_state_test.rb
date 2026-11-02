@@ -337,7 +337,7 @@ describe PublishingPipelineState do
     end
 
     describe "retry!" do
-      let(:podcast) { create(:podcast) }
+      let(:podcast) { create(:podcast, :with_apple_key) }
       let(:public_feed) { podcast.default_feed }
       let(:private_feed) { create(:delegated_delivery_feed, podcast: podcast) }
       let(:delegated_delivery_feed) { private_feed }
@@ -408,6 +408,7 @@ describe PublishingPipelineState do
     end
 
     describe "Apple publishing" do
+      let(:podcast) { create(:podcast, :with_apple_key) }
       let(:f1) { podcast.default_feed }
       let(:f2) { create(:private_feed, podcast: podcast) }
       let(:f3) { create(:delegated_delivery_feed, podcast: podcast) }

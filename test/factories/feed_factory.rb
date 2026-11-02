@@ -54,12 +54,6 @@ FactoryBot.define do
       after(:build) do |feed, evaluator|
         feed.delegated_delivery_config = build(:delegated_delivery_config, feed: feed, apple_show_id: evaluator.apple_show_id)
       end
-
-      # Saving the feed does not save an existing podcast's newly selected key.
-      after(:create) do |feed, _evaluator|
-        podcast = feed.podcast
-        podcast.save! if podcast.changed? || podcast.apple_key&.new_record?
-      end
     end
 
     factory :megaphone_feed, class: "Feeds::MegaphoneFeed" do

@@ -370,7 +370,7 @@ describe Episode do
   end
 
   describe "Apple integration" do
-    let(:podcast) { create(:podcast) }
+    let(:podcast) { create(:podcast, :with_apple_key) }
     let(:episode) { create(:episode, podcast: podcast) }
 
     describe "unscoped Apple resources" do

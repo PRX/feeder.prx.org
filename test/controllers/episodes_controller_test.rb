@@ -127,6 +127,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
   # Error Handling Tests
 
   test "shows apple integration error state when asset processing fails" do
+    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
     _apple_feed = create(:delegated_delivery_feed, podcast: podcast, apple_show_id: "show-1")
     error_episode = create(:episode, podcast: podcast, published_at: 1.hour.ago, segment_count: 1)
 
@@ -145,6 +146,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "shows error badge when delivery file has validation errors" do
+    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
     _apple_feed = create(:delegated_delivery_feed, podcast: podcast, apple_show_id: "show-1")
     error_episode = create(:episode, podcast: podcast, published_at: 1.hour.ago, segment_count: 1)
 

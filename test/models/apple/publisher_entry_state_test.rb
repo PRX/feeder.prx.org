@@ -93,7 +93,7 @@ module PublisherEntryStateDoubles
 end
 
 describe Apple::Publisher do
-  let(:podcast) { create(:podcast) }
+  let(:podcast) { create(:podcast, :with_apple_key) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:delegated_delivery_feed, podcast: podcast) }
   let(:delegated_delivery_config) { private_feed.delegated_delivery_config }

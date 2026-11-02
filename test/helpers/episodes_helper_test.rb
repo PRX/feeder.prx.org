@@ -29,6 +29,7 @@ describe EpisodesHelper do
     end
 
     describe "with apple feed" do
+      let(:podcast) { create(:podcast, :with_apple_key) }
       let(:delegated_delivery_feed) { create(:delegated_delivery_feed, podcast: podcast, apple_show_id: "show-1") }
       let(:episode) { create(:episode, podcast: podcast, published_at: 1.hour.ago) }
       let(:draft_episode) { create(:episode_with_media, podcast: podcast, published_at: nil) }
@@ -46,8 +47,7 @@ describe EpisodesHelper do
         let(:other_config) do
           public_feed = create(:public_feed, podcast: podcast)
           binding = create(:apple_show_feed_binding, feed: public_feed, apple_show_id: "show-2")
-          create(:delegated_delivery_config, feed: other_feed, key: podcast.apple_key,
-            show_feed_binding: binding, publish_enabled: true)
+          create(:delegated_delivery_config, feed: other_feed, show_feed_binding: binding, publish_enabled: true)
         end
 
         before { other_config }
@@ -197,6 +197,7 @@ describe EpisodesHelper do
     end
 
     it "shows separate statuses and timestamps for Apple and Megaphone on the same feed" do
+      podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
       mixed_feed = create(:megaphone_feed, podcast: podcast)
       config = create(:delegated_delivery_config, feed: mixed_feed)
       episode = create(:episode, podcast: podcast, published_at: 1.hour.ago)
@@ -275,6 +276,7 @@ describe EpisodesHelper do
   end
 
   describe "#episode_integration_updated_at" do
+    let(:podcast) { create(:podcast, :with_apple_key) }
     let(:episode) { create(:episode, podcast: podcast, updated_at: 1.day.ago) }
     let(:delegated_delivery_feed) { create(:delegated_delivery_feed, podcast: podcast, apple_show_id: "show-1") }
     let(:megaphone_feed) { create(:megaphone_feed, podcast: podcast) }

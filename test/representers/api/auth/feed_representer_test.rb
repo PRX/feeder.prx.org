@@ -43,6 +43,7 @@ describe Api::Auth::FeedRepresenter do
   end
 
   it "does not allow draft audio for public Apple delivery feeds" do
+    podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
     public_feed = podcast.default_feed
     binding = create(:apple_show_feed_binding, feed: public_feed)
     create(:delegated_delivery_config, feed: public_feed, show_feed_binding: binding)

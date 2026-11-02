@@ -167,7 +167,7 @@ describe PublishFeedJob do
   end
 
   describe "publishing Apple and Megaphone from one feed" do
-    let(:podcast) { create(:podcast) }
+    let(:podcast) { create(:podcast, :with_apple_key) }
     let(:mixed_feed) { create(:megaphone_feed, podcast: podcast) }
     let(:apple_config) { create(:delegated_delivery_config, feed: mixed_feed) }
     let(:calls) { [] }
@@ -246,15 +246,13 @@ describe PublishFeedJob do
   end
 
   describe "publishing to two Apple feeds" do
-    let(:podcast) { create(:podcast) }
-    let(:key) { create(:apple_key, account_id: podcast.account_id) }
+    let(:podcast) { create(:podcast, :with_apple_key) }
     let(:delivery_feeds) do
-      podcast.update!(apple_key: key)
       2.times.map do
         public_feed = create(:public_feed, podcast: podcast)
         binding = create(:apple_show_feed_binding, feed: public_feed)
         delivery_feed = create(:private_feed, podcast: podcast)
-        create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: binding)
+        create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: binding)
         delivery_feed.reload
       end
     end
@@ -456,7 +454,7 @@ describe PublishFeedJob do
   end
 
   describe "publishing to apple" do
-    let(:podcast) { create(:podcast) }
+    let(:podcast) { create(:podcast, :with_apple_key) }
     let(:public_feed) { podcast.default_feed }
     let(:private_feed) { create(:delegated_delivery_feed, podcast: podcast) }
     let(:delegated_delivery_feed) { private_feed }
