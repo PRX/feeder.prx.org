@@ -95,7 +95,7 @@ describe Feed, "Apple delegated delivery" do
   it "requires a token when a feed delivering through its own show becomes private" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    create(:delegated_delivery_config, feed: public_feed, key: key, show_feed_binding: connection)
+    create(:delegated_delivery_config, feed: public_feed, show_feed_binding: connection)
 
     refute public_feed.reload.update(private: true)
     assert_includes public_feed.errors[:tokens], "must have a token"
@@ -105,7 +105,7 @@ describe Feed, "Apple delegated delivery" do
   it "keeps a connected feed public when its own delivery is removed in the same save" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    config = create(:delegated_delivery_config, feed: public_feed, key: key, show_feed_binding: connection)
+    config = create(:delegated_delivery_config, feed: public_feed, show_feed_binding: connection)
     public_feed.reload.assign_attributes(private: true, tokens: [FeedToken.new(label: "apple")])
 
     refute public_feed.update(apple_settings: {delivery: ""})
@@ -118,7 +118,7 @@ describe Feed, "Apple delegated delivery" do
   it "keeps a connected feed public while another feed delivers to its show" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: connection)
+    create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: connection)
 
     refute public_feed.update(private: true, tokens: [FeedToken.new(label: "apple")])
     assert_includes public_feed.errors[:private], "cannot be enabled while Members delivers to this feed's Apple show"
@@ -138,7 +138,7 @@ describe Feed, "Apple delegated delivery" do
   it "allows a connected feed with HLS video turned off to become private" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    create(:delegated_delivery_config, feed: public_feed, key: key, show_feed_binding: connection)
+    create(:delegated_delivery_config, feed: public_feed, show_feed_binding: connection)
     create(:apple_hls_config, show_feed_binding: connection, enabled: false)
 
     assert public_feed.reload.update(private: true, tokens: [FeedToken.new(label: "apple")])
@@ -147,7 +147,7 @@ describe Feed, "Apple delegated delivery" do
   it "allows a feed delivering through its own show to become private" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    create(:delegated_delivery_config, feed: public_feed, key: key, show_feed_binding: connection)
+    create(:delegated_delivery_config, feed: public_feed, show_feed_binding: connection)
 
     assert public_feed.reload.update(private: true, tokens: [FeedToken.new(label: "apple")])
     assert_equal connection, public_feed.reload.delegated_delivery_config.show_feed_binding
@@ -164,7 +164,7 @@ describe Feed, "Apple delegated delivery" do
   it "preserves the feed and its associations when delivery prevents deletion" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    config = create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: connection)
+    config = create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: connection)
     episode = create(:episode, podcast: podcast)
     public_feed.episodes << episode
 
@@ -178,7 +178,7 @@ describe Feed, "Apple delegated delivery" do
   it "allows deletion after dependent delivery is removed" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    config = create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: connection)
+    config = create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: connection)
     config.destroy!
 
     assert public_feed.reload.destroy
@@ -187,7 +187,7 @@ describe Feed, "Apple delegated delivery" do
 
   it "allows deleting a feed that delivers through its own show" do
     connection = create(:apple_show_feed_binding, feed: delivery_feed, apple_show_id: "own-show")
-    config = create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: connection)
+    config = create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: connection)
     sync_log = Apple::SyncLog.log!(feeder_id: delivery_feed.id, feeder_type: :feeds, external_id: "own-show")
 
     assert delivery_feed.reload.destroy

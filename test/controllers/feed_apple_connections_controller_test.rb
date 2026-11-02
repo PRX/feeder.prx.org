@@ -160,7 +160,7 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
 
   test "requires confirmation when replacing a connection used by delegated delivery" do
     connected_apple_feed
-    create(:delegated_delivery_config, feed: private_feed, key: podcast.apple_key, show_feed_binding: feed.apple_show_feed_binding)
+    create(:delegated_delivery_config, feed: private_feed, show_feed_binding: feed.apple_show_feed_binding)
 
     Apple::ShowFeedBinding.stub(:connectable_shows, []) do
       get podcast_feed_apple_connection_url(podcast, feed)

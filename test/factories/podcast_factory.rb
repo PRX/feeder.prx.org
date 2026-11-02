@@ -21,5 +21,11 @@ FactoryBot.define do
     donation_url { "https://prx.org/donations" }
 
     default_feed
+
+    trait :with_apple_key do
+      after(:build) do |podcast|
+        podcast.apple_key ||= build(:apple_key, account_id: podcast.account_id)
+      end
+    end
   end
 end

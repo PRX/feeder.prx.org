@@ -1,7 +1,7 @@
 require "test_helper"
 
 describe Apple::AssetStateTimeoutError do
-  let(:podcast) { create(:podcast) }
+  let(:podcast) { create(:podcast, :with_apple_key) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
   let(:delegated_delivery_config) { create(:delegated_delivery_config, feed: private_feed) }

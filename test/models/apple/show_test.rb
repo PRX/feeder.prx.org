@@ -3,7 +3,7 @@
 require "test_helper"
 
 describe Apple::Show do
-  let(:podcast) { create(:episode).podcast }
+  let(:podcast) { create(:episode, podcast: create(:podcast, :with_apple_key)).podcast }
   let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
@@ -26,8 +26,6 @@ describe Apple::Show do
 
   describe ".from_show_feed_binding" do
     let(:binding) { create(:apple_show_feed_binding, feed: public_feed, apple_show_id: "hls-show") }
-
-    before { podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id)) }
 
     it "routes through the binding with no delivery feed" do
       show = Apple::Show.from_show_feed_binding(binding)
@@ -422,8 +420,6 @@ describe Apple::Show do
   end
 
   def create_bound_config(show_id)
-    key = create(:apple_key, account_id: public_feed.podcast.account_id)
-    public_feed.podcast.update!(apple_key: key)
     binding = create(
       :apple_show_feed_binding,
       feed: public_feed,
@@ -432,7 +428,6 @@ describe Apple::Show do
     config = create(
       :delegated_delivery_config,
       feed: private_feed,
-      key: key,
       show_feed_binding: binding
     )
 
