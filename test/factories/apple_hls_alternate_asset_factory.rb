@@ -1,7 +1,6 @@
 FactoryBot.define do
   factory :apple_hls_alternate_asset, class: Apple::HlsAlternateAsset do
     episode
-    feeder_podcast { episode.podcast }
     sequence(:apple_show_id) { |n| "show-#{n}" }
     feeder_guid { episode.item_guid }
     status { :staged }

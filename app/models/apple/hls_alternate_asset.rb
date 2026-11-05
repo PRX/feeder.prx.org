@@ -7,15 +7,14 @@ module Apple
     RESOURCE_TYPES = %i[staged_alternate_asset episode].freeze
 
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
-    belongs_to :feeder_podcast, class_name: "::Podcast"
 
     enum :status, {staged: 0, linked: 1, expired: 2, error: 3}
 
     validates :apple_show_id, :feeder_guid, :status, presence: true
-    validates :feeder_guid, uniqueness: {scope: [:feeder_podcast_id, :apple_show_id]}
+    validates :feeder_guid, uniqueness: {scope: :apple_show_id}
 
-    def self.for_key(episode:, binding:, feeder_guid:)
-      find_by(feeder_podcast_id: episode.podcast_id, apple_show_id: binding.apple_show_id, feeder_guid: feeder_guid)
+    def self.for_key(binding:, feeder_guid:)
+      find_by(apple_show_id: binding.apple_show_id, feeder_guid: feeder_guid)
     end
 
     # Records the result of an Apple lookup or write for one asset key and
@@ -33,8 +32,8 @@ module Apple
         raise ArgumentError, "unknown resource_type: #{resource_type.inspect}"
       end
 
-      asset = for_key(episode: episode, binding: binding, feeder_guid: feeder_guid) ||
-        new(feeder_podcast_id: episode.podcast_id, apple_show_id: binding.apple_show_id, feeder_guid: feeder_guid)
+      asset = for_key(binding: binding, feeder_guid: feeder_guid) ||
+        new(apple_show_id: binding.apple_show_id, feeder_guid: feeder_guid)
       return nil if asset.new_record? && resource_type.nil? && error.nil?
 
       asset.episode = episode

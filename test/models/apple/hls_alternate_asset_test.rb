@@ -12,7 +12,7 @@ module Apple
       HlsAlternateAsset.upsert_from_apple!(episode: episode, binding: binding, feeder_guid: guid, **opts)
     end
 
-    it "enforces one row per podcast, show, and GUID" do
+    it "enforces one row per show and GUID" do
       create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: guid)
       dup = build(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: guid)
 
@@ -27,7 +27,7 @@ module Apple
         assert asset.staged?
         assert_equal "staged-1", asset.staged_alternate_asset_id
         assert_equal "https://example.com/a.m3u8", asset.content_url
-        assert_equal [podcast.id, "show-1", guid], [asset.feeder_podcast_id, asset.apple_show_id, asset.feeder_guid]
+        assert_equal ["show-1", guid], [asset.apple_show_id, asset.feeder_guid]
         assert_equal episode, asset.episode
         assert asset.last_checked_at.present?
       end
