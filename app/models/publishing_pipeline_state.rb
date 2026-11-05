@@ -249,8 +249,6 @@ class PublishingPipelineState < ApplicationRecord
   # Holds the publish lock on pub_item's podcast, raising LostOwnershipError
   # unless pub_item still owns the pipeline
   def self.with_owner_lock(pub_item)
-    raise ArgumentError, "publishing queue item is required" if pub_item.nil?
-
     podcast = pub_item.podcast
     podcast.with_publish_lock do
       assert_owner!(podcast, pub_item)

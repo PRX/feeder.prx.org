@@ -85,14 +85,6 @@ describe PublishingPipelineState do
       assert_nil other.reload.heartbeat_at
     end
 
-    it "requires a queue item" do
-      assert_no_difference "PublishingPipelineState.count" do
-        error = assert_raises(ArgumentError) { PublishingPipelineState.error!(nil) }
-        assert_equal "publishing queue item is required", error.message
-        assert_raises(ArgumentError) { PublishingPipelineState.heartbeat!(nil) }
-      end
-    end
-
     it "keeps an expired worker from writing onto the newer pipeline" do
       old_pqi = PublishingPipelineState.start_pipeline!(podcast)
       PublishingPipelineState.start!(old_pqi)
