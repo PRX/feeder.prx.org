@@ -223,7 +223,7 @@ describe PublishFeedJob do
         end
       end
 
-      it "beats before each integration and rss publish" do
+      it "passes the integration a heartbeat for its checkpoints" do
         pqi = PublishingPipelineState.start_pipeline!(podcast)
         calls = []
 
@@ -247,7 +247,7 @@ describe PublishFeedJob do
           end
         end
 
-        assert_equal [[:beat, pqi], [:integration], [:beat, pqi], [:beat, pqi], [:rss]], calls
+        assert_equal [[:integration], [:beat, pqi], [:rss]], calls
         assert_equal "complete", pqi.reload.last_pipeline_state
         refute_nil pqi.heartbeat_at
       end

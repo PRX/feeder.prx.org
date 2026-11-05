@@ -57,7 +57,6 @@ class PublishFeedJob < ApplicationJob
     return unless feed.publish_integration?
     # The integration calls this at its checkpoints to prove liveness
     heartbeat = -> { PublishingPipelineState.heartbeat!(pub_item) }
-    heartbeat.call
     res = feed.publish_integration!(&heartbeat)
     PublishingPipelineState.publish_integration!(pub_item)
     res
@@ -87,7 +86,6 @@ class PublishFeedJob < ApplicationJob
   end
 
   def publish_rss(podcast, pub_item, feed)
-    PublishingPipelineState.heartbeat!(pub_item)
     rss_builder = save_file(podcast, feed)
     after_publish_rss(podcast, feed, rss_builder.episodes)
     PublishingPipelineState.publish_rss!(pub_item)
