@@ -246,9 +246,6 @@ class PublishingPipelineState < ApplicationRecord
     end
   end
 
-  # The database decides who owns the pipeline: pub_item is only the worker's
-  # identity, and it must still be the podcast's current unfinished item.
-  # Call under the publish lock, so ownership can't change before the write.
   def self.assert_owner!(podcast, pub_item)
     curr_running_item = PublishingQueueItem.current_unfinished_item(podcast)
     if curr_running_item != pub_item
