@@ -84,7 +84,8 @@ describe PublishingQueueItem do
 
     it "returns the most recent expired publishing attempt for each podcast" do
       pqi1 = PublishingPipelineState.create!(podcast: podcast, publishing_queue_item: PublishingQueueItem.create!(podcast: podcast)).publishing_queue_item
-      PublishingPipelineState.expire!(podcast)
+      travel PublishingPipelineState::HEARTBEAT_STALE_AFTER + 1.second
+      PublishingPipelineState.expire_if_stale!(podcast)
 
       assert_equal [pqi1].sort, PublishingQueueItem.latest_failed.where(podcast: podcast)
       assert_equal [pqi1].sort, PublishingQueueItem.latest_attempted.latest_failed.where(podcast: podcast)

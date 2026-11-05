@@ -89,7 +89,8 @@ describe PublishingPipelineState do
       old_pqi = PublishingPipelineState.start_pipeline!(podcast)
       PublishingPipelineState.start!(old_pqi)
 
-      PublishingPipelineState.expire!(podcast)
+      travel PublishingPipelineState::HEARTBEAT_STALE_AFTER + 1.second
+      PublishingPipelineState.expire_if_stale!(podcast)
       new_pqi = PublishingPipelineState.start_pipeline!(podcast)
       last_heartbeat = old_pqi.reload.heartbeat_at
       travel 1.minute
@@ -127,19 +128,6 @@ describe PublishingPipelineState do
 
       assert PublishingPipelineState.start!(pqi).started?
       refute_nil pqi.reload.heartbeat_at
-    end
-  end
-
-  describe ".expire!" do
-    it "expires the current item without an owner" do
-      pqi = PublishingPipelineState.start_pipeline!(podcast)
-
-      assert PublishingPipelineState.expire!(podcast).expired?
-      assert_equal "expired", pqi.reload.last_pipeline_state
-    end
-
-    it "does nothing when there is no running pipeline" do
-      assert_nil PublishingPipelineState.expire!(podcast)
     end
   end
 

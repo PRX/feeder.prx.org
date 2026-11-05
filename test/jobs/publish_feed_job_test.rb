@@ -132,7 +132,8 @@ describe PublishFeedJob do
           original = PublishingPipelineState.method(transition)
 
           reap_then_transition = ->(*args) {
-            PublishingPipelineState.expire!(podcast)
+            travel PublishingPipelineState::HEARTBEAT_STALE_AFTER + 1.second
+            PublishingPipelineState.expire_if_stale!(podcast)
             new_pqi = PublishingPipelineState.start_pipeline!(podcast)
             original.call(*args)
           }
@@ -261,7 +262,8 @@ describe PublishFeedJob do
           Apple::ApiWaiting.wait_for([:ep], wait_interval: 0.seconds) do |remaining|
             ticks += 1
             heartbeat.call
-            PublishingPipelineState.expire!(podcast)
+            travel PublishingPipelineState::HEARTBEAT_STALE_AFTER + 1.second
+            PublishingPipelineState.expire_if_stale!(podcast)
             new_pqi = PublishingPipelineState.start_pipeline!(podcast)
             remaining
           end
@@ -300,7 +302,8 @@ describe PublishFeedJob do
 
       it "re-raises lost ownership instead of recording an integration error" do
         old_pqi = PublishingPipelineState.start_pipeline!(podcast)
-        PublishingPipelineState.expire!(podcast)
+        travel PublishingPipelineState::HEARTBEAT_STALE_AFTER + 1.second
+        PublishingPipelineState.expire_if_stale!(podcast)
         new_pqi = PublishingPipelineState.start_pipeline!(podcast)
 
         private_feed.stub(:publish_integration!, :publishing_apple!) do

@@ -176,19 +176,6 @@ class PublishingPipelineState < ApplicationRecord
     state_transition(:error, pub_item)
   end
 
-  # The reaper expires whatever is currently running, with no owner check
-  def self.expire!(podcast)
-    podcast.with_publish_lock do
-      pqi = PublishingQueueItem.current_unfinished_item(podcast)
-      if pqi.present?
-        create_state!(podcast, :expired, pqi)
-      else
-        Rails.logger.error("Podcast #{podcast.id} has no unfinished work, cannot transition state", {podcast_id: podcast.id, to_state: :expired})
-        nil
-      end
-    end
-  end
-
   def self.retry!(pub_item)
     state_transition(:retry, pub_item)
   end
@@ -205,7 +192,9 @@ class PublishingPipelineState < ApplicationRecord
   # replaced, since the reaper selected it
   def self.expire_if_stale!(podcast)
     podcast.with_publish_lock do
-      expire!(podcast) if expired?(podcast)
+      if expired?(podcast)
+        create_state!(podcast, :expired, PublishingQueueItem.current_unfinished_item(podcast))
+      end
     end
   end
 

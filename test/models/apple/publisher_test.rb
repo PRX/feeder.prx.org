@@ -1640,8 +1640,8 @@ describe Apple::Publisher do
       expire = -> {
         assert_equal podcast, publisher.podcast
         refute_nil pqi.reload.heartbeat_at
-        PublishingPipelineState.expire!(podcast)
-        travel PublishingHeartbeat::HEARTBEAT_INTERVAL + 1.second
+        travel PublishingPipelineState::HEARTBEAT_STALE_AFTER + 1.second
+        PublishingPipelineState.expire_if_stale!(podcast)
       }
       apple_publisher.show.stub(:sync!, expire) do
         apple_publisher.show.stub(:apple_id, "123") do
