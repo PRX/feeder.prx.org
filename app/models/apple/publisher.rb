@@ -9,6 +9,15 @@ module Apple
       new(show: Apple::Show.from_delegated_delivery_config(delegated_delivery_config), heartbeat: heartbeat)
     end
 
+    def initialize(show:, heartbeat: nil)
+      super
+
+      Rails.logger.info("Initialized Apple::Publisher", {public_feed_id: show.public_feed.id,
+                                                         private_feed_id: show.private_feed.id,
+                                                         podcast_id: show.podcast.id,
+                                                         show_apple_id: show.apple_id})
+    end
+
     def podcast
       public_feed.podcast
     end
