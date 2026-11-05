@@ -66,7 +66,7 @@ class Feeds::MegaphoneFeed < Feed
     publish_to_megaphone?
   end
 
-  def publish_integration!(&heartbeat)
+  def publish_integration!(heartbeat:)
     if publish_integration?
       ::Megaphone::Publisher.new(self, heartbeat: heartbeat).publish!
     end

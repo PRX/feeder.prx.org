@@ -85,7 +85,7 @@ class Feed < ApplicationRecord
     false
   end
 
-  def publish_integration!
+  def publish_integration!(heartbeat:)
   end
 
   def sync_log(integration)

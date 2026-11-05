@@ -55,7 +55,7 @@ class PublishFeedJob < ApplicationJob
   def publish_integration(podcast, pub_item, feed)
     return unless feed.publish_integration?
     heartbeat = -> { PublishingPipelineState.heartbeat!(pub_item) }
-    res = feed.publish_integration!(&heartbeat)
+    res = feed.publish_integration!(heartbeat: heartbeat)
     PublishingPipelineState.publish_integration!(pub_item)
     res
   rescue Apple::AssetStateTimeoutError => e

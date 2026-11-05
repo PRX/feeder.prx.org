@@ -154,7 +154,7 @@ class Feeds::AppleSubscription < Feed
     :apple
   end
 
-  def publish_integration!(&heartbeat)
+  def publish_integration!(heartbeat:)
     if publish_integration?
       delegated_delivery_config.build_publisher(heartbeat: heartbeat).publish!
     end

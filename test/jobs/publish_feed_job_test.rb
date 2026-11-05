@@ -215,7 +215,7 @@ describe PublishFeedJob do
         job.stub(:s3_client, stub_client) do
           pqi = PublishingPipelineState.start_pipeline!(podcast)
           # Simulate some method blowing up
-          private_feed.stub(:publish_integration!, -> { raise "random apple error" }) do
+          private_feed.stub(:publish_integration!, ->(heartbeat:) { raise "random apple error" }) do
             podcast.stub(:feeds, [private_feed]) do
               assert_raises(RuntimeError) { job.perform(podcast, pqi) }
               assert_equal ["created", "started", "error_integration", "error"], PublishingPipelineState.where(podcast: podcast).latest_pipelines.order(id: :asc).pluck(:status)
@@ -229,7 +229,7 @@ describe PublishFeedJob do
         calls = []
 
         beat = ->(item) { calls << [:beat, item] }
-        integration = ->(&heartbeat) {
+        integration = ->(heartbeat:) {
           calls << [:integration]
           heartbeat.call
         }
@@ -258,7 +258,7 @@ describe PublishFeedJob do
         new_pqi = nil
         ticks = 0
 
-        waiting = ->(&heartbeat) {
+        waiting = ->(heartbeat:) {
           Apple::ApiWaiting.wait_for([:ep], wait_interval: 0.seconds) do |remaining|
             ticks += 1
             heartbeat.call
@@ -343,7 +343,7 @@ describe PublishFeedJob do
             PublishFeedJob.stub(:s3_client, stub_client) do
               episode1.stub(:measure_asset_processing_duration, duration) do
                 episode2.stub(:measure_asset_processing_duration, nil) do
-                  private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new(episodes) }) do
+                  private_feed.stub(:publish_integration!, ->(heartbeat:) { raise Apple::AssetStateTimeoutError.new(episodes) }) do
                     podcast.stub(:feeds, [private_feed]) do
                       lines = capture_json_logs do
                         PublishingQueueItem.ensure_queued!(podcast)
@@ -369,7 +369,7 @@ describe PublishFeedJob do
           assert apple_feed.delegated_delivery_config.present?
           assert apple_feed.delegated_delivery_config.publish_enabled
 
-          private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new([]) }) do
+          private_feed.stub(:publish_integration!, ->(heartbeat:) { raise Apple::AssetStateTimeoutError.new([]) }) do
             podcast.stub(:feeds, [private_feed]) do
               PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
 
@@ -386,7 +386,7 @@ describe PublishFeedJob do
           feed.reload
 
           PublishFeedJob.stub(:s3_client, stub_client) do
-            private_feed.stub(:publish_integration!, -> { raise "some apple error" }) do
+            private_feed.stub(:publish_integration!, ->(heartbeat:) { raise "some apple error" }) do
               feed.podcast.stub(:feeds, [podcast.public_feed, private_feed, feed]) do
                 # no error raised
                 PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
@@ -401,7 +401,7 @@ describe PublishFeedJob do
           assert apple_feed.delegated_delivery_config.publish_enabled
           apple_feed.delegated_delivery_config.update!(sync_blocks_rss: true)
 
-          private_feed.stub(:publish_integration!, -> { raise StandardError.new("some apple error") }) do
+          private_feed.stub(:publish_integration!, ->(heartbeat:) { raise StandardError.new("some apple error") }) do
             podcast.stub(:feeds, [private_feed]) do
               assert_raises(StandardError) { PublishingPipelineState.attempt!(feed.podcast, perform_later: false) }
 
@@ -418,7 +418,7 @@ describe PublishFeedJob do
           feed.reload
 
           PublishFeedJob.stub(:s3_client, stub_client) do
-            private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new([]) }) do
+            private_feed.stub(:publish_integration!, ->(heartbeat:) { raise Apple::AssetStateTimeoutError.new([]) }) do
               feed.podcast.stub(:feeds, [podcast.public_feed, private_feed, feed]) do
                 # no error raised, continues to RSS
                 PublishingPipelineState.attempt!(feed.podcast, perform_later: false)
@@ -438,7 +438,7 @@ describe PublishFeedJob do
           PublishFeedJob.stub(:s3_client, stub_client) do
             episode1.stub(:measure_asset_processing_duration, 2000) do
               episode2.stub(:measure_asset_processing_duration, nil) do
-                private_feed.stub(:publish_integration!, -> { raise Apple::AssetStateTimeoutError.new(episodes) }) do
+                private_feed.stub(:publish_integration!, ->(heartbeat:) { raise Apple::AssetStateTimeoutError.new(episodes) }) do
                   feed.podcast.stub(:feeds, [podcast.public_feed, private_feed, feed]) do
                     lines = capture_json_logs do
                       PublishingQueueItem.ensure_queued!(podcast)
