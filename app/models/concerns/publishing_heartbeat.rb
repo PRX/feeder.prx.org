@@ -10,8 +10,8 @@ module PublishingHeartbeat
 
   class_methods do
     # Call at the bottom of the class: only methods defined so far are wrapped
-    def heartbeat_around_all_methods(except: [])
-      skip = [:initialize, :heartbeat!, *except]
+    def heartbeat_around_all_methods
+      skip = [:initialize, :heartbeat!]
       privates = private_instance_methods(false)
       protecteds = protected_instance_methods(false)
       names = (public_instance_methods(false) + protecteds + privates) - skip

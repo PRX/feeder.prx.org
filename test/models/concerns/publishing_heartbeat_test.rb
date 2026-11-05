@@ -31,7 +31,7 @@ class PublishingHeartbeatTest < ActiveSupport::TestCase
         :helper
       end
 
-      heartbeat_around_all_methods(except: [:run])
+      heartbeat_around_all_methods
 
       public
 
