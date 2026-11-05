@@ -9,7 +9,8 @@ class PublishingPipelineState < ApplicationRecord
   class LostOwnershipError < Exception; end # standard:disable Lint/InheritException
 
   # How long a pipeline can go without a heartbeat before the reaper treats its
-  # worker as dead. Running workers beat on every transition and wait-loop tick.
+  # worker as dead. Workers beat on every state transition; publishers beat on
+  # entry to every method, throttled to HEARTBEAT_INTERVAL (see PublishingHeartbeat).
   HEARTBEAT_STALE_AFTER = 10.minutes.freeze
 
   scope :unfinished_pipelines, -> { where(publishing_queue_item_id: PublishingQueueItem.all_unfinished_items) }
