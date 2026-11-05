@@ -24,7 +24,7 @@ class PublishFeedJob < ApplicationJob
   # writes below, so this rescue wraps them all
   rescue PublishingPipelineState::LostOwnershipError => e
     # Our pipeline was expired or replaced: stop without writing any state
-    Rails.logger.warn("Aborting PublishFeedJob, lost pipeline ownership", {podcast_id: podcast.id, publishing_queue_item_id: pub_item&.id, error: e.message, cause: e.cause&.message})
+    Rails.logger.warn("Aborting PublishFeedJob, lost pipeline ownership", {podcast_id: podcast.id, publishing_queue_item_id: pub_item.id, error: e.message, cause: e.cause&.message})
   ensure
     PublishingPipelineState.settle_remaining!(podcast)
   end
