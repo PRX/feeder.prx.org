@@ -20,10 +20,9 @@ class PublishFeedJob < ApplicationJob
     return :mismatched if mismatched_publishing_item?(podcast, pub_item)
 
     publish_pipeline(podcast, pub_item)
-  # Ownership can be lost anywhere in the pipeline, including the terminal
-  # writes below, so this rescue wraps them all
   rescue PublishingPipelineState::LostOwnershipError => e
-    # Our pipeline was expired or replaced: stop without writing any state
+    # Rescued here so it also covers publish_pipeline's own error!/retry!
+    # writes. Our pipeline was expired or replaced: stop without writing state
     Rails.logger.warn("Aborting PublishFeedJob, lost pipeline ownership", {podcast_id: podcast.id, publishing_queue_item_id: pub_item.id, error: e.message, cause: e.cause&.message})
   ensure
     PublishingPipelineState.settle_remaining!(podcast)
