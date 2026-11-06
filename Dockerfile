@@ -1,4 +1,4 @@
-FROM ruby:3.4.3-alpine
+FROM ruby:3.4.12-alpine
 
 LABEL org.prx.app="yes"
 LABEL org.prx.spire.publish.ecr="RAILS_APP"
