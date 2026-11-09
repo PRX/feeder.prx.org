@@ -42,6 +42,7 @@ class EpisodesController < ApplicationController
 
   # GET /episodes/1
   def show
+    authorize @episode
     if @episode.published?
       redirect_to episode_overview_path(@episode.guid)
     else
@@ -60,6 +61,7 @@ class EpisodesController < ApplicationController
 
   # GET /episodes/1/overview
   def overview
+    authorize @episode, :show?
   end
 
   # GET /episodes/1/edit
