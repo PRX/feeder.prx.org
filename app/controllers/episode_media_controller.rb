@@ -28,6 +28,7 @@ class EpisodeMediaController < ApplicationController
     # when an uncut is destroyed, also destroy sliced contents
     if @episode.uncut&.marked_for_destruction? || @episode.uncut&.new_record?
       @episode.contents.each(&:mark_for_destruction)
+      @episode.alternate_media_resource&.mark_for_destruction
     end
 
     respond_to do |format|
@@ -39,7 +40,7 @@ class EpisodeMediaController < ApplicationController
       elsif @episode.errors.added?(:base, :media_not_ready)
 
         # some UI feedback that these files aren't ready
-        if @episode.medium_uncut?
+        if @episode.medium_uncut? || @episode.medium_video?
           (@episode.uncut || @episode.build_uncut).valid?
         else
           @episode.build_contents.each(&:valid?)

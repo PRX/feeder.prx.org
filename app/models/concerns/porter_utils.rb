@@ -26,6 +26,15 @@ module PorterUtils
     self.class.porter_sns_client.publish(topic_arn: ENV["PORTER_SNS_TOPIC"], message: {Job: job}.to_json)
   end
 
+  def porter_options
+    {
+      Id: job_id,
+      Source: porter_source,
+      Tasks: porter_tasks,
+      Callbacks: porter_callbacks
+    }
+  end
+
   def porter_source
     if source_url&.starts_with?("s3://")
       parts = source_url.sub("s3://", "").split("/", 2)

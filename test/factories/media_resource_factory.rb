@@ -31,8 +31,21 @@ FactoryBot.define do
       task_count { 0 }
     end
 
+    factory :uncut_video, class: Uncut do
+      mime_type { "video/mp4" }
+      medium { "video" }
+      original_url { "s3://prx-testing/test/video.mp4" }
+      segmentation { [[1.23, 4.56]] }
+      task_count { 0 }
+    end
+
     factory :external_media_resource, class: ExternalMediaResource do
       original_url { "https://prx.org/audio.mp3" }
+    end
+
+    factory :alternate_media_resource, class: AlternateMediaResource do
+      original_url { "https://prx.org/video.mp4" }
+      segmentation { [[nil, 22.3], [22.3, nil]] }
     end
   end
 end

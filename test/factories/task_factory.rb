@@ -6,8 +6,8 @@ FactoryBot.define do
     options { {destination: "s3://test-prx-up/podcast/episode/filename.mp3"} }
     result { build(:porter_job_results) }
 
-    factory :copy_uncut_task do
-      association :owner, factory: :uncut
+    factory :copy_video_task, class: Tasks::CopyVideoTask do
+      association :owner, factory: :uncut_video
     end
   end
 
@@ -45,5 +45,20 @@ FactoryBot.define do
     job_id { build(:oxbow_job_id)[:Id] }
     options { {} }
     result { build(:oxbow_job_results) }
+  end
+
+  factory :slice_media_task, class: Tasks::SliceMediaTask do
+    association :owner, factory: :content
+    status { :complete }
+    job_id { "1234" }
+    options { {destination: "s3://test-prx-up/podcast/episode/filename.mp3"} }
+    result { build(:porter_job_results) }
+  end
+
+  factory :transcode_hls_task, class: Tasks::TranscodeHlsTask do
+    association :owner, factory: :alternate_media_resource
+    status { :complete }
+    job_id { "1234" }
+    result { {} }
   end
 end

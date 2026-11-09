@@ -373,44 +373,6 @@ describe Episode do
     let(:podcast) { create(:podcast) }
     let(:episode) { create(:episode, podcast: podcast) }
 
-    describe "#apple_episode" do
-      it "returns nil without an Apple configuration" do
-        assert_nil episode.apple_episode
-      end
-
-      it "returns nil without a show identity" do
-        apple_feed = create(:apple_feed, podcast: podcast)
-        config = apple_feed.delegated_delivery_config
-        binding = config.show_feed_binding
-        binding.feed.apple_sync_log&.destroy!
-        config.update!(show_feed_binding: nil)
-        binding.destroy!
-        apple_feed.update_column(:apple_show_id, nil)
-        podcast.reload
-
-        assert_nil episode.apple_episode
-      end
-
-      it "returns a show-scoped facade" do
-        create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
-
-        assert_equal "show-1", episode.apple_episode.apple_show_id
-      end
-
-      it "resolves the show-scoped sync log through the integration facade" do
-        create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
-        sync_log = SyncLog.create!(
-          integration: :apple,
-          feeder_type: :episodes,
-          feeder_id: episode.id,
-          external_id: "episode-1",
-          external_show_id: "show-1"
-        )
-
-        assert_equal sync_log, episode.integration_episode(:apple).sync_log
-      end
-    end
-
     describe "unscoped Apple resources" do
       it "keeps raw Apple associations private" do
         refute episode.respond_to?(:apple_sync_log)
@@ -451,6 +413,28 @@ describe Episode do
         podcast.reload
 
         assert episode.publish_to_apple?
+      end
+    end
+
+    describe "#apple_episodes" do
+      let(:episode) { create(:episode, podcast: podcast, published_at: 1.hour.ago) }
+
+      it "returns no episodes without a delegated delivery config" do
+        assert_empty episode.apple_episodes
+      end
+
+      it "builds an Apple episode for each feed publishing to Apple" do
+        configs = [true, true, false].map do |publish_enabled|
+          binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
+          create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast), show_feed_binding: binding, publish_enabled: publish_enabled)
+        end
+        podcast.reload
+
+        apple_episodes = episode.apple_episodes
+
+        assert(apple_episodes.all? { |apple_episode| apple_episode.is_a?(Apple::Episode) })
+        assert(apple_episodes.all? { |apple_episode| apple_episode.feeder_episode == episode })
+        assert_equal configs.first(2).map(&:apple_show_id).sort, apple_episodes.map(&:apple_show_id).sort
       end
     end
   end

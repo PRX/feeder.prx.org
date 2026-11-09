@@ -19,6 +19,18 @@ describe PodcastPolicy do
     end
   end
 
+  describe "#update_apple_key?" do
+    let(:podcast) { create(:podcast, prx_account_uri: "/api/v1/accounts/#{account_id}") }
+
+    it "returns false if a locked feed connects to Apple" do
+      policy = PodcastPolicy.new(token("feeder:podcast-edit"), podcast)
+      assert policy.update_apple_key?
+
+      create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast, edit_locked: true))
+      refute policy.update_apple_key?
+    end
+  end
+
   describe "#update?" do
     it "returns false if token is not present" do
       refute PodcastPolicy.new(nil, podcast).update?

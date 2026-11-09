@@ -65,6 +65,8 @@ PRX_HOST=beta.staging.prx.tech
 PUBLIC_FEEDS_URL_PREFIX=https://publicfeeds.net/f
 PODPING_HOST=podping.cloud
 PODPING_AUTH_TOKEN=
+# WebSub hub, defaults to https://pubsubhubbub.appspot.com/ (blank to disable)
+# WEBSUB_HUB_URL=
 
 # RSS settings
 # FEEDER_GENERATOR=

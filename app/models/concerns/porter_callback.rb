@@ -26,10 +26,6 @@ module PorterCallback
       Time.parse(logged_at) if logged_at
     end
 
-    def porter_callback_results(msg)
-      porter_callback_parsed(msg).try(:[], :Result)
-    end
-
     def porter_callback_parsed(msg)
       msg[porter_callback_key(msg)].with_indifferent_access if porter_callback_key(msg)
     end
@@ -39,11 +35,18 @@ module PorterCallback
         %w[JobReceived TaskResult JobResult].include?(key.to_s)
       end
     end
+
+    def porter_callback_task_results(msg)
+      porter_callback_parsed(msg).try(:[], :TaskResults) || []
+    end
+  end
+
+  def porter_callback_task_results
+    self.class.porter_callback_task_results(result)
   end
 
   def porter_callback_task_result(task)
-    parsed = self.class.porter_callback_parsed(result).try(:[], :TaskResults) || []
-    parsed.find { |t| t[:Task].to_s == task.to_s }
+    porter_callback_task_results.find { |t| t[:Task].to_s == task.to_s }
   end
 
   def porter_callback_inspect
@@ -66,6 +69,28 @@ module PorterCallback
 
   def porter_callback_size
     porter_callback_inspect[:Size]&.to_i
+  end
+
+  def porter_callback_format
+    porter_callback_inspect.dig(:Audio, :Format) || porter_callback_inspect.dig(:Video, :Format)
+  end
+
+  def porter_callback_bitrate
+    porter_callback_inspect.dig(:Audio, :Bitrate)
+  end
+
+  def porter_callback_bitrate_normalized
+    bitrate = porter_callback_bitrate.to_i / 1000
+    if bitrate > 0
+      higher_bits = AudioFormatValidator::BIT_RATES.select { |b| b >= bitrate }
+      higher_bits.first || AudioFormatValidator::BIT_RATES.last
+    else
+      128
+    end
+  end
+
+  def porter_callback_tags
+    porter_callback_inspect.dig(:Audio, :Tags)
   end
 
   def porter_callback_ffmpeg

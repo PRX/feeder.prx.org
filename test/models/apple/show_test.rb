@@ -168,7 +168,7 @@ describe Apple::Show do
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
       apple_feed.episodes << draft
 
-      config = build(:delegated_delivery_config, feed: apple_feed)
+      config = apple_feed.delegated_delivery_config
       show = Apple::Show.connect_existing("123", config)
 
       episode_ids = show.episodes.map { |e| e.feeder_episode.id }
@@ -183,7 +183,7 @@ describe Apple::Show do
       ep = create(:episode_with_media, podcast: podcast, published_at: nil)
       apple_feed.episodes << ep
 
-      config = build(:delegated_delivery_config, feed: apple_feed)
+      config = apple_feed.delegated_delivery_config
       show = Apple::Show.connect_existing("123", config)
 
       ep.update!(published_at: 1.hour.ago)
@@ -199,7 +199,7 @@ describe Apple::Show do
       draft = create(:episode, podcast: podcast, published_at: nil)
       apple_feed.episodes << draft
 
-      config = build(:delegated_delivery_config, feed: apple_feed)
+      config = apple_feed.delegated_delivery_config
       show = Apple::Show.connect_existing("123", config)
 
       episode_ids = show.episodes.map { |e| e.feeder_episode.id }
@@ -208,6 +208,15 @@ describe Apple::Show do
   end
 
   describe "#draft_upload_candidates" do
+    it "excludes drafts from public delivery feeds" do
+      binding = create(:apple_show_feed_binding, feed: public_feed)
+      config = create(:delegated_delivery_config, feed: public_feed, show_feed_binding: binding)
+      create(:episode_with_media, podcast: podcast, published_at: nil)
+      create(:episode_with_media, podcast: podcast, published_at: 1.day.from_now)
+
+      assert_empty config.build_show.draft_upload_candidates
+    end
+
     it "returns draft episodes with media from an apple subscription feed" do
       apple_feed = create(:apple_feed, podcast: podcast)
       apple_feed.set_default_episodes
@@ -221,7 +230,7 @@ describe Apple::Show do
       refute draft_without_media.enclosure_ready?(true), "draft_without_media should not have complete media"
       refute draft_without_media.enclosure_ready?(false), "draft_without_media should have no media at all"
 
-      config = build(:delegated_delivery_config, feed: apple_feed)
+      config = apple_feed.delegated_delivery_config
       show = Apple::Show.connect_existing("123", config)
 
       candidate_ids = show.draft_upload_candidates.map { |e| e.feeder_episode.id }
@@ -242,7 +251,7 @@ describe Apple::Show do
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
       apple_feed.episodes << draft
 
-      config = build(:delegated_delivery_config, feed: apple_feed)
+      config = apple_feed.delegated_delivery_config
       show = Apple::Show.connect_existing("123", config)
 
       first = show.draft_upload_candidates
@@ -266,25 +275,29 @@ describe Apple::Show do
     end
 
     it "should take in the apple show id an apple credentials object" do
-      delegated_delivery_config.save!
-      apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
+      with_legacy_routing do
+        delegated_delivery_config.save!
+        apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
 
-      assert_equal apple_show.apple_id, "some_apple_id"
-      assert_equal apple_show.public_feed, delegated_delivery_config.public_feed
-      assert_equal apple_show.private_feed, delegated_delivery_config.private_feed
+        assert_equal apple_show.apple_id, "some_apple_id"
+        assert_equal apple_show.public_feed, delegated_delivery_config.public_feed
+        assert_equal apple_show.private_feed, delegated_delivery_config.private_feed
 
-      # it can be reloaded from the db
-      apple_publisher = Apple::Publisher.from_delegated_delivery_config(delegated_delivery_config.reload)
-      assert_equal apple_publisher.show.apple_id, "some_apple_id"
+        # it can be reloaded from the db
+        apple_publisher = Apple::Publisher.from_delegated_delivery_config(delegated_delivery_config.reload)
+        assert_equal apple_publisher.show.apple_id, "some_apple_id"
+      end
     end
 
     it "should take in a new apple show id" do
-      delegated_delivery_config.save!
-      apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
-      assert_equal apple_show.apple_id, "some_apple_id"
-      apple_show = Apple::Show.connect_existing("another_apple_id", delegated_delivery_config)
-      apple_show.public_feed.reload
-      assert_equal apple_show.apple_id, "another_apple_id"
+      with_legacy_routing do
+        delegated_delivery_config.save!
+        apple_show = Apple::Show.connect_existing("some_apple_id", delegated_delivery_config)
+        assert_equal apple_show.apple_id, "some_apple_id"
+        apple_show = Apple::Show.connect_existing("another_apple_id", delegated_delivery_config)
+        apple_show.public_feed.reload
+        assert_equal apple_show.apple_id, "another_apple_id"
+      end
     end
   end
 
@@ -509,6 +522,14 @@ describe Apple::Show do
   def with_show_feed_binding_routing
     previous = ENV["APPLE_ROUTING_SOURCE"]
     ENV["APPLE_ROUTING_SOURCE"] = "show_feed_binding"
+    yield
+  ensure
+    previous ? ENV["APPLE_ROUTING_SOURCE"] = previous : ENV.delete("APPLE_ROUTING_SOURCE")
+  end
+
+  def with_legacy_routing
+    previous = ENV["APPLE_ROUTING_SOURCE"]
+    ENV["APPLE_ROUTING_SOURCE"] = "legacy"
     yield
   ensure
     previous ? ENV["APPLE_ROUTING_SOURCE"] = previous : ENV.delete("APPLE_ROUTING_SOURCE")

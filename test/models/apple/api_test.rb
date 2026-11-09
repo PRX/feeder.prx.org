@@ -255,5 +255,41 @@ describe Apple::Api do
     it "can optionally treat a 404 as ok, excising the missing responses" do
       assert_equal [[ok_row], []], api.unwrap_bridge_response(OpenStruct.new(code: "200", body: [not_found_row, ok_row].to_json), ignore_errors: [::Apple::Api::NOT_FOUND])
     end
+
+    it "logs ignored errors with their details" do
+      conflict_row = {
+        request_metadata: {apple_episode_id: "456", guid: "some-guid"},
+        api_url: "https://api.podcastsconnect.apple.com/v1/episodes/456",
+        api_response: {ok: false, err: true, val: {data: {status: 409, body: {errors: [
+          {status: "409", code: "ENTITY_ERROR.ATTRIBUTE.INVALID", detail: "title should be non-null", source: {pointer: "/data/attributes/title"}}
+        ]}}}}
+      }.with_indifferent_access
+
+      result = nil
+      logs = capture_json_logs do
+        result = api.unwrap_bridge_response(OpenStruct.new(code: "200", body: [conflict_row, ok_row].to_json), ignore_errors: [::Apple::Api::CONFLICT])
+      end
+
+      assert_equal [[ok_row], []], result
+
+      log = logs.find { |l| l[:msg] == "Apple::Api ignored bridge error" }
+      assert log, "Expected the ignored error to be logged"
+      assert_equal 40, log[:level]
+      assert_equal "456", log[:request_metadata][:apple_episode_id]
+      assert_equal "https://api.podcastsconnect.apple.com/v1/episodes/456", log[:api_url]
+      assert_equal 409, log[:status]
+      assert_equal "/data/attributes/title", log[:errors].first[:source][:pointer]
+    end
+
+    it "logs ignored errors without a response body" do
+      logs = capture_json_logs do
+        assert_equal [[ok_row], []], api.unwrap_bridge_response(OpenStruct.new(code: "200", body: [not_found_row, ok_row].to_json), ignore_errors: [::Apple::Api::NOT_FOUND])
+      end
+
+      log = logs.find { |l| l[:msg] == "Apple::Api ignored bridge error" }
+      assert log, "Expected the ignored error to be logged"
+      assert_equal 404, log[:status]
+      assert_nil log[:errors]
+    end
   end
 end

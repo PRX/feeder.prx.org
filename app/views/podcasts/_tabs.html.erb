@@ -5,6 +5,7 @@
       <%= tab_link_to t(".engagement"), podcast_engagement_path(@podcast) %>
       <%= tab_link_to t(".player"), podcast_player_path(@podcast) %>
       <%= tab_link_to t(".import"), podcast_imports_path(@podcast) %>
+      <%= tab_link_to t(".integrations"), podcast_integrations_path(@podcast) %>
       <% if policy(@podcast).update? %>
         <%= tab_link_to t(".planner"), podcast_planner_path(@podcast) %>
       <% end %>

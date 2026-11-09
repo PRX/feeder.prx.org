@@ -1,6 +1,6 @@
 require "test_helper"
 
-describe ImportUtils do
+class ImportUtilsTest < ActiveSupport::TestCase
   let(:model) { PodcastImport.new }
   let(:emoticons) { "😀😁😂😃😄😅😆😇😈😉😊😋😌😍😎😏😐😑😒😓😔😕😖😗😘😙😚😛😜😝😞😟😠😡😢😣😤😥😦😧😨😩😪😫😬😭😮😯😰😱😲😳😴😵😶😷😸😹😺😻😼😽😾😿🙀🙁🙂🙅🙆🙇🙈🙉🙊🙋🙌🙍🙎🙏" }
 

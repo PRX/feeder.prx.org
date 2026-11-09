@@ -35,6 +35,8 @@ class Episode < ApplicationRecord
   has_many :contents, -> { order("position ASC, created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_one :uncut, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
   has_one :external_media_resource, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
+  has_one :alternate_media_resource, -> { order("created_at DESC") }, autosave: true, dependent: :destroy, inverse_of: :episode
+  has_one :complete_alternate_media_resource, -> { with_deleted.status_complete.order("created_at DESC") }, class_name: "AlternateMediaResource"
 
   has_many :episode_imports
   has_many :images, -> { order("created_at DESC") }, class_name: "EpisodeImage", autosave: true, dependent: :destroy, inverse_of: :episode
@@ -122,21 +124,16 @@ class Episode < ApplicationRecord
   end
 
   def publish_to_apple?
-    !!podcast.delegated_delivery_config&.publish_to_apple?
+    podcast.delegated_delivery_configs.any?(&:publish_to_apple?)
+  end
+
+  # Apple episodes, one per feed this episode is delivered through.
+  def apple_episodes
+    integration_feeds(:apple).filter_map { |feed| feed.integration_episode(self, :apple) }
   end
 
   def megaphone_episode
     Megaphone::Episode.new.tap { |episode| episode.feeder_episode = self }
-  end
-
-  def apple_episode
-    return nil if !persisted? || !publish_to_apple?
-
-    if (show = podcast.delegated_delivery_config&.build_publisher&.show)
-      return nil unless show.apple_id.present?
-
-      Apple::Episode.new(api: show.api, show: show, feeder_episode: self)
-    end
   end
 
   def published?

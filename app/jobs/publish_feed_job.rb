@@ -34,14 +34,16 @@ class PublishFeedJob < ApplicationJob
     PublishingPipelineState.start!(pub_item)
 
     # Publish each integration for each feed (e.g. apple, megaphone)
-    podcast.feeds.each { |feed| publish_integration(podcast, pub_item, feed) }
+    podcast.feeds.each do |feed|
+      feed.integration_types.each { |integration| publish_integration(podcast, pub_item, feed, integration) }
+    end
 
     # After integrations, publish RSS, if appropriate
     podcast.feeds.each { |feed| publish_rss(podcast, pub_item, feed) }
 
     PublishingPipelineState.complete!(pub_item)
   # Top-level error handling, capping the entire pipeline's error status
-  # All of the intermediate errors are handled in the publish_integration and publish_rss
+  # Intermediate errors are handled by publish_integration and publish_rss
   rescue Apple::RetryPublishingError
     # Terminal state: retry
     PublishingPipelineState.retry!(pub_item)
@@ -52,35 +54,40 @@ class PublishFeedJob < ApplicationJob
     raise e
   end
 
-  def publish_integration(podcast, pub_item, feed)
-    return unless feed.publish_integration?
+  def publish_integration(podcast, pub_item, feed, integration)
+    return unless feed.publish_integration?(integration)
+
+    config = feed.integration_config(integration)
+    context = {feed_id: feed.id, integration: integration}
+    tags = ["integration:#{integration}", "feed:#{feed.id}"]
     heartbeat = -> { PublishingPipelineState.heartbeat!(pub_item) }
-    res = feed.publish_integration!(heartbeat: heartbeat)
-    PublishingPipelineState.publish_integration!(pub_item)
-    res
-  rescue Apple::AssetStateTimeoutError => e
-    # Apple timeout errors indicate the async publishing job is still in progress
-    # We always mark the integration as errored in the pipeline state
-    PublishingPipelineState.error_integration!(pub_item)
 
-    # Log at the error's specified level (INFO, WARN, or ERROR)
-    e.log_error!
+    Rails.logger.tagged(*tags) do
+      Rails.logger.info("Starting integration feed publish", context)
+      res = feed.publish_integration!(integration, heartbeat: heartbeat)
+      PublishingPipelineState.publish_integration!(pub_item)
+      Rails.logger.info("Completed integration feed publish", context)
+      res
+    rescue Apple::AssetStateTimeoutError => e
+      # Apple timeout errors indicate the async publishing job is still in progress
+      # We always mark the integration as errored in the pipeline state
+      PublishingPipelineState.error_integration!(pub_item)
 
-    if feed.config.sync_blocks_rss
-      # When sync_blocks_rss is enabled, Apple publishing must succeed before RSS
-      raise Apple::RetryPublishingError.new(e.message)
-    else
-      # When sync_blocks_rss is disabled, we allow RSS publishing to continue despite timeout
-      # The integration error is recorded in pipeline state but doesn't block RSS delivery
-      Rails.logger.info("Apple publishing timed out, continuing to RSS", {podcast_id: podcast.id})
+      # Log at the error's specified level (INFO, WARN, or ERROR)
+      e.log_error!
+
+      if config.sync_blocks_rss
+        raise Apple::RetryPublishingError.new(e.message)
+      else
+        Rails.logger.info("Apple publishing timed out, continuing to RSS", context)
+      end
+    rescue => e
+      Rails.logger.error("Integration feed publish failed", context.merge(error: e))
+      PublishingPipelineState.error_integration!(pub_item)
+
+      # Without sync_blocks_rss, swallow the error so RSS publishing proceeds
+      raise e if config.sync_blocks_rss
     end
-  rescue => e
-    # All other integration errors (network failures, API errors, etc.)
-    PublishingPipelineState.error_integration!(pub_item)
-
-    # Re-raise the error if sync_blocks_rss is enabled, blocking RSS publishing
-    # Otherwise, swallow the error and allow RSS publishing to proceed
-    raise e if feed.config.sync_blocks_rss
   end
 
   def publish_rss(podcast, pub_item, feed)
