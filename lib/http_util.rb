@@ -27,6 +27,20 @@ module HttpUtil
     nil
   end
 
+  # replace sensitive query params (e.g. signed url signatures) using filter_parameters for logging
+  def self.filter_url(url)
+    return "" if url.blank?
+
+    uri = Addressable::URI.parse(url.to_s)
+    return uri.to_s if uri.query.blank?
+
+    filter = ActiveSupport::ParameterFilter.new(Rails.application.config.filter_parameters)
+    uri.query_values = uri.query_values(Array).map { |key, value| [key, filter.filter_param(key, value)] }
+    uri.to_s
+  rescue Addressable::URI::InvalidURIError
+    url.to_s.split("?").first
+  end
+
   def http_head(uri_str, **opts)
     HttpUtil.http_head(uri_str, **opts)
   end

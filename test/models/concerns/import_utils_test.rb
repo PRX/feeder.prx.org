@@ -81,6 +81,7 @@ class ImportUtilsTest < ActiveSupport::TestCase
 
       err = assert_raises(ImportUtils::HttpError) { model.download_file(io, url) }
       _(err.message).must_match(/403/)
+      _(err.message).wont_include "a%2Bb%3D"
       _(io.string).must_be_empty
     end
   end

@@ -4,5 +4,6 @@
 # Use this to limit dissemination of sensitive information.
 # See the ActiveSupport::ParameterFilter documentation for supported notations and behaviors.
 Rails.application.config.filter_parameters += [
-  :passw, :authorization, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :password, :cvv, :cvc
+  :passw, :authorization, :email, :secret, :token, :_key, :crypt, :salt, :certificate, :otp, :ssn, :password, :cvv, :cvc, 
+  :GoogleAccessId, :Signature # google cloud storage signed url params
 ]

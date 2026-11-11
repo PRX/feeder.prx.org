@@ -161,12 +161,12 @@ module ImportUtils
     if res.is_a? Net::HTTPSuccess
       res.body
     else
-      raise HttpError.new("bad response from #{url}")
+      raise HttpError.new("bad response from #{HttpUtil.filter_url(url)}")
     end
   end
 
   def download_file(io, url, redirect_limit = 10)
-    raise HttpError.new("too many redirects for #{url}") if redirect_limit <= 0
+    raise HttpError.new("too many redirects for #{HttpUtil.filter_url(url)}") if redirect_limit <= 0
 
     uri = URI.parse(url)
     http = Net::HTTP.new(uri.host, uri.port)
@@ -184,7 +184,7 @@ module ImportUtils
       when Net::HTTPRedirection
         location = (uri + response["location"]).to_s
       else
-        raise HttpError.new("bad response #{response.code} from #{url}")
+        raise HttpError.new("bad response #{response.code} from #{HttpUtil.filter_url(url)}")
       end
     end
 
