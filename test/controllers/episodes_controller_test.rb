@@ -36,9 +36,27 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test "should show episode" do
+  test "redirects showing episodes" do
     get episode_url(episode)
     assert_redirected_to edit_episode_url(episode)
+
+    episode.update(published_at: 10.minutes.ago)
+    get episode_url(episode)
+    assert_redirected_to episode_overview_url(episode)
+
+    podcast.update(prx_account_uri: "/api/v1/accounts/456")
+    get episode_url(episode)
+    assert_response :forbidden
+  end
+
+  test "authorizes episode overviews" do
+    episode.update(published_at: 10.minutes.ago)
+    get episode_overview_url(episode)
+    assert_response :success
+
+    podcast.update(prx_account_uri: "/api/v1/accounts/456")
+    get episode_overview_url(episode)
+    assert_response :forbidden
   end
 
   test "should get edit" do
