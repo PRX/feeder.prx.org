@@ -36,9 +36,27 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  test "should show episode" do
+  test "redirects showing episodes" do
     get episode_url(episode)
     assert_redirected_to edit_episode_url(episode)
+
+    episode.update(published_at: 10.minutes.ago)
+    get episode_url(episode)
+    assert_redirected_to episode_overview_url(episode)
+
+    podcast.update(prx_account_uri: "/api/v1/accounts/456")
+    get episode_url(episode)
+    assert_response :forbidden
+  end
+
+  test "authorizes episode overviews" do
+    episode.update(published_at: 10.minutes.ago)
+    get episode_overview_url(episode)
+    assert_response :success
+
+    podcast.update(prx_account_uri: "/api/v1/accounts/456")
+    get episode_overview_url(episode)
+    assert_response :forbidden
   end
 
   test "should get edit" do
@@ -135,7 +153,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
     # Create apple episode without audio asset state (still indeterminate since file failed validation)
     api_response = build(:apple_episode_api_response,
       item_guid: error_episode.item_guid)
-    _apple_episode = build(:apple_episode, feeder_episode: error_episode, api_response: api_response)
+    apple_episode = build(:apple_episode, feeder_episode: error_episode, api_response: api_response)
 
     # Create podcast container, delivery, and delivery file with validation error
     container = create(:apple_podcast_container, episode: error_episode)
@@ -144,7 +162,7 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
 
     # Update the sync log with validation error
     pdf.apple_sync_log.update!(**build(:podcast_delivery_file_api_response, asset_processing_state: "VALIDATION_FAILED"))
-    error_episode.apple_episode.podcast_delivery_files.reset
+    apple_episode.podcast_delivery_files.reset
 
     get edit_episode_url(error_episode)
     assert_response :success

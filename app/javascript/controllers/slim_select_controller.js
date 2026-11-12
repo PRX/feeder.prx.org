@@ -29,6 +29,7 @@ export default class extends Controller {
   hasEmpty(element) {
     for (let i = 0; i < element.children.length; i++) {
       if (element.children[i].innerText === "") {
+        element.children[i].setAttribute("data-placeholder", "true")
         element.children[i].classList.add("d-none")
         return true
       }

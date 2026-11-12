@@ -1,7 +1,11 @@
 require "test_helper"
+require_relative "../../../support/apple_pre_cutover_schema"
 
 module Apple
   describe ShowFeedBinding::Backfill do
+    include ApplePreCutoverSchema
+    around { |test| with_apple_pre_cutover_schema { test.call } }
+
     describe ".backfill!" do
       it "creates a binding and sets the config from a public feed sync log" do
         config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync", private_show_id: "show-from-feed")
@@ -68,7 +72,7 @@ module Apple
       it "reports conflicting podcast key candidates without choosing one" do
         config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
         other_feed = create(:private_feed, podcast: config.podcast)
-        other_config = build(:delegated_delivery_config, feed: other_feed, key: create(:apple_key))
+        other_config = build(:delegated_delivery_config, :legacy_routing, feed: other_feed, key: create(:apple_key))
         other_config.save!(validate: false)
         config.podcast.update_column(:apple_key_id, nil)
 
@@ -84,6 +88,7 @@ module Apple
         config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
         other_config = build(
           :delegated_delivery_config,
+          :legacy_routing,
           feed: create(:private_feed, podcast: config.podcast),
           key: config.key
         )
@@ -92,7 +97,7 @@ module Apple
         report = ShowFeedBinding::Backfill.backfill!
 
         assert_equal 1, report[:binding_conflicts].length
-        assert_equal config.public_feed.id, report[:binding_conflicts].first[:feed_id]
+        assert_equal config.legacy_public_feed.id, report[:binding_conflicts].first[:feed_id]
         assert_equal [config.id, other_config.id].sort, report[:binding_conflicts].first[:config_ids]
         assert_equal 2, report[:skipped]
         assert_nil config.reload.show_feed_binding
@@ -113,7 +118,7 @@ module Apple
       it "reports a seeded mismatch" do
         config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
         ShowFeedBinding::Backfill.backfill!
-        config.reload.show_feed_binding.update!(apple_show_id: "wrong-show")
+        config.reload.show_feed_binding.update_column(:apple_show_id, "wrong-show")
 
         report = ShowFeedBinding::Backfill.verify_routing_equivalence!
 
@@ -126,7 +131,7 @@ module Apple
         config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
         ShowFeedBinding::Backfill.backfill!
         replacement_key = create(:apple_key, account_id: config.podcast.account_id)
-        config.podcast.update!(apple_key: replacement_key)
+        config.podcast.update_column(:apple_key_id, replacement_key.id)
 
         report = ShowFeedBinding::Backfill.verify_routing_equivalence!
 
@@ -138,7 +143,7 @@ module Apple
       it "compares against legacy routing when binding routing is selected" do
         config = create_config_with_legacy_show_id(sync_log_show_id: "show-from-sync")
         ShowFeedBinding::Backfill.backfill!
-        config.reload.show_feed_binding.update!(apple_show_id: "wrong-show")
+        config.reload.show_feed_binding.update_column(:apple_show_id, "wrong-show")
 
         previous = ENV["APPLE_ROUTING_SOURCE"]
         ENV["APPLE_ROUTING_SOURCE"] = "show_feed_binding"
@@ -201,7 +206,9 @@ module Apple
       podcast_attributes = key ? {prx_account_uri: "/api/v1/accounts/#{key.account_id}"} : {}
       podcast = create(:podcast, **podcast_attributes)
       private_feed = create(:private_feed, podcast: podcast, apple_show_id: private_show_id)
-      config = create(:delegated_delivery_config, feed: private_feed, key: key)
+      config = build(:delegated_delivery_config, :legacy_routing, feed: private_feed, key: key)
+      # Reproduce an unfinished setup saved before bindings were required.
+      config.save!(validate: false)
       podcast.update_column(:apple_key_id, nil)
 
       if sync_log_show_id

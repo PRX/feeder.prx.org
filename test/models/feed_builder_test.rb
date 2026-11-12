@@ -36,6 +36,31 @@ describe FeedBuilder do
     _(rss[0, 38]).must_equal '<?xml version="1.0" encoding="UTF-8"?>'
   end
 
+  [false, true].each do |has_apple_feed|
+    it "loads Apple configs once regardless of episode count with has_apple_feed=#{has_apple_feed}" do
+      create(:apple_feed, podcast: podcast) if has_apple_feed
+      query_counts = [1, 4].map do |episode_count|
+        create_list(:episode, episode_count - 1, podcast: podcast) if episode_count > 1
+        feed.episodes = podcast.episodes.reload
+        queries = []
+        subscriber = ->(event) do
+          queries << event.payload[:sql] if event.payload[:sql].match?(/\bFROM "apple_configs"/i)
+        end
+
+        rendered = ActiveRecord::Base.uncached do
+          ActiveSupport::Notifications.subscribed(subscriber, "sql.active_record") do
+            FeedBuilder.new(podcast, feed).to_feed_xml
+          end
+        end
+
+        _(Nokogiri::XML(rendered).css("item").count).must_equal episode_count
+        queries.count
+      end
+
+      _(query_counts).must_equal [1, 1], "Apple config queries for 1 and 4 episodes"
+    end
+  end
+
   it "returns an rss feed with correct podcast information" do
     assert_equal rss_feed.at_css("link").text, podcast.link
     assert_equal rss_feed.at_css("title").text, podcast.title
@@ -45,7 +70,8 @@ describe FeedBuilder do
     assert_equal rss_feed.css("managingEditor").text, podcast.managing_editor
     assert_equal rss_feed.at_css("pubDate").text, podcast.pub_date.utc.rfc2822
     assert_equal rss_feed.css("lastBuildDate").text, podcast.last_build_date.utc.rfc2822
-    assert_equal rss_feed.at_css("atom|link").attributes["href"].value, "http://feeds.feedburner.com/thornmorris"
+    assert_equal rss_feed.at_css("atom|link[rel=self]").attributes["href"].value, "http://feeds.feedburner.com/thornmorris"
+    assert_equal rss_feed.at_css("atom|link[rel=hub]").attributes["href"].value, "https://pubsubhubbub.appspot.com/"
     assert_equal rss_feed.at_css("itunes|author").text, podcast.author_name
     assert_equal rss_feed.at_css("itunes|explicit").text, "true"
     assert_equal rss_feed.at_css("itunes|new-feed-url").text, "http://feeds.feedburner.com/newthornmorris"
@@ -252,5 +278,26 @@ describe FeedBuilder do
 
     type = podcast_transcript.attribute("type").to_s
     _(type).must_equal("text/html")
+  end
+
+  describe "alternate enclosure" do
+    let(:episode) { create(:video_episode) }
+
+    it "returns alt enclosures for video episodes" do
+      feed.audio_format = nil
+      feed.set_default_episodes
+      node = rss_feed.css("item")[0]
+
+      # regular enclosure is an mp3
+      encl = node.at_css("enclosure")
+      assert_includes encl.attribute("url").value, "preview.mp3"
+      assert_equal "audio/mpeg", encl.attribute("type").value
+
+      # alt enclosure is hls
+      alt = node.at_css("podcast|alternateEnclosure")
+      src = alt.at_css("podcast|source")
+      assert_includes src.attribute("uri").value, "preview.m3u8"
+      assert_equal "application/x-mpegURL", alt.attribute("type").value
+    end
   end
 end

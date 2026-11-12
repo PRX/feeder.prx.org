@@ -11,10 +11,6 @@ class FeedPolicy < ApplicationPolicy
     update?
   end
 
-  def new_apple?
-    update?
-  end
-
   def new_megaphone?
     update?
   end

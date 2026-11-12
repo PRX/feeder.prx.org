@@ -37,6 +37,7 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
     end
 
     xml.atom :link, href: @feed.public_url, rel: "self", type: "application/rss+xml"
+    xml.atom :link, href: websub_hub_url, rel: "hub" if websub_enabled?(@feed)
 
     unless @feed.new_feed_url.blank?
       xml.itunes :"new-feed-url", @feed.new_feed_url
@@ -134,6 +135,12 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
             type: ep.enclosure_content_type(feed: @feed),
             length: ep.enclosure_file_size(feed: @feed)
           )
+        end
+
+        if ep.complete_alternate_media_resource
+          xml.podcast :alternateEnclosure, type: ep.enclosure_alt_content_type do
+            xml.podcast :source, uri: ep.enclosure_alt_url
+          end
         end
 
         xml.itunes :title, ep.clean_title unless ep.clean_title.blank?

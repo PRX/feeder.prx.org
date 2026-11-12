@@ -16,7 +16,9 @@ describe Apple::KeyPolicy do
   it "authorizes writes in the key account" do
     assert Apple::KeyPolicy.new(token("feeder:podcast-edit"), key).create?
     assert Apple::KeyPolicy.new(token("feeder:podcast-edit"), key).update?
+    assert Apple::KeyPolicy.new(token("feeder:podcast-edit"), key).destroy?
     refute Apple::KeyPolicy.new(token("feeder:read-private"), key).create?
+    refute Apple::KeyPolicy.new(token("feeder:read-private"), key).destroy?
   end
 
   it "scopes keys to readable accounts" do

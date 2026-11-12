@@ -9,17 +9,6 @@ describe Tasks::CopyMediaTask do
         assert_equal "whatev", task.source_url
       end
     end
-
-    it "is always the original url for sliced segments" do
-      task.media_resource.segmentation = [1.23, 4.56]
-      task.media_resource.original_url = "http://some.where"
-
-      assert task.media_resource.slice?
-
-      task.media_resource.stub(:href, "http://else.where") do
-        assert_equal "http://some.where", task.source_url
-      end
-    end
   end
 
   describe "#porter_tasks" do
@@ -39,7 +28,7 @@ describe Tasks::CopyMediaTask do
       assert_equal "attachment; filename=\"audio.mp3\"", t[:Parameters][:ContentDisposition]
     end
 
-    it "optionally runs an inspect task" do
+    it "optionally runs a waveform task" do
       assert_equal 2, task.porter_tasks.count
 
       task.media_resource.stub(:generate_waveform?, true) do
@@ -111,6 +100,43 @@ describe Tasks::CopyMediaTask do
       end
     end
 
+    it "saves ad breaks from tags when slicing" do
+      episode = create(:episode, medium: "audio", segment_count: nil)
+      uncut = create(:uncut, episode: episode, segmentation: nil)
+      task = create(:copy_media_task, owner: uncut, status: "processing")
+
+      Content.stub_any_instance(:copy_media, true) do
+        task.update!(status: "complete")
+      end
+
+      assert_equal 2, episode.reload.segment_count
+      assert_equal [[nil, 3.0], [3.0, nil]], uncut.reload.segmentation
+    end
+
+    it "saves ad breaks from tags matching the episode ad breaks" do
+      episode = create(:episode, medium: "audio", ad_breaks: 1)
+      uncut = create(:uncut, episode: episode, segmentation: nil)
+      task = create(:copy_media_task, owner: uncut, status: "processing")
+
+      Content.stub_any_instance(:copy_media, true) do
+        task.update!(status: "complete")
+      end
+
+      assert_equal 2, episode.reload.contents.count
+      assert_equal [[nil, 3.0], [3.0, nil]], uncut.reload.segmentation
+    end
+
+    it "saves ad breaks from tags when not slicing" do
+      episode = create(:episode, medium: "audio", segment_count: 3)
+      uncut = create(:uncut, episode: episode, segmentation: nil)
+      task = create(:copy_media_task, owner: uncut, status: "processing")
+
+      task.update!(status: "complete")
+
+      refute uncut.segmentation_ready?
+      assert_equal [[nil, 3.0], [3.0, nil]], uncut.reload.segmentation
+    end
+
     it "will not lower segment count from tag" do
       slice = Minitest::Mock.new
 
@@ -128,6 +154,7 @@ describe Tasks::CopyMediaTask do
         end
       end
     end
+
     it "will not override ad breaks if already set" do
       slice = Minitest::Mock.new
 
@@ -167,20 +194,6 @@ describe Tasks::CopyMediaTask do
       assert_nil task.media_resource.frame_rate
       assert_nil task.media_resource.height
       assert_nil task.media_resource.width
-    end
-
-    it "overrides sliced audio with the new size/duration" do
-      task.media_resource.update!(segmentation: [5, 10])
-
-      task.result[:JobResult][:TaskResults] << build(:porter_slice_audio_result)
-      task.media_resource.reset_media_attributes
-
-      task.update(status: "created")
-      assert_nil task.media_resource.mime_type
-
-      task.update(status: "complete")
-      assert_equal 9.999, task.media_resource.duration
-      assert_equal 9999, task.media_resource.file_size
     end
 
     it "updates video metadata on complete" do
@@ -259,23 +272,6 @@ describe Tasks::CopyMediaTask do
           assert_equal "-b:a 192k", task.media_resource.task.options[:Tasks][0][:FFmpeg][:OutputFileOptions]
         end
       end
-    end
-  end
-
-  describe "#next_highest_bitrate" do
-    it "returns the next highest common bitrate" do
-      assert_equal 192, task.next_highest_bitrate
-
-      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Bitrate] = 195678
-      assert_equal 224, task.next_highest_bitrate
-
-      # 320 is the  max
-      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Bitrate] = 999999
-      assert_equal 320, task.next_highest_bitrate
-
-      # 128 is the default
-      task.result[:JobResult][:TaskResults][1][:Inspection][:Audio][:Bitrate] = nil
-      assert_equal 128, task.next_highest_bitrate
     end
   end
 end

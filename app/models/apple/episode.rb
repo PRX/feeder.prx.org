@@ -12,6 +12,7 @@ module Apple
 
     AUDIO_ASSET_FAILURE = "FAILURE"
     AUDIO_ASSET_SUCCESS = "SUCCESS"
+    REMOTE_REQUIRED_ATTRIBUTES = %w[title originalReleaseDate].freeze
 
     # Cleans up old delivery/delivery files iff the episode is to be uploaded
     def self.prepare_for_delivery(episodes)
@@ -73,8 +74,9 @@ module Apple
       end
     end
 
+    # Returns the sync logs for the successfully updated episodes
     def self.update_episodes(api, episodes)
-      return if episodes.empty?
+      return [] if episodes.empty?
 
       (episode_bridge_results, errs) =
         api.bridge_remote_and_retry("updateEpisodes",
@@ -250,8 +252,7 @@ module Apple
       show_id = scoped_apple_show_id!
       logs = SyncLog.apple.episodes.where(feeder_id: feeder_episode.id, feeder_type: :episodes)
 
-      # TODO remove with cutover once all legacy NULL-show rows are stamped.
-      logs.find_by(external_show_id: show_id) || logs.find_by(external_show_id: nil)
+      logs.find_by(external_show_id: show_id)
     end
 
     def apple_show_id
@@ -435,6 +436,14 @@ module Apple
       publishing_state == "DRAFTING"
     end
 
+    def remote_missing_required_attributes
+      attributes = apple_json&.dig("attributes")
+      # Return if there is no remote resource
+      return [] if attributes.nil?
+
+      REMOTE_REQUIRED_ATTRIBUTES.select { |key| attributes[key].blank? }
+    end
+
     def archived?
       publishing_state == "ARCHIVED"
     end
@@ -529,15 +538,16 @@ module Apple
       apple_id
     end
 
-    def video_content_type?
-      feeder_episode.video_content_type?
+    # TODO: we do transcode an mp3 audio version of hls-video episodes, but i'm unsure
+    # if those should be included or excluded here
+    def audio?
+      feeder_episode&.audio?
     end
 
     def podcast_container
       show_id = scoped_apple_show_id!
       containers = Apple::PodcastContainer.where(episode_id: feeder_id)
-      # TODO remove with cutover after all legacy NULL-show rows are stamped.
-      containers.find_by(apple_show_id: show_id) || containers.find_by(apple_show_id: nil)
+      containers.find_by(apple_show_id: show_id)
     end
 
     def podcast_deliveries
@@ -577,9 +587,8 @@ module Apple
     def delivery_statuses
       show_id = scoped_apple_show_id!
 
-      # TODO remove with cutover after all legacy NULL-show rows are stamped.
       Apple::EpisodeDeliveryStatus
-        .where(episode_id: feeder_id, apple_show_id: [show_id, nil])
+        .where(episode_id: feeder_id, apple_show_id: show_id)
         .order(created_at: :desc)
     end
 

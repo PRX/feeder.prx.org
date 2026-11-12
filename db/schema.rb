@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_05_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_16_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "uuid-ossp"
@@ -20,12 +20,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_000002) do
     t.bigint "feed_id", null: false
     t.bigint "key_id"
     t.boolean "publish_enabled", default: false, null: false
-    t.bigint "show_feed_binding_id"
+    t.bigint "show_feed_binding_id", null: false
     t.boolean "sync_blocks_rss", default: false, null: false
     t.datetime "updated_at", null: false
-    t.index ["feed_id"], name: "index_apple_configs_on_feed_id"
+    t.index ["feed_id"], name: "index_apple_configs_on_feed_id", unique: true
     t.index ["key_id"], name: "index_apple_configs_on_key_id"
-    t.index ["show_feed_binding_id"], name: "index_apple_configs_on_show_feed_binding_id"
+    t.index ["show_feed_binding_id"], name: "index_apple_configs_on_show_feed_binding_id", unique: true
   end
 
   create_table "apple_keys", force: :cascade do |t|
@@ -41,7 +41,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_000002) do
   create_table "apple_podcast_containers", force: :cascade do |t|
     t.string "api_response"
     t.string "apple_episode_id", null: false
-    t.string "apple_show_id"
+    t.string "apple_show_id", null: false
     t.datetime "created_at", null: false
     t.integer "episode_id"
     t.string "external_id"
@@ -84,6 +84,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_000002) do
     t.datetime "created_at", null: false
     t.bigint "feed_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["apple_show_id"], name: "index_apple_show_feed_bindings_on_apple_show_id", unique: true
     t.index ["feed_id"], name: "index_apple_show_feed_bindings_on_feed_id", unique: true
   end
 
@@ -267,6 +268,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_000002) do
     t.index ["apple_show_id"], name: "index_integrations_episode_delivery_statuses_on_apple_show_id"
     t.index ["episode_id", "created_at"], name: "index_apple_episode_delivery_statuses_on_episode_id_created_at", include: ["delivered", "id"]
     t.index ["episode_id"], name: "index_integrations_episode_delivery_statuses_on_episode_id"
+    t.check_constraint "integration IS DISTINCT FROM 0 OR apple_show_id IS NOT NULL", name: "apple_delivery_statuses_require_show"
   end
 
   create_table "itunes_categories", id: :serial, force: :cascade do |t|
@@ -549,6 +551,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_000002) do
     t.integer "integration"
     t.datetime "updated_at"
     t.index ["integration", "feeder_type", "feeder_id", "external_show_id"], name: "idx_sync_logs_unique_by_external_show", unique: true, nulls_not_distinct: true
+    t.check_constraint "integration IS DISTINCT FROM 0 OR feeder_type::text <> 'episodes'::text OR external_show_id IS NOT NULL", name: "apple_episode_sync_logs_require_show"
   end
 
   create_table "tasks", id: :serial, force: :cascade do |t|

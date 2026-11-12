@@ -34,9 +34,13 @@ class StreamResource < ApplicationRecord
 
   def copy_media(force = false)
     if force || needs_copy?
-      Tasks::CopyMediaTask.create! do |task|
-        task.owner = self
-      end.start!
+      Tasks::CopyMediaTask.start!(self)
+    end
+  end
+
+  def after_copy(copy_task)
+    if copy_task.bad_audio?
+      Tasks::FixMediaTask.start!(self, copy_task)
     end
   end
 
@@ -98,10 +102,6 @@ class StreamResource < ApplicationRecord
 
   def generate_waveform?
     true
-  end
-
-  def slice?
-    false
   end
 
   def missing_seconds

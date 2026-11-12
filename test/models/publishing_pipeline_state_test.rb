@@ -231,6 +231,21 @@ describe PublishingPipelineState do
       assert_equal ["created"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
     end
 
+    it "does not retry failed pipelines for locked podcasts" do
+      PublishingPipelineState.start_pipeline!(podcast)
+      PublishingPipelineState.error!(podcast)
+      podcast.update!(locked_until: 1.minute.from_now)
+
+      # it does not retry while locked
+      PublishingPipelineState.retry_failed_pipelines!
+      assert_equal ["created", "error"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+
+      # it retries once the lock expires
+      podcast.update!(locked_until: 1.minute.ago)
+      PublishingPipelineState.retry_failed_pipelines!
+      assert_equal ["created"].sort, PublishingPipelineState.latest_pipeline(podcast).map(&:status).sort
+    end
+
     it "retries pipelines with intermediate error_integration and non-error terminal status" do
       PublishingPipelineState.start_pipeline!(podcast)
       assert_equal ["created"], PublishingPipelineState.latest_pipeline(podcast).map(&:status)
@@ -298,6 +313,7 @@ describe PublishingPipelineState do
 
     describe "error!" do
       it 'sets the status to "error"' do
+        create(:apple_feed, podcast: podcast)
         pqi = nil
         PublishFeedJob.stub_any_instance(:save_file, nil) do
           PublishFeedJob.stub_any_instance(:publish_integration, ->(*args) { raise "error" }) do
@@ -398,6 +414,7 @@ describe PublishingPipelineState do
 
       it "can publish via the delegated delivery configs" do
         stub_request(:get, /#{ENV["PODPING_HOST"]}/).to_return(status: 200)
+        stub_request(:post, /pubsubhubbub/).to_return(status: 204)
         assert [f1, f2, f3]
 
         f3.stub(:publish_integration!, "published apple!") do

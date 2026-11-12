@@ -1,6 +1,6 @@
 require "test_helper"
 
-describe ImageFile do
+class ImageFileTest < ActiveSupport::TestCase
   let(:url) { "http://some/where/file.png" }
   let(:image) { build_stubbed(:feed_image) }
 
