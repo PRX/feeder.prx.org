@@ -221,7 +221,13 @@ module Apple
         return false
       end
 
+      # The feed has an Apple show connection.
+      # Get the HLS config of the binding. If there is no HLS config, make a
+      # new one. The new HLS config is not saved at this time.
       hls = binding.hls_config || binding.build_hls_config
+
+      # A new HLS config with hls_enabled set to false has no data to save.
+      # Return true, because there is no error.
       return true if hls.new_record? && !hls_enabled
 
       recheck = hls_enabled && (!hls.enabled? || @connected)
