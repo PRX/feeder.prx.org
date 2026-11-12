@@ -89,6 +89,8 @@ module Apple
       upsert(episode, guid, resource_type: :staged_alternate_asset, response: staged_json)
     end
 
+    # Apple no longer returns the resource a prior row recorded: staged assets
+    # expire, but a linked episode should not disappear.
     def log_vanished(episode, guid)
       asset = Apple::HlsAlternateAsset.find_by(feeder_podcast_id: episode.podcast_id, apple_show_id: show_feed_binding.apple_show_id, feeder_guid: guid)
       context = {episode_id: episode.id, feed_id: feed.id, apple_show_id: show_feed_binding.apple_show_id, guid: guid}
