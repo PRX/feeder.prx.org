@@ -9,6 +9,7 @@ module Apple
   #   config, OWN for this feed's own binding (which may not exist until
   #   this save connects it), or the id of a public feed's binding
   # - publish_enabled, sync_blocks_rss: the delivery config's flags
+  # - hls_enabled: whether a public feed's binding delivers HLS video
   #
   # Every attribute is optional. A missing one keeps the saved setting, so
   # a form that doesn't render a field can't clear it.
@@ -16,12 +17,29 @@ module Apple
   # The feed saves them with its own changes:
   #
   #   feed.update(apple_settings: {connection: "6813172774", delivery: "own"})
+  #
+  #   This class models Feed rails form semantics! The data in this class comes from the following templates:
+  #  ┌───────────────────────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────┐
+  #  │                 Template                  │                                            Role                                             │             Fields it submits              │
+  #  ├───────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+  #  │ feeds/_form.html.erb                      │ The feed form; renders the Apple section when the feed is connectable                   │ none itself                                │
+  #  ├───────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+  #  │ feeds/_form_apple_settings.html.erb       │ The Apple section; opens fields_for :apple_settings and shows HLS errors                    │ none itself                                │
+  #  ├───────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+  #  │ feeds/_apple_settings_delivery.html.erb   │ Delivery choice and its flags                                                               │ delivery, publish_enabled, sync_blocks_rss │
+  #  ├───────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+  #  │ feeds/_apple_settings_connection.html.erb │ Lazy turbo frame for the show selector, plus the HLS checkbox                               │ hls_enabled                                │
+  #  ├───────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+  #  │ feeds/_apple_connection_field.html.erb    │ The show selector itself                                                                    │ connection (a select, or a hidden field)   │
+  #  ├───────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+  #  │ feed_apple_connections/show.html.erb      │ Turbo frame response that re-renders the show selector once the shows are loaded from Apple │ connection, via the partial above          │
+  #  └───────────────────────────────────────────┴─────────────────────────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────┘
   class FeedSettings
     include ActiveModel::Model
 
     OWN = "own"
-    ATTRIBUTES = %i[delivery connection publish_enabled sync_blocks_rss].freeze
-    BOOLEANS = %i[publish_enabled sync_blocks_rss].freeze
+    ATTRIBUTES = %i[delivery connection publish_enabled sync_blocks_rss hls_enabled].freeze
+    BOOLEANS = %i[publish_enabled sync_blocks_rss hls_enabled].freeze
 
     attr_reader :feed
 
@@ -73,12 +91,21 @@ module Apple
       !!config&.sync_blocks_rss?
     end
 
+    def hls_enabled_was
+      !!hls_config&.enabled?
+    end
+
     def connectable?
       feed.apple_connectable?
     end
 
     def deliverable?
       connectable? && !feed.default?
+    end
+
+    # HLS video is delivered through a public feed's own binding.
+    def hls_available?
+      connectable? && feed.public?
     end
 
     def own_available?
@@ -140,6 +167,10 @@ module Apple
       feed.delegated_delivery_config
     end
 
+    def hls_config
+      binding&.hls_config
+    end
+
     # Point the feed's config at the submitted delivery before the feed
     # validates. The config saves with the feed.
     def apply
@@ -156,7 +187,7 @@ module Apple
     def connect
       return true unless connection_change == :connect
 
-      connection_changed(connection_binding.connect_existing(connection))
+      @connected = connection_changed(connection_binding.connect_existing(connection))
     rescue ActiveRecord::RecordInvalid => error
       error.record.errors.full_messages.each { |message| errors.add(:connection, message) }
       false
@@ -167,7 +198,54 @@ module Apple
     def disconnect
       return true unless connection_change == :disconnect
 
-      connection_changed(binding.disconnect)
+      @disconnected = connection_changed(binding.disconnect)
+    end
+
+    # The feed calls this method after connect and disconnect.
+    # If this save disconnected a show, it also removed the HLS config of
+    # that show.
+    # If this save connected a show, do the eligibility check again.
+    def save_hls_config
+      return true unless hls_submitted?
+
+      # The feed has no Apple show connection.
+      if binding.nil?
+        # If this save removed the connection, it also removed the
+        # Apple::ShowFeedBinding. The Apple::HlsConfig belongs to that
+        # binding. Thus, the save also removed the HLS config.
+        # In this condition, hls_enabled has no effect.
+        #
+        # Return true, because there is no error.
+        return true if !hls_enabled || @disconnected
+
+        errors.add(:hls_enabled, "HLS video requires an Apple show connection")
+        return false
+      end
+
+      # The feed has an Apple show connection.
+
+      # Get the HLS config of the binding. If there is no HLS config, make a
+      # new one. The new HLS config is not saved at this time.
+      hls = binding.hls_config || binding.build_hls_config
+
+      # A new HLS config with hls_enabled set to false has no data to save.
+      # Return true, because there is no error.
+      return true if hls.new_record? && !hls_enabled
+
+      # An eligibility check is necessary when hls_enabled is true and one of
+      # these conditions occurs:
+      # - This save changes hls_enabled from false to true.
+      # - This save connected a show.
+      recheck = hls_enabled && (hls_enabled_changed? || @connected)
+
+      # The eligibility check gets the show from Apple. If the check cannot
+      # get the show, return false. The feed then stops the save.
+      # A show that is not eligible is not an error.
+      return false if recheck && !refresh_hls_eligibility(hls)
+
+      hls.enabled = hls_enabled
+      hls.save!
+      true
     end
 
     private
@@ -182,6 +260,10 @@ module Apple
 
     def delivery_submitted?
       deliverable? && submitted?(:delivery)
+    end
+
+    def hls_submitted?
+      hls_available? && submitted?(:hls_enabled)
     end
 
     def mapped_binding_id
@@ -269,6 +351,15 @@ module Apple
       feed.association(:apple_show_feed_binding).reset
       @connection_binding = nil
       true
+    end
+
+    def refresh_hls_eligibility(hls)
+      hls.refresh_eligibility
+      true
+    rescue => error
+      Rails.logger.error("Unable to check Apple HLS eligibility", feed_id: feed.id, apple_show_id: binding.apple_show_id, error: error)
+      errors.add(:hls_enabled, "Could not check Apple video eligibility for this show")
+      false
     end
   end
 end
