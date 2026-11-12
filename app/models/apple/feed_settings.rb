@@ -170,7 +170,7 @@ module Apple
     def connect
       return true unless connection_change == :connect
 
-      connection_changed(connection_binding.connect_existing(connection))
+      @connected = connection_changed(connection_binding.connect_existing(connection))
     rescue ActiveRecord::RecordInvalid => error
       error.record.errors.full_messages.each { |message| errors.add(:connection, message) }
       false
@@ -181,14 +181,17 @@ module Apple
     def disconnect
       return true unless connection_change == :disconnect
 
-      connection_changed(binding.disconnect)
+      @disconnected = connection_changed(binding.disconnect)
     end
 
+    # Runs after connect and disconnect. A show this save disconnected takes
+    # its HLS config with it, and one it connected needs its eligibility
+    # checked again.
     def save_hls_config
       return true unless hls_submitted?
 
       if binding.nil?
-        return true if !hls_enabled || connection_change
+        return true if !hls_enabled || @disconnected
 
         errors.add(:hls_enabled, "HLS video requires an Apple show connection")
         return false
@@ -197,7 +200,7 @@ module Apple
       hls = binding.hls_config || binding.build_hls_config
       return true if hls.new_record? && !hls_enabled
 
-      recheck = hls_enabled && (!hls.enabled? || connection_change)
+      recheck = hls_enabled && (!hls.enabled? || @connected)
       hls.enabled = hls_enabled
       return false if recheck && !refresh_hls_eligibility(hls)
 
