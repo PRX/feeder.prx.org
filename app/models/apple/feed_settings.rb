@@ -201,9 +201,10 @@ module Apple
       @disconnected = connection_changed(binding.disconnect)
     end
 
-    # Runs after connect and disconnect. A show this save disconnected takes
-    # its HLS config with it, and one it connected needs its eligibility
-    # checked again.
+    # The feed calls this method after connect and disconnect.
+    # If this save disconnected a show, it also removed the HLS config of
+    # that show.
+    # If this save connected a show, do the eligibility check again.
     def save_hls_config
       return true unless hls_submitted?
 
