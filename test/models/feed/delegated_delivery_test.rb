@@ -276,13 +276,21 @@ describe Feed, "Apple delegated delivery" do
       megaphone_publisher = Minitest::Mock.new
       megaphone_publisher.expect(:publish!, :published_megaphone)
 
-      mixed_feed.delegated_delivery_config.stub(:build_publisher, apple_publisher) do
-        Megaphone::Publisher.stub(:new, ->(feed) {
+      heartbeat_lambda = -> {}
+
+      build_apple = ->(heartbeat:) {
+        assert_same heartbeat_lambda, heartbeat
+        apple_publisher
+      }
+
+      mixed_feed.delegated_delivery_config.stub(:build_publisher, build_apple) do
+        Megaphone::Publisher.stub(:new, ->(feed, heartbeat:) {
           assert_equal mixed_feed, feed
+          assert_same heartbeat_lambda, heartbeat
           megaphone_publisher
         }) do
-          assert_equal :published_apple, mixed_feed.publish_integration!(:apple)
-          assert_equal :published_megaphone, mixed_feed.publish_integration!(:megaphone)
+          assert_equal :published_apple, mixed_feed.publish_integration!(:apple, heartbeat: heartbeat_lambda)
+          assert_equal :published_megaphone, mixed_feed.publish_integration!(:megaphone, heartbeat: heartbeat_lambda)
         end
       end
 

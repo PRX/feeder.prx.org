@@ -78,10 +78,10 @@ class Feeds::MegaphoneFeed < Feed
     (integration == :megaphone) ? publish_to_megaphone? : super
   end
 
-  def publish_integration!(integration)
+  def publish_integration!(integration, heartbeat:)
     return super unless integration == :megaphone
 
-    ::Megaphone::Publisher.new(self).publish! if publish_integration?(integration)
+    ::Megaphone::Publisher.new(self, heartbeat: heartbeat).publish! if publish_integration?(integration)
   end
 
   def publish_to_megaphone?

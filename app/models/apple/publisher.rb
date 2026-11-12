@@ -5,16 +5,16 @@ module Apple
     EPISODE_ASSET_WAIT_TIMEOUT = 15.minutes.freeze
     EPISODE_ASSET_WAIT_INTERVAL = 10.seconds.freeze
 
-    def self.from_delegated_delivery_config(delegated_delivery_config)
-      new(show: Apple::Show.from_delegated_delivery_config(delegated_delivery_config))
+    def self.from_delegated_delivery_config(delegated_delivery_config, heartbeat: nil)
+      new(show: Apple::Show.from_delegated_delivery_config(delegated_delivery_config), heartbeat: heartbeat)
     end
 
-    def initialize(show:)
+    def initialize(show:, heartbeat: nil)
       super
 
-      Rails.logger.info("Initialized Apple::Publisher", {public_feed_id: public_feed.id,
-                                                         private_feed_id: private_feed.id,
-                                                         podcast_id: podcast.id,
+      Rails.logger.info("Initialized Apple::Publisher", {public_feed_id: show.public_feed.id,
+                                                         private_feed_id: show.private_feed.id,
+                                                         podcast_id: show.podcast.id,
                                                          show_apple_id: show.apple_id})
     end
 
@@ -704,5 +704,7 @@ module Apple
 
       [ready_acc, waiting_acc]
     end
+
+    heartbeat_around_all_methods
   end
 end
