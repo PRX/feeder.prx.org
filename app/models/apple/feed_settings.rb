@@ -207,27 +207,25 @@ module Apple
     def save_hls_config
       return true unless hls_submitted?
 
+      # The feed has no Apple show connection.
       if binding.nil?
-        # The feed has no Apple show connection.
-        #
         # If this save removed the connection, it also removed the
         # Apple::ShowFeedBinding. The Apple::HlsConfig belongs to that
         # binding. Thus, the save also removed the HLS config.
-        # In this condition, hls_enabled has no effect and hls_wanted? is
-        # false.
+        # In this condition, hls_enabled has no effect.
         #
         # Return true, because there is no error.
-        return true unless hls_wanted?
+        return true if !hls_enabled || @disconnected
 
         errors.add(:hls_enabled, "HLS video requires an Apple show connection")
         return false
       end
 
       hls = binding.hls_config || binding.build_hls_config
-      return true if hls.new_record? && !hls_wanted?
+      return true if hls.new_record? && !hls_enabled
 
-      recheck = hls_wanted? && (!hls.enabled? || @connected)
-      hls.enabled = hls_wanted?
+      recheck = hls_enabled && (!hls.enabled? || @connected)
+      hls.enabled = hls_enabled
       return false if recheck && !refresh_hls_eligibility(hls)
 
       hls.save!
@@ -250,12 +248,6 @@ module Apple
 
     def hls_submitted?
       hls_available? && submitted?(:hls_enabled)
-    end
-
-    # Whether this save asks for HLS video. A show this save disconnected
-    # takes its HLS config with it, so the checkbox no longer counts.
-    def hls_wanted?
-      hls_enabled && !@disconnected
     end
 
     def mapped_binding_id
