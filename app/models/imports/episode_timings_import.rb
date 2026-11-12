@@ -45,7 +45,7 @@ class EpisodeTimingsImport < EpisodeImport
       status_importing!
 
       # changing audio->uncut medium builds a new Uncut
-      episode.medium = "uncut"
+      episode.medium = "uncut" unless episode.medium_video?
       return status_no_media! unless episode.uncut.present?
 
       episode.uncut.ad_breaks = parse_timings
