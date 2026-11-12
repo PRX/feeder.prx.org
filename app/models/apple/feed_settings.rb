@@ -208,25 +208,26 @@ module Apple
       return true unless hls_submitted?
 
       if binding.nil?
-        # Handle the case where a user is disconnecting.
+        # The feed has no Apple show connection.
         #
-        # If we have just `@disconnected` that means we are destroying
-        # Apple::ShowFeedBinding. Since Apple::HlsConfig is keyed on the
-        # apple_show_feed_binding_id, the cascade will destroy the HLS config
-        # here, so whether hls_enabled is true or false doesn't matter.
+        # If this save removed the connection, it also removed the
+        # Apple::ShowFeedBinding. The Apple::HlsConfig belongs to that
+        # binding. Thus, the save also removed the HLS config.
+        # In this condition, hls_enabled has no effect and hls_wanted? is
+        # false.
         #
-        # Return true because nothing is wrong.
-        return true if !hls_enabled || @disconnected
+        # Return true, because there is no error.
+        return true unless hls_wanted?
 
         errors.add(:hls_enabled, "HLS video requires an Apple show connection")
         return false
       end
 
       hls = binding.hls_config || binding.build_hls_config
-      return true if hls.new_record? && !hls_enabled
+      return true if hls.new_record? && !hls_wanted?
 
-      recheck = hls_enabled && (!hls.enabled? || @connected)
-      hls.enabled = hls_enabled
+      recheck = hls_wanted? && (!hls.enabled? || @connected)
+      hls.enabled = hls_wanted?
       return false if recheck && !refresh_hls_eligibility(hls)
 
       hls.save!
@@ -249,6 +250,12 @@ module Apple
 
     def hls_submitted?
       hls_available? && submitted?(:hls_enabled)
+    end
+
+    # Whether this save asks for HLS video. A show this save disconnected
+    # takes its HLS config with it, so the checkbox no longer counts.
+    def hls_wanted?
+      hls_enabled && !@disconnected
     end
 
     def mapped_binding_id
