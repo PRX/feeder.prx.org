@@ -30,6 +30,11 @@ export default class extends Controller {
 
     this.zoomTarget.addEventListener("wheel", this.handleWheel(this))
 
+    // Fallback for dragging markers when canvas hit detection fails; see handleMarkerDragFallback.
+    // Capture phase, so this runs before Konva's own listeners on the stage content.
+    this.zoomTarget.addEventListener("mousedown", this.handleMarkerDragFallback, true)
+    this.zoomTarget.addEventListener("touchstart", this.handleMarkerDragFallback, true)
+
     this.peaksOptions = {
       ...(this.hasZoomTarget && {
         zoomview: {
@@ -249,6 +254,49 @@ export default class extends Controller {
       default:
         break
     }
+  }
+
+  // Konva finds the shape under the pointer by reading pixel colors from a hidden hit canvas.
+  // Browsers that add noise to canvas reads (e.g. Brave Shields fingerprinting protection)
+  // break that lookup, so marker handles can't be grabbed. When Konva misses, fall back to
+  // finding the handle by its bounding box and starting the drag ourselves.
+  //
+  // This leans on Peaks.js internals, so recheck it when upgrading peaks.js (pinned in
+  // config/importmap.rb):
+  //   - `zoomView._stage` is the zoom view's private Konva stage.
+  //   - Peaks names each marker's Konva group "marker" and makes that group the draggable
+  //     node. Its dragBoundFunc and drag events (no-overlap limits, dragend -> marker.update)
+  //     only run because we start the drag on that same group.
+  // The "handle" name is ours, set in PrxPointMarker and PrxSegmentMarker. The Konva calls
+  // (setPointersPositions, getIntersection, getClientRect, startDrag) are public API.
+  handleMarkerDragFallback = (evt) => {
+    if (evt.type === "mousedown" && evt.button !== 0) return
+
+    const stage = this.zoomView?._stage
+    if (!stage) return
+
+    // Konva only records pointer positions in its own listeners, which haven't run yet in the
+    // capture phase. Record them now so getPointerPosition() and startDrag() see this event.
+    stage.setPointersPositions(evt)
+    const pos = stage.getPointerPosition()
+
+    // Konva's hit detection worked (e.g. no canvas noise), so let it handle the drag normally.
+    if (!pos || stage.getIntersection(pos)?.findAncestor(".marker")) return
+
+    // Extra pixels around the 10x20 handle, so it's not fiddly to grab.
+    const slop = 4
+    const handle = stage.find(".handle").find((handle) => {
+      if (!handle.isVisible() || !handle.findAncestor(".marker")?.draggable()) return false
+
+      const { x, y, width, height } = handle.getClientRect()
+      return pos.x >= x - slop && pos.x <= x + width + slop && pos.y >= y - slop && pos.y <= y + height + slop
+    })
+    if (!handle) return
+
+    // Keep peaks from also treating this as a click or drag on the waveform. Konva's own
+    // listeners on the stage content are below zoomTarget, so they never see this event.
+    evt.stopPropagation()
+    handle.findAncestor(".marker").startDrag(evt)
   }
 
   handleWheel(evt) {
