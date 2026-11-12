@@ -34,6 +34,7 @@ module Apple
       # read raises instead of being recorded on every episode. Staged assets
       # are only needed for episodes Apple has not crawled yet.
       show.apple_episode_json
+      # Guard to save an api call for the 'all-linked' case
       show.staged_alternate_asset_json if eligible.any? { |episode| show.find_apple_episode_json_by_guid(episode_guid(episode, feed)).nil? }
 
       eligible.map { |episode| publish_episode(episode) }
