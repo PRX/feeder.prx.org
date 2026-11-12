@@ -34,6 +34,9 @@ class Tasks::AnalyzeMediaTask < ::Task
         media_resource.height = info[:Video][:Height].to_i
         media_resource.frame_rate = info[:Video][:Framerate].to_f.round
       end
+
+      # change status, if metadata doesn't pass validations
+      media_resource.status = "invalid" if media_resource.invalid?
     end
 
     media_resource.save!

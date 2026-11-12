@@ -18,7 +18,7 @@ describe Tasks::AnalyzeMediaTask do
   end
 
   describe "#update_owner" do
-    let(:task) { create(:copy_media_task) }
+    let(:task) { create(:analyze_media_task) }
 
     it "updates status before save" do
       assert_equal task.status, "complete"
@@ -61,6 +61,16 @@ describe Tasks::AnalyzeMediaTask do
       assert_nil task.media_resource.frame_rate
       assert_nil task.media_resource.height
       assert_nil task.media_resource.width
+    end
+
+    it "handles validation errors" do
+      task.update(status: "created")
+
+      task.result[:JobResult][:TaskResults][0][:Inspection][:MIME] = "foo/bar"
+      task.update(status: "complete")
+
+      assert_equal "invalid", task.media_resource.status
+      assert_equal "foo", task.media_resource.medium
     end
   end
 end
