@@ -17,6 +17,23 @@ module Apple
   # The feed saves them with its own changes:
   #
   #   feed.update(apple_settings: {connection: "6813172774", delivery: "own"})
+  #
+  #   This class models Feed rails form semantics! The data in this class comes from the following templates:
+  #  ┌───────────────────────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────┐
+  #  │                 Template                  │                                            Role                                             │             Fields it submits              │
+  #  ├───────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+  #  │ feeds/_form.html.erb                      │ The feed form; renders the Apple section when the feed is connectable                   │ none itself                                │
+  #  ├───────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+  #  │ feeds/_form_apple_settings.html.erb       │ The Apple section; opens fields_for :apple_settings and shows HLS errors                    │ none itself                                │
+  #  ├───────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+  #  │ feeds/_apple_settings_delivery.html.erb   │ Delivery choice and its flags                                                               │ delivery, publish_enabled, sync_blocks_rss │
+  #  ├───────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+  #  │ feeds/_apple_settings_connection.html.erb │ Lazy turbo frame for the show selector, plus the HLS checkbox                               │ hls_enabled                                │
+  #  ├───────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+  #  │ feeds/_apple_connection_field.html.erb    │ The show selector itself                                                                    │ connection (a select, or a hidden field)   │
+  #  ├───────────────────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+  #  │ feed_apple_connections/show.html.erb      │ Turbo frame response that re-renders the show selector once the shows are loaded from Apple │ connection, via the partial above          │
+  #  └───────────────────────────────────────────┴─────────────────────────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────┘
   class FeedSettings
     include ActiveModel::Model
 
@@ -191,6 +208,14 @@ module Apple
       return true unless hls_submitted?
 
       if binding.nil?
+        # Handle the case where a user is disconnecting.
+        #
+        # If we have just `@disconnected` that means we are destroying
+        # Apple::ShowFeedBinding. Since Apple::HlsConfig is keyed on the
+        # apple_show_feed_binding_id, the cascade will destroy the HLS config
+        # here, so whether hls_enabled is true or false doesn't matter.
+        #
+        # Return true because nothing is wrong.
         return true if !hls_enabled || @disconnected
 
         errors.add(:hls_enabled, "HLS video requires an Apple show connection")
