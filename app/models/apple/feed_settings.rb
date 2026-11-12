@@ -223,6 +223,7 @@ module Apple
       end
 
       # The feed has an Apple show connection.
+
       # Get the HLS config of the binding. If there is no HLS config, make a
       # new one. The new HLS config is not saved at this time.
       hls = binding.hls_config || binding.build_hls_config
@@ -231,10 +232,18 @@ module Apple
       # Return true, because there is no error.
       return true if hls.new_record? && !hls_enabled
 
-      recheck = hls_enabled && (!hls.enabled? || @connected)
-      hls.enabled = hls_enabled
+      # An eligibility check is necessary when hls_enabled is true and one of
+      # these conditions occurs:
+      # - This save changes hls_enabled from false to true.
+      # - This save connected a show.
+      recheck = hls_enabled && (hls_enabled_changed? || @connected)
+
+      # The eligibility check gets the show from Apple. If the check cannot
+      # get the show, return false. The feed then stops the save.
+      # A show that is not eligible is not an error.
       return false if recheck && !refresh_hls_eligibility(hls)
 
+      hls.enabled = hls_enabled
       hls.save!
       true
     end
