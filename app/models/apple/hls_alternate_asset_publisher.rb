@@ -30,8 +30,11 @@ module Apple
       eligible = episodes.select(&:hls_eligible_for_apple?)
       return [] if eligible.empty?
 
-      unlinked = eligible.reject { |episode| apple_episode_json(episode) }
-      show.staged_alternate_asset_json if unlinked.any?
+      # Load bulk state here, outside publish_episode's rescue, so a failed
+      # read raises instead of being recorded on every episode. Staged assets
+      # are only needed for episodes Apple has not crawled yet.
+      show.apple_episode_json
+      show.staged_alternate_asset_json if eligible.any? { |episode| show.find_apple_episode_json_by_guid(episode_guid(episode, feed)).nil? }
 
       eligible.map { |episode| publish_episode(episode) }
     end
@@ -42,7 +45,7 @@ module Apple
       guid = episode_guid(episode, feed)
       url = episode.apple_hls_master_url(feed: feed)
 
-      if (episode_json = apple_episode_json(episode))
+      if (episode_json = show.find_apple_episode_json_by_guid(guid))
         publish_linked(episode, guid, url, episode_json)
       elsif (staged_json = show.find_staged_alternate_asset_json_by_guid(guid))
         publish_staged(episode, guid, url, staged_json)
@@ -53,10 +56,6 @@ module Apple
       Rails.logger.error("Apple HLS alternate asset publish failed",
         {episode_id: episode.id, feed_id: feed.id, apple_show_id: show_feed_binding.apple_show_id, guid: guid, error: error})
       upsert(episode, guid, error: error)
-    end
-
-    def apple_episode_json(episode)
-      show.find_apple_episode_json_by_guid(episode_guid(episode, feed))
     end
 
     def publish_linked(episode, guid, url, episode_json)
