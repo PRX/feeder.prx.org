@@ -195,6 +195,22 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       assert_equal pruned_pdf.id, log[:podcast_delivery_file_id]
     end
 
+    it "does not match a pruned file to a sibling file on the same delivery" do
+      sibling_pdf = create(:apple_podcast_delivery_file, podcast_delivery: podcast_delivery, episode: podcast_container.episode, api_marked_as_uploaded: true)
+      sibling_pdf.apple_sync_log.api_response["api_response"]["val"]["data"]["id"] = "sibling-delivery-file-id"
+      sibling_pdf.apple_sync_log.save!
+      refute_equal pruned_pdf.apple_id, sibling_pdf.apple_id
+
+      found = nil
+      stub_bridge([not_found_row(pruned_pdf), readable_row(sibling_pdf, asset_delivery_state: "COMPLETE")]) do
+        found = Apple::PodcastDeliveryFile.get_and_update_api_response(apple_api, [pruned_pdf, sibling_pdf])
+      end
+
+      assert_equal [sibling_pdf], found
+      assert pruned_pdf.deleted?
+      refute sibling_pdf.deleted?
+    end
+
     it "raises for a missing delivery file that was never marked as uploaded" do
       pruned_pdf.update!(api_marked_as_uploaded: false)
 

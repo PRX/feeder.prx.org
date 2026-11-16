@@ -2223,13 +2223,22 @@ describe Apple::Publisher do
     end
 
     describe "container audio gate" do
-      def process_with_ready_asset_state(eps)
+      def process_with_ready_asset_state(eps, wait_timeout: 100.seconds, container_poll: ->(*) {})
         published = []
+        original_wait = apple_publisher.method(:wait_for_asset_state)
+        fast_wait = ->(waiting, **_kwargs, &block) {
+          original_wait.call(waiting, wait_timeout: wait_timeout, wait_interval: 0.seconds, &block)
+        }
+
         apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
-          apple_publisher.stub(:verify_publishing_state!, ->(*) {}) do
-            Apple::Episode.stub(:probe_asset_state, ->(_api, batch) { [batch, []] }) do
-              Apple::Episode.stub(:publish, ->(_api, _show, batch) { published.concat(batch) }) do
-                yield
+          apple_publisher.stub(:wait_for_asset_state, fast_wait) do
+            apple_publisher.stub(:verify_publishing_state!, ->(*) {}) do
+              Apple::PodcastContainer.stub(:poll_podcast_container_state, container_poll) do
+                Apple::Episode.stub(:probe_asset_state, ->(_api, batch) { [batch, []] }) do
+                  Apple::Episode.stub(:publish, ->(_api, _show, batch) { published.concat(batch) }) do
+                    yield
+                  end
+                end
               end
             end
           end
@@ -2251,11 +2260,34 @@ describe Apple::Publisher do
         assert episode.delivery_status.delivered
       end
 
-      it "raises for an uploaded episode whose container lacks processed audio" do
+      it "waits for container audio and then delivers the episode" do
+        refute_empty episode.podcast_delivery_files
+        episode.define_singleton_method(:drafting?) { true }
+
+        container_complete = false
+        episode.define_singleton_method(:container_upload_complete?) { container_complete }
+
+        polled = []
+        container_poll = ->(_api, eps) {
+          polled << eps
+          container_complete = true if polled.length == 2
+        }
+
+        published = process_with_ready_asset_state([episode], container_poll: container_poll) do
+          apple_publisher.process_delivery!([episode])
+        end
+
+        assert_equal [[episode], [episode]], polled
+        assert_equal [episode], published
+        assert episode.delivery_status.delivered
+      end
+
+      it "times out for an uploaded episode whose container lacks processed audio" do
+        refute_empty episode.podcast_delivery_files
         episode.define_singleton_method(:container_upload_complete?) { false }
 
         error = nil
-        published = process_with_ready_asset_state([episode]) do
+        published = process_with_ready_asset_state([episode], wait_timeout: 0.seconds) do
           error = assert_raises(Apple::AssetStateTimeoutError) do
             apple_publisher.process_delivery!([episode])
           end
@@ -2265,6 +2297,46 @@ describe Apple::Publisher do
         assert_empty published
         refute episode.delivery_status.delivered
         assert episode.delivery_status.uploaded
+      end
+
+      it "marks a pruned episode without container audio for reupload" do
+        episode.podcast_delivery_files.each(&:destroy)
+        assert_empty episode.podcast_delivery_files
+        episode.define_singleton_method(:container_upload_complete?) { false }
+
+        polled = []
+        error = nil
+        published = process_with_ready_asset_state([episode], container_poll: ->(_api, eps) { polled << eps }) do
+          error = assert_raises(Apple::RetryPublishingError) do
+            apple_publisher.process_delivery!([episode])
+          end
+        end
+
+        assert_includes error.message, episode.feeder_id.to_s
+        assert_empty polled
+        assert_empty published
+        refute episode.delivery_status.delivered
+        refute episode.delivery_status.uploaded
+        assert episode.needs_upload?
+      end
+
+      it "delivers ready episodes before raising for a pruned episode without container audio" do
+        ready_episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+        ready_episode.define_singleton_method(:container_upload_complete?) { true }
+        ready_episode.define_singleton_method(:drafting?) { true }
+
+        episode.podcast_delivery_files.each(&:destroy)
+        episode.define_singleton_method(:container_upload_complete?) { false }
+
+        published = process_with_ready_asset_state([ready_episode, episode]) do
+          assert_raises(Apple::RetryPublishingError) do
+            apple_publisher.process_delivery!([ready_episode, episode])
+          end
+        end
+
+        assert_equal [ready_episode], published
+        assert ready_episode.delivery_status.delivered
+        refute episode.delivery_status.uploaded
       end
 
       it "leaves episodes with rejected delivery files to the processing error check" do

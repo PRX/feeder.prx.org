@@ -182,9 +182,9 @@ module Apple
 
         wait_for_upload_processing(eps)
 
-        pending_eps = eps.filter do |ep|
-          ep.delivery_status(true).uploaded? && !ep.container_upload_complete? && !ep.delivery_file_errors?
-        end
+        missing_audio_eps = filter_episodes_missing_container_audio(eps)
+        mark_asset_state_failures_as_not_delivered!(missing_audio_eps)
+
         error_audio_state_eps = []
 
         # Wait for the audio asset to be processed by Apple
@@ -201,16 +201,19 @@ module Apple
         end
 
         raise_asset_state_failure_retry!(error_audio_state_eps) if error_audio_state_eps.any?
-        raise_pending_container_audio!(pending_eps) if pending_eps.any?
+        raise_missing_container_audio_retry!(missing_audio_eps) if missing_audio_eps.any?
       end
     end
 
-    def raise_pending_container_audio!(eps)
-      e = Apple::AssetStateTimeoutError.new(eps)
-      Rails.logger.info("Waiting for processed audio in podcast containers", {episode_count: e.episodes.length,
-                                                                              episode_ids: e.episode_ids,
-                                                                              asset_wait_duration: e.asset_wait_duration})
-      raise e
+    def raise_missing_container_audio_retry!(eps)
+      eps.each do |ep|
+        Rails.logger.error("Found pruned delivery files without processed container audio, marked as not delivered",
+          Apple::Episode.apple_episode_log_context(ep))
+      end
+
+      raise Apple::RetryPublishingError.new(
+        "Found pruned delivery files without processed container audio on #{eps.length} episodes #{eps.map(&:feeder_id)}, marked as not delivered"
+      )
     end
 
     def wait_for_asset_state(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL, &finisher_block)
@@ -220,7 +223,9 @@ module Apple
         (timed_out, final_waiting) = Apple::ApiWaiting.wait_for(remaining_eps,
           wait_timeout: wait_timeout,
           wait_interval: wait_interval) do |waiting_eps|
-          ready_episodes, still_waiting_episodes = partition_episodes_by_readiness(waiting_eps)
+          container_ready_eps, container_pending_eps = partition_episodes_by_container_audio(waiting_eps)
+          ready_episodes, still_waiting_episodes = partition_episodes_by_readiness(container_ready_eps)
+          still_waiting_episodes += container_pending_eps
 
           if ready_episodes.any?
             Rails.logger.info("Processing #{ready_episodes.length} ready episodes")
@@ -704,7 +709,20 @@ module Apple
     end
 
     def filter_episodes_awaiting_asset_state(eps)
-      eps.filter { |e| e.delivery_status(true).uploaded? && e.container_upload_complete? }
+      eps.filter { |e| e.delivery_status(true).uploaded? && !e.delivery_file_errors? }
+    end
+
+    def filter_episodes_missing_container_audio(eps)
+      eps.filter do |e|
+        e.delivery_status(true).uploaded? && !e.container_upload_complete? && e.podcast_delivery_files.empty?
+      end
+    end
+
+    def partition_episodes_by_container_audio(eps)
+      pending_eps = eps.reject(&:container_upload_complete?)
+      Apple::PodcastContainer.poll_podcast_container_state(api, pending_eps) if pending_eps.any?
+
+      eps.partition(&:container_upload_complete?)
     end
 
     def partition_episodes_by_readiness(waiting_eps)
