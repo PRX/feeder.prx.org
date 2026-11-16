@@ -2325,6 +2325,27 @@ describe Apple::Publisher do
         assert episode.needs_upload?
       end
 
+      it "logs a pruned episode without container audio when the asset wait times out" do
+        episode.podcast_delivery_files.each(&:destroy)
+        episode.define_singleton_method(:container_upload_complete?) { false }
+        timeout = ->(*, **) { raise Apple::AssetStateTimeoutError.new([]) }
+
+        logs = capture_json_logs do
+          apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
+            apple_publisher.stub(:wait_for_asset_state, timeout) do
+              assert_raises(Apple::AssetStateTimeoutError) do
+                apple_publisher.process_delivery!([episode])
+              end
+            end
+          end
+        end
+
+        log = logs.find { |l| l[:msg] == "Found pruned delivery files without processed container audio, marking as not delivered" }
+        assert log.present?
+        assert_equal episode.feeder_id, log[:episode_id]
+        assert episode.needs_upload?
+      end
+
       it "delivers ready episodes before raising for a pruned episode without container audio" do
         ready_episode = build(:uploaded_apple_episode, show: apple_publisher.show)
         ready_episode.define_singleton_method(:container_upload_complete?) { true }

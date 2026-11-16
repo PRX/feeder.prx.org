@@ -341,10 +341,22 @@ module Apple
 
       rejected_pdfs = mark_delivery_file_errors!(eps)
 
-      missing_audio_eps = filter_episodes_missing_container_audio(eps)
-      mark_asset_state_failures_as_not_delivered!(missing_audio_eps)
+      missing_audio_eps = mark_missing_container_audio!(eps)
 
       [rejected_pdfs, missing_audio_eps]
+    end
+
+    def mark_missing_container_audio!(eps)
+      missing_audio_eps = filter_episodes_missing_container_audio(eps)
+
+      missing_audio_eps.each do |ep|
+        Rails.logger.error("Found pruned delivery files without processed container audio, marking as not delivered",
+          Apple::Episode.apple_episode_log_context(ep))
+
+        ep.mark_as_not_delivered!
+      end
+
+      missing_audio_eps
     end
 
     def log_container_audio_mismatches(eps)
@@ -370,11 +382,6 @@ module Apple
     end
 
     def raise_missing_container_audio_retry!(eps)
-      eps.each do |ep|
-        Rails.logger.error("Found pruned delivery files without processed container audio, marked as not delivered",
-          Apple::Episode.apple_episode_log_context(ep))
-      end
-
       raise Apple::RetryPublishingError.new(
         "Found pruned delivery files without processed container audio on #{eps.length} episodes #{eps.map(&:feeder_id)}, marked as not delivered"
       )
