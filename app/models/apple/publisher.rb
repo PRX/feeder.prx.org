@@ -200,7 +200,7 @@ module Apple
         end
 
         raise_asset_state_failure_retry!(error_audio_state_eps) if error_audio_state_eps.any?
-        raise_delivery_file_errors!(rejected_pdfs, :processed_validation_failed?)
+        raise_delivery_file_errors!(rejected_pdfs)
         raise_missing_container_audio_retry!(missing_audio_eps) if missing_audio_eps.any?
       end
     end
@@ -303,23 +303,17 @@ module Apple
       end
 
       # This will raise and mark for reupload if any validation failures
-      raise_for_processing_state(eps, :processed_validation_failed?)
+      raise_delivery_file_errors!(mark_delivery_file_errors!(eps))
 
       true
     end
 
-    def raise_for_processing_state(eps, filter_method)
-      raise_delivery_file_errors!(mark_delivery_file_errors!(eps, filter_method), filter_method)
-    end
-
-    def mark_delivery_file_errors!(eps, filter_method)
-      state_name = processing_state_name(filter_method)
-
-      problem_pdfs = eps.flat_map(&:podcast_delivery_files).filter(&filter_method)
+    def mark_delivery_file_errors!(eps)
+      problem_pdfs = eps.flat_map(&:podcast_delivery_files).filter(&:processed_validation_failed?)
       apple_episodes_by_feeder_id = eps.index_by(&:feeder_id)
 
       problem_pdfs.each do |pdf|
-        Rails.logger.error("Podcast delivery file has #{state_name} state, marking as not delivered",
+        Rails.logger.error("Podcast delivery file has VALIDATION_FAILED state, marking as not delivered",
           {episode_id: pdf.episode.id,
            podcast_delivery_file_id: pdf.id,
            asset_processing_state: pdf.asset_processing_state,
@@ -334,22 +328,18 @@ module Apple
       problem_pdfs
     end
 
-    def raise_delivery_file_errors!(problem_pdfs, filter_method)
+    def raise_delivery_file_errors!(problem_pdfs)
       return if problem_pdfs.empty?
 
       raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
-        "Found #{processing_state_name(filter_method)} state on #{problem_pdfs.length} podcast delivery files, episodes marked as not delivered"
+        "Found VALIDATION_FAILED state on #{problem_pdfs.length} podcast delivery files, episodes marked as not delivered"
       )
-    end
-
-    def processing_state_name(filter_method)
-      filter_method.to_s.delete_prefix("processed_").delete_suffix("?").upcase
     end
 
     def mark_upload_processing_failures!(eps)
       log_container_audio_mismatches(eps)
 
-      rejected_pdfs = mark_delivery_file_errors!(eps, :processed_validation_failed?)
+      rejected_pdfs = mark_delivery_file_errors!(eps)
 
       missing_audio_eps = filter_episodes_missing_container_audio(eps)
       mark_asset_state_failures_as_not_delivered!(missing_audio_eps)
