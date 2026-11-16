@@ -210,14 +210,14 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       refute sibling_pdf.deleted?
     end
 
-    it "does not prune a missing delivery file that was never marked as uploaded" do
+    it "prunes a missing delivery file that was never marked as uploaded" do
       pruned_pdf.update!(api_marked_as_uploaded: false)
 
       stub_bridge([not_found_row(pruned_pdf)]) do
-        assert_empty Apple::PodcastDeliveryFile.prune_missing_delivery_files(apple_api, [pruned_pdf])
+        assert_equal [pruned_pdf], Apple::PodcastDeliveryFile.prune_missing_delivery_files(apple_api, [pruned_pdf])
       end
 
-      refute pruned_pdf.reload.deleted?
+      assert pruned_pdf.reload.deleted?
     end
 
     it "does not prune when the bridge returns no row for an uploaded file" do
