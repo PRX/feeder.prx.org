@@ -182,6 +182,9 @@ module Apple
 
         wait_for_upload_processing(eps)
 
+        pending_eps = eps.filter do |ep|
+          ep.delivery_status(true).uploaded? && !ep.container_upload_complete? && !ep.delivery_file_errors?
+        end
         error_audio_state_eps = []
 
         # Wait for the audio asset to be processed by Apple
@@ -198,7 +201,16 @@ module Apple
         end
 
         raise_asset_state_failure_retry!(error_audio_state_eps) if error_audio_state_eps.any?
+        raise_pending_container_audio!(pending_eps) if pending_eps.any?
       end
+    end
+
+    def raise_pending_container_audio!(eps)
+      e = Apple::AssetStateTimeoutError.new(eps)
+      Rails.logger.info("Waiting for processed audio in podcast containers", {episode_count: e.episodes.length,
+                                                                              episode_ids: e.episode_ids,
+                                                                              asset_wait_duration: e.asset_wait_duration})
+      raise e
     end
 
     def wait_for_asset_state(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL, &finisher_block)
@@ -382,6 +394,9 @@ module Apple
           Rails.logger.info("Timed out waiting for delivery", {episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
           raise e
         end
+
+        # Files Apple pruned were soft deleted by the delivery wait.
+        pdfs = pdfs.reject(&:deleted?)
 
         (waiting_timed_out, still_waiting_pdfs) = Apple::PodcastDeliveryFile.wait_for_processing(api, pdfs, &stuck_check)
         if waiting_timed_out
@@ -689,7 +704,7 @@ module Apple
     end
 
     def filter_episodes_awaiting_asset_state(eps)
-      eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
+      eps.filter { |e| e.delivery_status(true).uploaded? && e.container_upload_complete? }
     end
 
     def partition_episodes_by_readiness(waiting_eps)

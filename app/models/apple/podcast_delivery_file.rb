@@ -75,11 +75,19 @@ module Apple
 
     def self.get_and_update_api_response(api, pdfs)
       unwrapped = get_podcast_delivery_files(api, pdfs)
-      pdfs.each do |pdf|
-        matched = unwrapped.detect { |r| r["request_metadata"]["podcast_delivery_id"] == pdf.podcast_delivery_id }
-        raise "Missing response for podcast delivery file" unless matched.present?
 
-        pdf.apple_sync_log.api_response = matched
+      pdfs.select do |pdf|
+        matched = unwrapped.detect { |r| r["request_metadata"]["podcast_delivery_id"] == pdf.podcast_delivery_id }
+
+        if matched.present?
+          pdf.apple_sync_log.api_response = matched
+          true
+        else
+          raise "Missing response for podcast delivery file" unless pdf.api_marked_as_uploaded?
+
+          pdf.mark_as_pruned!
+          false
+        end
       end
     end
 
@@ -155,7 +163,7 @@ module Apple
         api_url = api.join_url("podcastDeliveryFiles/#{pdf.apple_id}").to_s
         get_delivery_file_bridge_params(pdf.apple_episode_id, pdf.podcast_delivery_id, pdf.apple_id, api_url)
       end
-      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", bridge_params, batch_size: 1)
+      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", bridge_params, batch_size: 1, ignore_errors: [Apple::Api::NOT_FOUND])
     end
 
     def self.get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
@@ -294,6 +302,16 @@ module Apple
 
     def podcast_delivery_file_id
       id
+    end
+
+    def mark_as_pruned!
+      Rails.logger.warn("Podcast delivery file not found on Apple, treating as pruned",
+        {episode_id: episode_id,
+         podcast_delivery_id: podcast_delivery_id,
+         podcast_delivery_file_id: id,
+         apple_id: apple_id})
+
+      destroy
     end
 
     def mark_uploaded_parameters

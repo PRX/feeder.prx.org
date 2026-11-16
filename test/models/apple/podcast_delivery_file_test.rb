@@ -124,4 +124,109 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       assert_equal pdf.episode, podcast_container.episode
     end
   end
+
+  describe "pruned delivery files" do
+    let(:podcast_container) { create(:apple_podcast_container) }
+    let(:podcast_delivery) {
+      Apple::PodcastDelivery.create!(podcast_container: podcast_container, episode: podcast_container.episode)
+    }
+    let(:other_delivery) {
+      Apple::PodcastDelivery.create!(podcast_container: podcast_container, episode: podcast_container.episode)
+    }
+    let(:apple_api) { build(:apple_api) }
+    let(:pruned_pdf) {
+      create(:apple_podcast_delivery_file, podcast_delivery: podcast_delivery, episode: podcast_container.episode, api_marked_as_uploaded: true)
+    }
+    let(:readable_pdf) {
+      create(:apple_podcast_delivery_file, podcast_delivery: other_delivery, episode: podcast_container.episode, api_marked_as_uploaded: true)
+    }
+
+    def bridge_row(pdf, status:, data:)
+      {
+        request_metadata: {
+          apple_episode_id: "1234",
+          podcast_delivery_id: pdf.podcast_delivery_id,
+          apple_podcast_delivery_file_id: pdf.apple_id
+        },
+        api_url: "https://aardvark.prx.org/podcastDeliveryFiles/#{pdf.apple_id}",
+        api_parameters: {},
+        api_response: {ok: status < 300, err: status >= 300, val: data}
+      }
+    end
+
+    def not_found_row(pdf)
+      bridge_row(pdf, status: 404, data: {data: {status: 404, body: {errors: [{status: "404", code: "NOT_FOUND"}]}}})
+    end
+
+    def readable_row(pdf, **attrs)
+      resp = build(:podcast_delivery_file_api_response, podcast_delivery_id: pdf.podcast_delivery_id, **attrs)
+      bridge_row(pdf, status: 200, data: resp["api_response"]["api_response"]["val"])
+    end
+
+    # Stub the raw bridge HTTP call so Apple::Api#unwrap_bridge_response
+    # handles the ignored 404 rows for real.
+    def stub_bridge(rows, &block)
+      bridge = ->(_resource, _params, **_kwargs) { OpenStruct.new(code: "200", body: rows.to_json) }
+      apple_api.stub(:bridge_remote, bridge, &block)
+    end
+
+    def fast_wait(&block)
+      original = Apple::ApiWaiting.method(:wait_for)
+      fast = ->(records, **_kwargs, &wait_block) { original.call(records, wait_timeout: 0.seconds, wait_interval: 0.seconds, &wait_block) }
+      Apple::ApiWaiting.stub(:wait_for, fast, &block)
+    end
+
+    it "soft deletes an uploaded delivery file that Apple no longer has" do
+      found = nil
+      logs = capture_json_logs do
+        stub_bridge([not_found_row(pruned_pdf), readable_row(readable_pdf, asset_delivery_state: "COMPLETE")]) do
+          found = Apple::PodcastDeliveryFile.get_and_update_api_response(apple_api, [pruned_pdf, readable_pdf])
+        end
+      end
+
+      assert_equal [readable_pdf], found
+      assert pruned_pdf.deleted?
+      refute readable_pdf.deleted?
+      assert readable_pdf.delivery_complete?
+      assert_equal [readable_pdf], podcast_container.podcast_delivery_files.reset.to_a
+
+      log = logs.find { |l| l[:msg] == "Podcast delivery file not found on Apple, treating as pruned" }
+      assert log.present?
+      assert_equal pruned_pdf.id, log[:podcast_delivery_file_id]
+    end
+
+    it "raises for a missing delivery file that was never marked as uploaded" do
+      pruned_pdf.update!(api_marked_as_uploaded: false)
+
+      stub_bridge([not_found_row(pruned_pdf)]) do
+        error = assert_raises(RuntimeError) do
+          Apple::PodcastDeliveryFile.get_and_update_api_response(apple_api, [pruned_pdf])
+        end
+        assert_equal "Missing response for podcast delivery file", error.message
+      end
+
+      refute pruned_pdf.reload.deleted?
+    end
+
+    it "stops waiting for delivery of pruned files" do
+      fast_wait do
+        stub_bridge([not_found_row(pruned_pdf), readable_row(readable_pdf, asset_delivery_state: "COMPLETE")]) do
+          assert_equal [false, []], Apple::PodcastDeliveryFile.wait_for_delivery(apple_api, [pruned_pdf, readable_pdf])
+        end
+      end
+
+      assert pruned_pdf.reload.deleted?
+      refute readable_pdf.reload.deleted?
+    end
+
+    it "stops waiting for processing of pruned files" do
+      fast_wait do
+        stub_bridge([not_found_row(pruned_pdf)]) do
+          assert_equal [false, []], Apple::PodcastDeliveryFile.wait_for_processing(apple_api, [pruned_pdf])
+        end
+      end
+
+      assert pruned_pdf.reload.deleted?
+    end
+  end
 end

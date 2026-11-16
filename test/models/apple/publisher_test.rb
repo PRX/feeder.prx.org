@@ -2222,6 +2222,64 @@ describe Apple::Publisher do
       assert probe_call_count == 2
     end
 
+    describe "container audio gate" do
+      def process_with_ready_asset_state(eps)
+        published = []
+        apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
+          apple_publisher.stub(:verify_publishing_state!, ->(*) {}) do
+            Apple::Episode.stub(:probe_asset_state, ->(_api, batch) { [batch, []] }) do
+              Apple::Episode.stub(:publish, ->(_api, _show, batch) { published.concat(batch) }) do
+                yield
+              end
+            end
+          end
+        end
+        published
+      end
+
+      it "delivers an uploaded episode whose delivery files were pruned" do
+        episode.podcast_delivery_files.each(&:destroy)
+        assert_empty episode.podcast_delivery_files
+        episode.define_singleton_method(:container_upload_complete?) { true }
+        episode.define_singleton_method(:drafting?) { true }
+
+        published = process_with_ready_asset_state([episode]) do
+          apple_publisher.process_delivery!([episode])
+        end
+
+        assert_equal [episode], published
+        assert episode.delivery_status.delivered
+      end
+
+      it "raises for an uploaded episode whose container lacks processed audio" do
+        episode.define_singleton_method(:container_upload_complete?) { false }
+
+        error = nil
+        published = process_with_ready_asset_state([episode]) do
+          error = assert_raises(Apple::AssetStateTimeoutError) do
+            apple_publisher.process_delivery!([episode])
+          end
+        end
+
+        assert_equal [episode.feeder_id], error.episode_ids
+        assert_empty published
+        refute episode.delivery_status.delivered
+        assert episode.delivery_status.uploaded
+      end
+
+      it "leaves episodes with rejected delivery files to the processing error check" do
+        episode.define_singleton_method(:container_upload_complete?) { false }
+        episode.define_singleton_method(:delivery_file_errors?) { true }
+
+        published = process_with_ready_asset_state([episode]) do
+          apple_publisher.process_delivery!([episode])
+        end
+
+        assert_empty published
+        refute episode.delivery_status.delivered
+      end
+    end
+
     it "processes episodes in batches of PUBLISH_CHUNK_LEN" do
       # Create 75 test doubles (3 batches of 25)
       # Use simple doubles instead of expensive full episode instances
@@ -2230,9 +2288,11 @@ describe Apple::Publisher do
         OpenStruct.new(
           feeder_id: i,
           podcast_delivery_files: [pdf],
-          audio_asset_state_success?: true
+          audio_asset_state_success?: true,
+          container_upload_complete?: true,
+          delivery_file_errors?: false
         ).tap do |ep|
-          ep.define_singleton_method(:delivery_status) { |_with_default = false| OpenStruct.new(asset_processing_attempts: 1) }
+          ep.define_singleton_method(:delivery_status) { |_with_default = false| OpenStruct.new(asset_processing_attempts: 1, uploaded?: true) }
         end
       }
 
