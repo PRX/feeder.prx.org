@@ -2332,6 +2332,46 @@ describe Apple::Publisher do
         assert episode.needs_upload?
       end
 
+      it "reuploads when Apple has neither the delivery files nor the container audio" do
+        pdfs = episode.podcast_delivery_files.to_a
+        refute_empty pdfs
+
+        container = episode.podcast_container
+        empty_container = build(:podcast_container_api_response, podcast_container_id: container.apple_id)
+        empty_container["api_response"]["api_response"]["val"]["data"]["attributes"]["files"] = []
+        container.apple_sync_log.update!(**empty_container)
+        refute episode.container_upload_complete?
+
+        not_found_rows = pdfs.map do |pdf|
+          {
+            request_metadata: {podcast_delivery_id: pdf.podcast_delivery_id, apple_podcast_delivery_file_id: pdf.apple_id},
+            api_url: "https://aardvark.prx.org/podcastDeliveryFiles/#{pdf.apple_id}",
+            api_parameters: {},
+            api_response: {ok: false, err: true, val: {data: {status: 404, body: {errors: [{status: "404", code: "NOT_FOUND"}]}}}}
+          }
+        end
+        bridge = ->(_resource, _params, **_kwargs) { OpenStruct.new(code: "200", body: not_found_rows.to_json) }
+
+        error = nil
+        logs = capture_json_logs do
+          apple_publisher.api.stub(:bridge_remote, bridge) do
+            apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
+              error = assert_raises(Apple::RetryPublishingError) do
+                apple_publisher.process_delivery!([episode])
+              end
+            end
+          end
+        end
+
+        assert_empty episode.podcast_delivery_files
+        assert pdfs.all? { |pdf| pdf.reload.deleted? }
+        assert_includes error.message, episode.feeder_id.to_s
+        refute episode.delivery_status.uploaded
+        refute episode.delivery_status.delivered
+        assert episode.needs_upload?
+        assert logs.any? { |l| l[:msg] == "Found pruned delivery files without processed container audio, marking as not delivered" }
+      end
+
       it "prunes missing delivery files before waiting and reuploads without container audio" do
         refute_empty episode.podcast_delivery_files
         episode.define_singleton_method(:container_upload_complete?) { false }
