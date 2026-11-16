@@ -348,7 +348,9 @@ module Apple
     end
 
     def mark_missing_container_audio!(eps)
-      missing_audio_eps = filter_episodes_missing_container_audio(eps)
+      missing_audio_eps = eps.filter do |e|
+        e.delivery_status(true).uploaded? && !e.container_upload_complete? && e.podcast_delivery_files.empty?
+      end
 
       missing_audio_eps.each do |ep|
         Rails.logger.error("Found pruned delivery files without processed container audio, marking as not delivered",
@@ -759,12 +761,6 @@ module Apple
 
     def filter_episodes_awaiting_asset_state(eps)
       eps.filter { |e| e.delivery_status(true).uploaded? }
-    end
-
-    def filter_episodes_missing_container_audio(eps)
-      eps.filter do |e|
-        e.delivery_status(true).uploaded? && !e.container_upload_complete? && e.podcast_delivery_files.empty?
-      end
     end
 
     def partition_episodes_by_readiness(waiting_eps)
