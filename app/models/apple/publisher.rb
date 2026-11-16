@@ -202,13 +202,18 @@ module Apple
 
         raise_asset_state_failure_retry!(error_audio_state_eps) if error_audio_state_eps.any?
         raise_delivery_file_errors!(rejected_pdfs)
-        raise_missing_container_audio_retry!(missing_audio_eps) if missing_audio_eps.any?
+
+        if missing_audio_eps.any?
+          raise Apple::RetryPublishingError.new(
+            "Found pruned delivery files without processed container audio on #{missing_audio_eps.length} episodes #{missing_audio_eps.map(&:feeder_id)}, marked as not delivered"
+          )
+        end
       end
     end
 
     def wait_for_asset_state(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL, &finisher_block)
       Rails.logger.tagged("##{__method__}") do
-        remaining_eps = filter_episodes_awaiting_asset_state(eps)
+        remaining_eps = eps.filter { |e| e.delivery_status(true).uploaded? }
 
         (timed_out, final_waiting) = Apple::ApiWaiting.wait_for(remaining_eps,
           wait_timeout: wait_timeout,
@@ -382,12 +387,6 @@ module Apple
             asset_delivery_states: pdfs.map(&:asset_delivery_state)
           ))
       end
-    end
-
-    def raise_missing_container_audio_retry!(eps)
-      raise Apple::RetryPublishingError.new(
-        "Found pruned delivery files without processed container audio on #{eps.length} episodes #{eps.map(&:feeder_id)}, marked as not delivered"
-      )
     end
 
     def raise_for_asset_state_failure!(failure_eps)
@@ -757,10 +756,6 @@ module Apple
 
         raise error
       end
-    end
-
-    def filter_episodes_awaiting_asset_state(eps)
-      eps.filter { |e| e.delivery_status(true).uploaded? }
     end
 
     def partition_episodes_by_readiness(waiting_eps)
