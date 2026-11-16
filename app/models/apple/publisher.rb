@@ -180,6 +180,7 @@ module Apple
         reset_asset_wait_for_prior_uploads!(eps)
         increment_asset_wait!(eps)
 
+        prune_missing_delivery_files!(eps)
         wait_for_upload_processing(eps)
 
         rejected_pdfs, missing_audio_eps = mark_upload_processing_failures!(eps)
@@ -419,6 +420,19 @@ module Apple
       end
     end
 
+    def prune_missing_delivery_files!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        pruned = Apple::PodcastDeliveryFile.prune_missing_delivery_files(api, eps.flat_map(&:podcast_delivery_files))
+
+        if pruned.any?
+          Rails.logger.info("Pruned #{pruned.length} podcast delivery files missing on Apple",
+            {episode_ids: pruned.map(&:episode_id).uniq, podcast_delivery_file_ids: pruned.map(&:id)})
+        end
+
+        pruned
+      end
+    end
+
     def wait_for_upload_processing(eps)
       Rails.logger.tagged("##{__method__}") do
         pdfs = eps.map(&:podcast_delivery_files).flatten
@@ -438,9 +452,6 @@ module Apple
           Rails.logger.info("Timed out waiting for delivery", {episode_count: e.episodes.length, asset_wait_duration: e.asset_wait_duration})
           raise e
         end
-
-        # Files Apple pruned were soft deleted by the delivery wait.
-        pdfs = pdfs.reject(&:deleted?)
 
         (waiting_timed_out, still_waiting_pdfs) = Apple::PodcastDeliveryFile.wait_for_processing(api, pdfs, &stuck_check)
         if waiting_timed_out

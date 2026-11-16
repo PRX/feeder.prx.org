@@ -177,17 +177,16 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
     end
 
     it "soft deletes an uploaded delivery file that Apple no longer has" do
-      found = nil
+      pruned = nil
       logs = capture_json_logs do
         stub_bridge([not_found_row(pruned_pdf), readable_row(readable_pdf, asset_delivery_state: "COMPLETE")]) do
-          found = Apple::PodcastDeliveryFile.get_and_update_api_response(apple_api, [pruned_pdf, readable_pdf])
+          pruned = Apple::PodcastDeliveryFile.prune_missing_delivery_files(apple_api, [pruned_pdf, readable_pdf])
         end
       end
 
-      assert_equal [readable_pdf], found
+      assert_equal [pruned_pdf], pruned
       assert pruned_pdf.deleted?
       refute readable_pdf.deleted?
-      assert readable_pdf.delivery_complete?
       assert_equal [readable_pdf], podcast_container.podcast_delivery_files.reset.to_a
 
       log = logs.find { |l| l[:msg] == "Podcast delivery file not found on Apple, treating as pruned" }
@@ -195,65 +194,77 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       assert_equal pruned_pdf.id, log[:podcast_delivery_file_id]
     end
 
-    it "does not match a pruned file to a sibling file on the same delivery" do
+    it "does not prune a sibling file on the same delivery" do
       sibling_pdf = create(:apple_podcast_delivery_file, podcast_delivery: podcast_delivery, episode: podcast_container.episode, api_marked_as_uploaded: true)
       sibling_pdf.apple_sync_log.api_response["api_response"]["val"]["data"]["id"] = "sibling-delivery-file-id"
       sibling_pdf.apple_sync_log.save!
       refute_equal pruned_pdf.apple_id, sibling_pdf.apple_id
 
-      found = nil
+      pruned = nil
       stub_bridge([not_found_row(pruned_pdf), readable_row(sibling_pdf, asset_delivery_state: "COMPLETE")]) do
-        found = Apple::PodcastDeliveryFile.get_and_update_api_response(apple_api, [pruned_pdf, sibling_pdf])
+        pruned = Apple::PodcastDeliveryFile.prune_missing_delivery_files(apple_api, [pruned_pdf, sibling_pdf])
       end
 
-      assert_equal [sibling_pdf], found
+      assert_equal [pruned_pdf], pruned
       assert pruned_pdf.deleted?
       refute sibling_pdf.deleted?
     end
 
-    it "raises for a missing delivery file that was never marked as uploaded" do
+    it "does not prune a missing delivery file that was never marked as uploaded" do
       pruned_pdf.update!(api_marked_as_uploaded: false)
 
       stub_bridge([not_found_row(pruned_pdf)]) do
-        assert_raises(Apple::ApiError) do
-          Apple::PodcastDeliveryFile.get_and_update_api_response(apple_api, [pruned_pdf])
-        end
+        assert_empty Apple::PodcastDeliveryFile.prune_missing_delivery_files(apple_api, [pruned_pdf])
       end
 
       refute pruned_pdf.reload.deleted?
     end
 
-    it "raises without deleting when the bridge returns no row for an uploaded file" do
+    it "does not prune when the bridge returns no row for an uploaded file" do
       stub_bridge([readable_row(readable_pdf, asset_delivery_state: "COMPLETE")]) do
-        error = assert_raises(RuntimeError) do
-          Apple::PodcastDeliveryFile.get_and_update_api_response(apple_api, [pruned_pdf, readable_pdf])
-        end
-        assert_equal "Missing response for podcast delivery file", error.message
+        assert_empty Apple::PodcastDeliveryFile.prune_missing_delivery_files(apple_api, [pruned_pdf, readable_pdf])
       end
 
       refute pruned_pdf.reload.deleted?
       refute readable_pdf.reload.deleted?
     end
 
-    it "stops waiting for delivery of pruned files" do
+    it "raises without pruning for errors other than not found" do
+      server_error = bridge_row(pruned_pdf, status: 500, data: {data: {status: 500, body: {errors: [{status: "500"}]}}})
+
+      stub_bridge([server_error]) do
+        assert_raises(Apple::ApiError) do
+          Apple::PodcastDeliveryFile.prune_missing_delivery_files(apple_api, [pruned_pdf])
+        end
+      end
+
+      refute pruned_pdf.reload.deleted?
+    end
+
+    it "raises without deleting when a file goes missing while waiting for delivery" do
       fast_wait do
         stub_bridge([not_found_row(pruned_pdf), readable_row(readable_pdf, asset_delivery_state: "COMPLETE")]) do
-          assert_equal [false, []], Apple::PodcastDeliveryFile.wait_for_delivery(apple_api, [pruned_pdf, readable_pdf])
+          assert_raises(Apple::ApiError) do
+            Apple::PodcastDeliveryFile.wait_for_delivery(apple_api, [pruned_pdf, readable_pdf])
+          end
         end
       end
 
-      assert pruned_pdf.reload.deleted?
+      refute pruned_pdf.reload.deleted?
       refute readable_pdf.reload.deleted?
     end
 
-    it "stops waiting for processing of pruned files" do
+    it "raises without deleting when the bridge returns no row while waiting" do
       fast_wait do
-        stub_bridge([not_found_row(pruned_pdf)]) do
-          assert_equal [false, []], Apple::PodcastDeliveryFile.wait_for_processing(apple_api, [pruned_pdf])
+        stub_bridge([readable_row(readable_pdf, asset_delivery_state: "COMPLETE")]) do
+          error = assert_raises(RuntimeError) do
+            Apple::PodcastDeliveryFile.wait_for_processing(apple_api, [pruned_pdf, readable_pdf])
+          end
+          assert_equal "Missing response for podcast delivery file", error.message
         end
       end
 
-      assert pruned_pdf.reload.deleted?
+      refute pruned_pdf.reload.deleted?
     end
   end
 end
