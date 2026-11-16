@@ -215,13 +215,24 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       pruned_pdf.update!(api_marked_as_uploaded: false)
 
       stub_bridge([not_found_row(pruned_pdf)]) do
-        error = assert_raises(RuntimeError) do
+        assert_raises(Apple::ApiError) do
           Apple::PodcastDeliveryFile.get_and_update_api_response(apple_api, [pruned_pdf])
+        end
+      end
+
+      refute pruned_pdf.reload.deleted?
+    end
+
+    it "raises without deleting when the bridge returns no row for an uploaded file" do
+      stub_bridge([readable_row(readable_pdf, asset_delivery_state: "COMPLETE")]) do
+        error = assert_raises(RuntimeError) do
+          Apple::PodcastDeliveryFile.get_and_update_api_response(apple_api, [pruned_pdf, readable_pdf])
         end
         assert_equal "Missing response for podcast delivery file", error.message
       end
 
       refute pruned_pdf.reload.deleted?
+      refute readable_pdf.reload.deleted?
     end
 
     it "stops waiting for delivery of pruned files" do

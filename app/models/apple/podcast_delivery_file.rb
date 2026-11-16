@@ -74,22 +74,26 @@ module Apple
     end
 
     def self.get_and_update_api_response(api, pdfs)
-      unwrapped = get_podcast_delivery_files(api, pdfs)
+      found, not_found = get_podcast_delivery_files(api, pdfs)
 
-      pdfs.select do |pdf|
-        matched = unwrapped.detect do |r|
+      row_for = ->(rows, pdf) {
+        rows.detect do |r|
           r["request_metadata"]["podcast_delivery_id"] == pdf.podcast_delivery_id &&
             r["request_metadata"]["apple_podcast_delivery_file_id"] == pdf.apple_id
         end
+      }
 
-        if matched.present?
+      pdfs.select do |pdf|
+        if (matched = row_for.call(found, pdf))
           pdf.apple_sync_log.api_response = matched
           true
-        else
-          raise "Missing response for podcast delivery file" unless pdf.api_marked_as_uploaded?
+        elsif (missing = row_for.call(not_found, pdf))
+          api.raise_bridge_api_error([missing]) unless pdf.api_marked_as_uploaded?
 
           pdf.mark_as_pruned!
           false
+        else
+          raise "Missing response for podcast delivery file"
         end
       end
     end
@@ -166,7 +170,12 @@ module Apple
         api_url = api.join_url("podcastDeliveryFiles/#{pdf.apple_id}").to_s
         get_delivery_file_bridge_params(pdf.apple_episode_id, pdf.podcast_delivery_id, pdf.apple_id, api_url)
       end
-      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", bridge_params, batch_size: 1, ignore_errors: [Apple::Api::NOT_FOUND])
+
+      (oks, errs) = api.bridge_remote_and_retry("getPodcastDeliveryFiles", bridge_params, batch_size: 1)
+      not_found, errs = errs.partition { |err| err.dig("api_response", "val", "data", "status").to_i == Apple::Api::NOT_FOUND }
+      api.raise_bridge_api_error(errs) if errs.present?
+
+      [oks, not_found]
     end
 
     def self.get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
