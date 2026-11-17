@@ -1,7 +1,4 @@
 class EpisodeAppleHlsStatusesController < ApplicationController
-  # Coalesces repeat page views and frame reloads into one Apple lookup.
-  POLL_INTERVAL = 1.minute
-
   before_action :set_episode
 
   # GET /episodes/1/apple_hls_status
@@ -29,7 +26,7 @@ class EpisodeAppleHlsStatusesController < ApplicationController
     asset = Apple::HlsAlternateAssetPublisher.asset_for(@episode, feed: feed)
     return unless feed.rss_episode?(@episode)
     return unless asset || @episode.hls_eligible_for_apple?
-    return if asset&.last_checked_at&.after?(POLL_INTERVAL.ago)
+    return if asset&.recently_checked?
 
     Apple::HlsAlternateAssetPublisher.poll!(@episode, show_feed_binding: feed.apple_show_feed_binding)
   rescue => e

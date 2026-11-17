@@ -51,7 +51,7 @@ class EpisodeAppleHlsStatusesControllerTest < ActionDispatch::IntegrationTest
     assert_not_requested :any, /#{api_base}/
 
     stub_filtered("episodes", [{"id" => "ep-1", "attributes" => {"guid" => episode.item_guid, "alternateAssetContentUrl" => "https://dovetail.test/ep1.m3u8"}}])
-    travel_to(EpisodeAppleHlsStatusesController::POLL_INTERVAL.from_now) do
+    travel_to(Apple::HlsAlternateAsset::POLL_INTERVAL.from_now) do
       get episode_apple_hls_status_path(episode)
     end
 

@@ -191,5 +191,27 @@ module Apple
         assert_raises(ArgumentError) { upsert(resource_type: :show) }
       end
     end
+
+    describe "#checked_after?" do
+      it "compares the last check to a time" do
+        asset = build(:apple_hls_alternate_asset, episode: episode, last_checked_at: 1.minute.ago)
+
+        assert asset.checked_after?(2.minutes.ago)
+        refute asset.checked_after?(Time.current)
+      end
+
+      it "is false for a row that was never checked" do
+        refute build(:apple_hls_alternate_asset, episode: episode, last_checked_at: nil).checked_after?(1.day.ago)
+      end
+    end
+
+    describe "#recently_checked?" do
+      it "is true within the poll interval" do
+        asset = build(:apple_hls_alternate_asset, episode: episode, last_checked_at: 30.seconds.ago)
+
+        assert asset.recently_checked?
+        travel_to(HlsAlternateAsset::POLL_INTERVAL.from_now) { refute asset.recently_checked? }
+      end
+    end
   end
 end

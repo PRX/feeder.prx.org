@@ -5,6 +5,8 @@ module Apple
     CONTENT_KIND = "VIDEO"
     MIME_TYPE = "application/vnd.apple.mpegurl"
     RESOURCE_TYPES = %i[staged_alternate_asset episode].freeze
+    # Coalesces repeat page views and frame reloads into one Apple lookup.
+    POLL_INTERVAL = 1.minute
 
     belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
 
@@ -28,7 +30,7 @@ module Apple
 
       key = {apple_show_id: show_feed_binding.apple_show_id, feeder_guid: feeder_guid}
       asset = find_by(key)
-      return asset if unless_checked_after && asset&.last_checked_at&.after?(unless_checked_after)
+      return asset if unless_checked_after && asset&.checked_after?(unless_checked_after)
       return nil if asset.nil? && resource_type.nil? && error.nil?
 
       asset ||= new(key)
@@ -108,5 +110,13 @@ module Apple
       end
     end
     private_class_method :outdated_error
+
+    def checked_after?(time)
+      last_checked_at.present? && last_checked_at.after?(time)
+    end
+
+    def recently_checked?
+      checked_after?(POLL_INTERVAL.ago)
+    end
   end
 end
