@@ -183,7 +183,9 @@ module Apple
         prune_missing_delivery_files!(eps)
         wait_for_upload_processing(eps)
 
-        rejected_pdfs, missing_audio_eps = mark_upload_processing_failures!(eps)
+        log_container_audio_mismatches(eps)
+        rejected_pdfs = mark_delivery_file_errors!(eps)
+        missing_audio_eps = mark_missing_container_audio!(eps)
 
         error_audio_state_eps = []
 
@@ -340,16 +342,6 @@ module Apple
       raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
         "Found VALIDATION_FAILED state on #{problem_pdfs.length} podcast delivery files, episodes marked as not delivered"
       )
-    end
-
-    def mark_upload_processing_failures!(eps)
-      log_container_audio_mismatches(eps)
-
-      rejected_pdfs = mark_delivery_file_errors!(eps)
-
-      missing_audio_eps = mark_missing_container_audio!(eps)
-
-      [rejected_pdfs, missing_audio_eps]
     end
 
     def mark_missing_container_audio!(eps)
