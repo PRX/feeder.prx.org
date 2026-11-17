@@ -499,7 +499,7 @@ module Apple
         assert_equal :failed, status(ep)
       end
 
-      it "is not published for an episode outside the feed's RSS with no row" do
+      it "is not published or not in feed for an episode outside the feed's RSS with no row" do
         hls_config
         assert_equal :not_published, status(video_episode(published_at: nil))
         assert_equal :not_published, status(video_episode(published_at: 1.day.from_now))
@@ -507,7 +507,15 @@ module Apple
         older = video_episode(published_at: 2.days.ago)
         video_episode(published_at: 1.day.ago)
         feed.update!(display_episodes_count: 1)
-        assert_equal :not_published, status(older)
+        assert_equal :not_in_feed, status(older)
+      end
+
+      it "is not in feed for a published episode that is not feed ready" do
+        hls_config
+        ep = video_episode
+        ep.stub(:feed_ready?, false) do
+          assert_equal :not_in_feed, status(ep)
+        end
       end
 
       it "is not published for an unlinked row of an episode no longer in the feed's RSS" do

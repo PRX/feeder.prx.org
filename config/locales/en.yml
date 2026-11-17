@@ -395,6 +395,7 @@ en:
           failed: Failed
           linked: Linked
           not_eligible: Not Eligible
+          not_in_feed: Not in Feed
           not_published: Not Published
           pending: Pending
           processing: Processing

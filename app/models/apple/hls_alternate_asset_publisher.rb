@@ -34,7 +34,7 @@ module Apple
       elsif (in_rss || episode.published?) && episode.hls_processing_for_apple?
         :processing
       elsif !in_rss
-        :not_published
+        episode.published? ? :not_in_feed : :not_published
       elsif episode.hls_eligible_for_apple?
         :pending
       else

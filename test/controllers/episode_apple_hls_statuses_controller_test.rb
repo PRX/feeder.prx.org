@@ -108,11 +108,11 @@ class EpisodeAppleHlsStatusesControllerTest < ActionDispatch::IntegrationTest
     video_episode(published_at: 1.day.ago)
     feed.update!(display_episodes_count: 1)
 
-    [draft, older].each do |ep|
+    {draft => ["not_published", "Not Published"], older => ["not_in_feed", "Not in Feed"]}.each do |ep, (badge, text)|
       get episode_apple_hls_status_path(ep)
 
       assert_response :success
-      assert_select ".prx-badge-not_published", text: "Not Published"
+      assert_select ".prx-badge-#{badge}", text: text
     end
     assert_not_requested :any, /#{api_base}/
   end
