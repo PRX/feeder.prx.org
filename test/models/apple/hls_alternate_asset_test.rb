@@ -192,6 +192,26 @@ module Apple
       end
     end
 
+    describe ".outdated_attributes" do
+      it "returns the expected and actual value of each differing attribute" do
+        response = {"attributes" => alternate_asset_attributes("https://example.com/old.m3u8", mime_type: "audio/mpeg")}
+
+        assert_equal(
+          {
+            alternateAssetContentUrl: {expected: "https://example.com/new.m3u8", actual: "https://example.com/old.m3u8"},
+            alternateAssetMimeType: {expected: HlsAlternateAsset::MIME_TYPE, actual: "audio/mpeg"}
+          },
+          HlsAlternateAsset.outdated_attributes(response, "https://example.com/new.m3u8")
+        )
+      end
+
+      it "is empty when Apple holds the expected attributes" do
+        response = {"attributes" => alternate_asset_attributes("https://example.com/a.m3u8")}
+
+        assert_empty HlsAlternateAsset.outdated_attributes(response, "https://example.com/a.m3u8")
+      end
+    end
+
     describe "#checked_after?" do
       it "compares the last check to a time" do
         asset = build(:apple_hls_alternate_asset, episode: episode, last_checked_at: 1.minute.ago)

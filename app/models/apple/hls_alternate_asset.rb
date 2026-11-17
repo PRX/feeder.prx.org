@@ -100,7 +100,10 @@ module Apple
 
     def self.outdated_attributes(response, url)
       attributes = response&.dig("attributes") || {}
-      apple_attributes(url).reject { |key, value| attributes[key.to_s] == value }.keys
+      apple_attributes(url).filter_map do |key, expected|
+        actual = attributes[key.to_s]
+        [key, {expected: expected, actual: actual}] unless actual == expected
+      end.to_h
     end
 
     def self.outdated_error(response, episode, show_feed_binding)
@@ -112,7 +115,15 @@ module Apple
       outdated = outdated_attributes(response, expected_url)
       return if outdated.empty?
 
-      "Apple has an outdated alternate asset #{outdated.map { |key| ATTRIBUTE_LABELS.fetch(key) }.to_sentence}"
+      Rails.logger.warn("Apple HLS alternate asset outdated", {
+        episode_id: episode.id,
+        feed_id: show_feed_binding.feed.id,
+        apple_show_id: show_feed_binding.apple_show_id,
+        apple_resource_id: response["id"],
+        outdated: outdated
+      })
+
+      "Apple has an outdated alternate asset #{outdated.keys.map { |key| ATTRIBUTE_LABELS.fetch(key) }.to_sentence}"
     end
     private_class_method :outdated_error
 
