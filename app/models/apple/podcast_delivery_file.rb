@@ -84,14 +84,14 @@ module Apple
       end
     end
 
-    def self.prune_missing_delivery_files(api, pdfs)
+    def self.expire_missing_delivery_files(api, pdfs)
       (_oks, errs) = api.bridge_remote_and_retry("getPodcastDeliveryFiles", get_delivery_files_bridge_params(api, pdfs), batch_size: 1)
       not_found, errs = errs.partition { |err| err.dig("api_response", "val", "data", "status").to_i == Apple::Api::NOT_FOUND }
       api.raise_bridge_api_error(errs) if errs.present?
 
       pdfs
         .select { |pdf| not_found.any? { |r| response_row_for?(r, pdf) } }
-        .each(&:mark_as_pruned!)
+        .each(&:mark_as_expired!)
     end
 
     def self.response_row_for?(row, pdf)
@@ -315,8 +315,8 @@ module Apple
       id
     end
 
-    def mark_as_pruned!
-      Rails.logger.warn("Podcast delivery file not found on Apple, treating as pruned",
+    def mark_as_expired!
+      Rails.logger.warn("Podcast delivery file not found on Apple, treating as expired",
         {episode_id: episode_id,
          podcast_delivery_id: podcast_delivery_id,
          podcast_delivery_file_id: id,

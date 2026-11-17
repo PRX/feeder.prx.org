@@ -90,7 +90,7 @@ module Apple
       eps_to_unarchive = eps.select(&:archived?)
       eps_to_redraft = eps.select(&:apple_published?)
 
-      # Both paths reset delivery state after unarchive because Apple may prune archived media assets.
+      # Both paths reset delivery state after unarchive because Apple may expire archived media assets.
       unarchive_draft_candidates!(eps_to_unarchive) if eps_to_unarchive.any?
       redraft_published_draft_candidates!(eps_to_redraft) if eps_to_redraft.any?
     end
@@ -180,7 +180,7 @@ module Apple
         reset_asset_wait_for_prior_uploads!(eps)
         increment_asset_wait!(eps)
 
-        prune_missing_delivery_files!(eps)
+        expire_missing_delivery_files!(eps)
         wait_for_upload_processing(eps)
 
         log_container_audio_mismatches(eps)
@@ -207,7 +207,7 @@ module Apple
 
         if missing_audio_eps.any?
           raise Apple::RetryPublishingError.new(
-            "Found pruned delivery files without processed container audio on #{missing_audio_eps.length} episodes #{missing_audio_eps.map(&:feeder_id)}, marked as not delivered"
+            "Found expired delivery files without processed container audio on #{missing_audio_eps.length} episodes #{missing_audio_eps.map(&:feeder_id)}, marked as not delivered"
           )
         end
       end
@@ -350,7 +350,7 @@ module Apple
       end
 
       missing_audio_eps.each do |ep|
-        Rails.logger.error("Found pruned delivery files without processed container audio, marking as not delivered",
+        Rails.logger.error("Found expired delivery files without processed container audio, marking as not delivered",
           Apple::Episode.apple_episode_log_context(ep))
 
         ep.mark_as_not_delivered!
@@ -413,16 +413,16 @@ module Apple
       end
     end
 
-    def prune_missing_delivery_files!(eps)
+    def expire_missing_delivery_files!(eps)
       Rails.logger.tagged("##{__method__}") do
-        pruned = Apple::PodcastDeliveryFile.prune_missing_delivery_files(api, eps.flat_map(&:podcast_delivery_files))
+        expired = Apple::PodcastDeliveryFile.expire_missing_delivery_files(api, eps.flat_map(&:podcast_delivery_files))
 
-        if pruned.any?
-          Rails.logger.info("Pruned #{pruned.length} podcast delivery files missing on Apple",
-            {episode_ids: pruned.map(&:episode_id).uniq, podcast_delivery_file_ids: pruned.map(&:id)})
+        if expired.any?
+          Rails.logger.info("Expired #{expired.length} podcast delivery files missing on Apple",
+            {episode_ids: expired.map(&:episode_id).uniq, podcast_delivery_file_ids: expired.map(&:id)})
         end
 
-        pruned
+        expired
       end
     end
 
