@@ -15,8 +15,8 @@ module Apple
       new(show_feed_binding: show_feed_binding).publish!(episodes)
     end
 
-    def self.poll!(episode, show_feed_binding:)
-      new(show_feed_binding: show_feed_binding).poll!(episode)
+    def self.poll!(episode, feed:)
+      new(show_feed_binding: feed.apple_show_feed_binding).poll!(episode)
     end
 
     # The producer-facing HLS status for an episode in an Apple-bound feed,
@@ -76,9 +76,15 @@ module Apple
     end
 
     def poll!(episode)
+      return unless show_feed_binding.hls_config.publishable?
+      return unless feed.rss_episode?(episode)
+
+      asset = self.class.asset_for(episode, feed: feed)
+      return unless asset || episode.hls_eligible_for_apple?
+      return if asset&.recently_checked?
+
       started_at = Time.current
       guid = episode_guid(episode, feed)
-      asset = self.class.asset_for(episode, feed: feed)
       episode_json = show.find_apple_episode_json_by_guid_filter(guid) ||
         (show.find_apple_episode_json_by_apple_id(guid) if asset&.apple_episode_id == guid)
 

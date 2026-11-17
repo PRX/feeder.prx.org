@@ -192,50 +192,6 @@ module Apple
       end
     end
 
-    describe ".poll!" do
-      let(:feed) { show_feed_binding.feed }
-      let(:hls_config) { create(:apple_hls_config, show_feed_binding: show_feed_binding) }
-      let(:video) { create(:hls_video_episode, podcast: podcast, feeds: [podcast.default_feed, feed]) }
-
-      def polled(ep = video)
-        calls = []
-        HlsAlternateAssetPublisher.stub(:poll!, ->(*args, **opts) { calls << [args, opts] }) do
-          HlsAlternateAsset.poll!(ep, feed: feed)
-        end
-        calls
-      end
-
-      it "polls an eligible episode in the feed's RSS" do
-        hls_config
-        assert_equal [[[video], {show_feed_binding: show_feed_binding}]], polled
-      end
-
-      it "skips a show Apple has not enabled for video" do
-        hls_config.update!(video_enabled_cache: false)
-        assert_empty polled
-      end
-
-      it "skips an episode outside the feed's RSS" do
-        hls_config
-        video.update!(published_at: nil)
-        assert_empty polled
-      end
-
-      it "skips an ineligible episode with no row" do
-        hls_config
-        assert_empty polled(create(:episode, podcast: podcast, feeds: [podcast.default_feed, feed]))
-      end
-
-      it "skips a recently checked row" do
-        hls_config
-        asset = create(:apple_hls_alternate_asset, episode: video, apple_show_id: "show-1", feeder_guid: video.item_guid, last_checked_at: 30.seconds.ago)
-        assert_empty polled
-
-        asset.update!(last_checked_at: 2.minutes.ago)
-        assert_equal 1, polled.size
-      end
-    end
-
     describe "#checked_after?" do
       it "compares the last check to a time" do
         asset = build(:apple_hls_alternate_asset, episode: episode, last_checked_at: 1.minute.ago)

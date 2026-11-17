@@ -22,7 +22,7 @@ class EpisodeAppleHlsStatusesController < ApplicationController
   # Best-effort refresh from Apple; on failure the mirror row is unchanged
   # and the serialized status renders.
   def poll(feed)
-    Apple::HlsAlternateAsset.poll!(@episode, feed: feed)
+    Apple::HlsAlternateAssetPublisher.poll!(@episode, feed: feed)
   rescue => e
     Rails.logger.error("Apple HLS status poll failed", {episode_id: @episode.id, feed_id: feed.id, error: e})
   end

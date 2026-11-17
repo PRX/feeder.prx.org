@@ -291,8 +291,41 @@ module Apple
         json.merge("relationships" => {"show" => {"data" => {"type" => "shows", "id" => show_id}}})
       end
 
-      def poll
-        HlsAlternateAssetPublisher.poll!(episode, show_feed_binding: show_feed_binding)
+      let(:hls_config) { create(:apple_hls_config, show_feed_binding: show_feed_binding) }
+
+      before do
+        hls_config
+        episode.update!(feeds: [podcast.default_feed, feed])
+      end
+
+      def poll(ep = episode)
+        HlsAlternateAssetPublisher.poll!(ep, feed: feed.reload)
+      end
+
+      it "skips a show Apple has not enabled for video" do
+        hls_config.update!(video_enabled_cache: false)
+
+        assert_nil poll
+        assert_not_requested :any, /#{api_base}/
+      end
+
+      it "skips an episode outside the feed's RSS" do
+        episode.update!(published_at: nil)
+
+        assert_nil poll
+        assert_not_requested :any, /#{api_base}/
+      end
+
+      it "skips an ineligible episode with no row" do
+        assert_nil poll(hls_episode(nil, eligible: false).tap { |ep| ep.update!(feeds: [podcast.default_feed, feed]) })
+        assert_not_requested :any, /#{api_base}/
+      end
+
+      it "skips a recently checked row" do
+        create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: episode.item_guid, last_checked_at: 30.seconds.ago)
+
+        assert_nil poll
+        assert_not_requested :any, /#{api_base}/
       end
 
       it "records a linked episode" do
