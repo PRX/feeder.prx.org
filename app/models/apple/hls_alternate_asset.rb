@@ -15,6 +15,18 @@ module Apple
     validates :apple_show_id, :feeder_guid, :status, presence: true
     validates :feeder_guid, uniqueness: {scope: :apple_show_id}
 
+    def self.poll!(episode, feed:)
+      show_feed_binding = feed.apple_show_feed_binding
+      return unless show_feed_binding.hls_config.publishable?
+      return unless feed.rss_episode?(episode)
+
+      asset = Apple::HlsAlternateAssetPublisher.asset_for(episode, feed: feed)
+      return unless asset || episode.hls_eligible_for_apple?
+      return if asset&.recently_checked?
+
+      Apple::HlsAlternateAssetPublisher.poll!(episode, show_feed_binding: show_feed_binding)
+    end
+
     # Records the status of remote Apple resource state.
     # Takes in the JSON of the Apple resource that currently holds the
     # alternate-asset fields:
