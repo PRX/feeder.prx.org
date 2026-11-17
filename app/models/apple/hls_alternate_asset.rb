@@ -45,25 +45,23 @@ module Apple
         if resource_type == :episode
           asset.apple_episode_id = response&.dig("id") || asset.apple_episode_id
           asset.content_url = content_url
+          if content_url
+            asset.status = :linked
+            asset.last_error = nil
+          else
+            asset.status = :error
+            asset.last_error = "Apple reports the episode without an alternate asset"
+          end
         else
           asset.staged_alternate_asset_id = response&.dig("id") || asset.staged_alternate_asset_id
           asset.content_url = content_url || asset.content_url
+          asset.status = :staged
+          asset.last_error = nil
         end
 
         if (outdated = outdated_error(response, episode, show_feed_binding))
           asset.status = :error
           asset.last_error = outdated
-        elsif resource_type == :staged_alternate_asset
-          asset.status = :staged
-          asset.last_error = nil
-        elsif content_url
-          # Apple can hold the episode without its video (crawled before
-          # staging, or the staged asset expired), so only a content URL links.
-          asset.status = :linked
-          asset.last_error = nil
-        else
-          asset.status = :error
-          asset.last_error = "Apple reports the episode without an alternate asset"
         end
       # We have no remote apple episode or alternate asset, but we have local state
       elsif asset.staged? || asset.expired?
