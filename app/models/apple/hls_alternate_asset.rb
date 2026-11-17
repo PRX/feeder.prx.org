@@ -5,6 +5,11 @@ module Apple
     CONTENT_KIND = "VIDEO"
     MIME_TYPE = "application/vnd.apple.mpegurl"
     RESOURCE_TYPES = %i[staged_alternate_asset episode].freeze
+    ATTRIBUTE_LABELS = {
+      alternateAssetContentUrl: "URL",
+      alternateAssetContentKind: "content kind",
+      alternateAssetMimeType: "MIME type"
+    }.freeze
     # Coalesces repeat page views and frame reloads into one Apple lookup.
     POLL_INTERVAL = 1.minute
 
@@ -90,22 +95,24 @@ module Apple
     # Whether an Apple episode or staged asset JSON holds the expected URL,
     # content kind, and MIME type.
     def self.current_on_apple?(response, url)
+      outdated_attributes(response, url).empty?
+    end
+
+    def self.outdated_attributes(response, url)
       attributes = response&.dig("attributes") || {}
-      apple_attributes(url).all? { |key, value| attributes[key.to_s] == value }
+      apple_attributes(url).reject { |key, value| attributes[key.to_s] == value }.keys
     end
 
     def self.outdated_error(response, episode, show_feed_binding)
-      content_url = response&.dig("attributes", "alternateAssetContentUrl")
-      return if content_url.blank?
+      return if response&.dig("attributes", "alternateAssetContentUrl").blank?
 
       expected_url = episode.apple_hls_master_url(feed: show_feed_binding.feed)
-      return if expected_url.blank? || current_on_apple?(response, expected_url)
+      return if expected_url.blank?
 
-      if content_url == expected_url
-        "Apple has an outdated alternate asset content kind or MIME type"
-      else
-        "Apple has an outdated alternate asset URL"
-      end
+      outdated = outdated_attributes(response, expected_url)
+      return if outdated.empty?
+
+      "Apple has an outdated alternate asset #{outdated.map { |key| ATTRIBUTE_LABELS.fetch(key) }.to_sentence}"
     end
     private_class_method :outdated_error
 
