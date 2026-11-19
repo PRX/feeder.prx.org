@@ -18,6 +18,20 @@ describe Api::EpisodeRepresenter do
     assert_equal json["itunesBlock"], false
   end
 
+  it "includes locations" do
+    episode = create(:episode)
+    create(:location, owner: episode, name: "Hogwarts", rel: "subject", latitude: nil, longitude: nil, osm: nil, country: nil)
+    json = JSON.parse(Api::EpisodeRepresenter.new(episode.reload).to_json)
+
+    assert_equal [{"name" => "Hogwarts", "rel" => "subject"}], json["locations"]
+  end
+
+  it "does not update locations" do
+    episode = create(:episode)
+    Api::EpisodeRepresenter.new(episode).from_json({locations: [{name: "Hogwarts", rel: "subject"}]}.to_json)
+    assert_empty episode.locations
+  end
+
   it "is feed ready with no media" do
     refute episode.media?
     assert_equal json["isFeedReady"], true

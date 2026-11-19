@@ -61,12 +61,16 @@
 		<!-- podcasting 2.0 tags for testing -->
 		<podcast:guid>notarealguid-ohno-itsnot</podcast:guid>
 		<podcast:funding>https://www.prx.org/support/transistor</podcast:funding>
+		<podcast:location rel="creator" geo="geo:30.2711286,-97.7436995" osm="R113314" country="us">Austin, TX</podcast:location>
+		<podcast:location rel="elsewhere" geo="somewhere" osm="relation/123" country="USA">Hogwarts</podcast:location>
+		<podcast:location rel="subject"> </podcast:location>
 
 		<item>
 			<title>Sidedoor from the Smithsonian: Shake it Up</title>
 			<link>http://feeds.prx.org/~r/transistor_stem/~3/NHnLCsjtdQM/</link>
 			<pubDate>Fri, 20 Jan 2017 03:04:12 +0000</pubDate>
 			<guid isPermaLink="false">https://transistor.prx.org/?p=1286</guid>
+			<podcast:location rel="subject" geo="geo:38.8881,-77.026" country="US">Smithsonian Institution</podcast:location>
 			<comments>https://transistor.prx.org/2017/01/sidedoor-from-the-smithsonian-shake-it-up/#respond</comments>
 			<wfw:commentRss>https://transistor.prx.org/2017/01/sidedoor-from-the-smithsonian-shake-it-up/feed/</wfw:commentRss>
 			<slash:comments>0</slash:comments>

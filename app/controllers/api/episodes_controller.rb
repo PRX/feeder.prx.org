@@ -16,6 +16,7 @@ class Api::EpisodesController < Api::BaseController
       relation.includes(
         :contents,
         :images,
+        :locations,
         :uncut,
         latest_media_version: %i[media_resources],
         podcast: {default_feed: %i[feed_images itunes_images]}

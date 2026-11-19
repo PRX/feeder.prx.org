@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_16_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_11_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "uuid-ossp"
@@ -298,6 +298,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_16_000001) do
     t.integer "width"
     t.index ["feed_id"], name: "index_itunes_images_on_feed_id"
     t.index ["guid"], name: "index_itunes_images_on_guid", unique: true
+  end
+
+  create_table "locations", force: :cascade do |t|
+    t.string "country"
+    t.datetime "created_at", null: false
+    t.decimal "latitude", precision: 10, scale: 7
+    t.decimal "longitude", precision: 10, scale: 7
+    t.string "name"
+    t.string "osm"
+    t.bigint "owner_id"
+    t.string "owner_type"
+    t.string "rel"
+    t.datetime "updated_at", null: false
+    t.index ["owner_type", "owner_id"], name: "index_locations_on_owner"
   end
 
   create_table "media_resources", id: :serial, force: :cascade do |t|

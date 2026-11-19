@@ -250,6 +250,9 @@ class PodcastRssImport < PodcastImport
 
     self.podcast ||= Podcast.new
     podcast.assign_attributes(**build_podcast_attributes)
+
+    import_locations(podcast, channel[:podcast_locations])
+
     if podcast.invalid?
       podcast.restore_attributes(podcast.errors.attribute_names)
     end

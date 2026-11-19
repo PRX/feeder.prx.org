@@ -117,6 +117,10 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
       xml.podcast :person, p.name, {role: p.role, organization: p.organization, href: p.href}.compact_blank
     end
 
+    @podcast.locations.each do |l|
+      xml.podcast :location, l.name, {rel: l.rel, geo: l.geo, osm: l.osm, country: l.country}.compact_blank
+    end
+
     xml.podcast :podping, usesPodping: "true" if podping_enabled?(@feed)
 
     xml.podcast :locked, @feed.import_locked ? "yes" : "no"
@@ -196,6 +200,10 @@ xml.rss "xmlns:atom" => "http://www.w3.org/2005/Atom",
 
           ep.persons.each do |p|
             xml.podcast :person, p.name, {role: p.role, organization: p.organization, href: p.href}.compact_blank
+          end
+
+          ep.locations.each do |l|
+            xml.podcast :location, l.name, {rel: l.rel, geo: l.geo, osm: l.osm, country: l.country}.compact_blank
           end
         end
       end

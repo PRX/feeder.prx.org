@@ -55,6 +55,7 @@ Rails.application.routes.draw do
   end
 
   resource :podcast_switcher, only: [:show, :create], controller: :podcast_switcher
+  resource :location_search, only: :show
   get "/uploads/signature", to: "uploads#signature", as: :uploads_signature
 
   namespace :api do

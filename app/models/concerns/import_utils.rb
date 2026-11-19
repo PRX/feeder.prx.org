@@ -86,6 +86,29 @@ module ImportUtils
     {name: name, email: email}.with_indifferent_access
   end
 
+  # replace locations, dropping any attributes that would make them invalid
+  def import_locations(owner, locations)
+    owner.locations.each(&:mark_for_destruction)
+
+    Array(locations).each do |loc|
+      loc = loc.as_json.with_indifferent_access
+      name = clean_string(loc[:name])&.first(128)
+      next if name.blank?
+
+      rel = clean_string(loc[:rel])&.downcase
+      rel = "subject" unless Location.rels.key?(rel)
+      geo = clean_string(loc[:geo])
+      osm = clean_string(loc[:osm])
+      country = clean_string(loc[:country])
+      location = Location.new(name: name, rel: rel, geo: geo, osm: osm, country: country)
+      location.valid?
+      location.geo = nil if %i[latitude longitude].any? { |a| location.errors.include?(a) }
+      %i[osm country].each { |a| location[a] = nil if location.errors.include?(a) }
+
+      owner.locations.build(location.attributes.slice("name", "rel", "latitude", "longitude", "osm", "country"))
+    end
+  end
+
   def clean_string(str)
     return nil if str.blank?
     return str if !str.is_a?(String)

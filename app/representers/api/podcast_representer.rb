@@ -49,6 +49,7 @@ class Api::PodcastRepresenter < Api::BaseRepresenter
   collection :restrictions
 
   collection :itunes_categories, decorator: Api::ITunesCategoryRepresenter, class: ITunesCategory
+  collection :locations, decorator: Api::LocationRepresenter, class: Location, writeable: false
   property :itunes_image, decorator: Api::ImageRepresenter, class: ITunesImage
   property :feed_image, decorator: Api::ImageRepresenter, class: FeedImage
 
