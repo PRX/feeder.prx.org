@@ -358,6 +358,8 @@ class FeedsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     assert_select ".alert-danger", text: "must be selected to publish to this feed's own Apple show"
     assert_select "select[name='feed[apple_settings][delivery]'] option[selected][value='own']"
+    frame_src = css_select("turbo-frame#apple_connection_feed_#{private_feed.id}").first["src"]
+    assert_includes CGI.unescape(frame_src), "errors[]=must be selected to publish to this feed's own Apple show"
   end
 
   test "explains when another feed already delivers through a public feed's own show" do

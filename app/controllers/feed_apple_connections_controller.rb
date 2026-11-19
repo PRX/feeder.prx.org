@@ -8,6 +8,7 @@ class FeedAppleConnectionsController < ApplicationController
     # Keep the form's unsaved selection while the options load.
     selection = params.slice(:selection).permit(:selection)
     @apple_settings = Apple::FeedSettings.new(@feed, selection.key?(:selection) ? {connection: selection[:selection]} : {})
+    params.permit(errors: []).fetch(:errors, []).each { |message| @apple_settings.errors.add(:connection, message) }
     @apple_shows = Apple::ShowFeedBinding.connectable_shows(@podcast.apple_key, feed: @feed) do
       @apple_show_lookup_failed = true
     end

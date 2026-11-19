@@ -1,4 +1,6 @@
+<%# pass the failed save's connection errors so the loaded field keeps them %>
+<% frame_params = {selection: settings.connection.to_s, errors: settings.errors[:connection].presence} %>
 <%= turbo_frame_tag dom_id(feed, :apple_connection),
-      src: podcast_feed_apple_connection_path(podcast, feed, selection: settings.connection.to_s), loading: "lazy" do %>
+      src: podcast_feed_apple_connection_path(podcast, feed, frame_params), loading: "lazy" do %>
   <%= render "apple_connection_field", feed: feed, settings: settings, apple: apple, shows: [], loading: true, lookup_failed: false %>
 <% end %>
