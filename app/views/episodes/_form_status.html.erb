@@ -40,14 +40,18 @@
         <% name = integration.to_s.titleize %>
         <% statuses = episode_integration_statuses(episode, integration) %>
         <% if statuses.empty? %>
-          <%= render "integration_status", label: name, status: episode_integration_placeholder_status(episode) %>
+          <%= render "integration_status", label: name, status: episode_integration_placeholder_status(episode), status_type: "media_statuses" %>
         <% else %>
           <% statuses.each do |feed, status| %>
             <% label = episode_integration_label(name, feed) %>
-            <%= render "integration_status", label: label, feed: feed, status: status, updated_at: episode_integration_updated_at(episode, integration, feed) %>
+            <%= render "integration_status", label: label, feed: feed, status: status, status_type: "media_statuses", updated_at: episode_integration_updated_at(episode, integration, feed) %>
           <% end %>
         <% end %>
       <% end %>
+    <% end %>
+
+    <% if episode.persisted? && (hls_feeds = episode_apple_hls_feeds(episode)).any? %>
+      <%= render "apple_hls_statuses", episode: episode, feeds: hls_feeds, poll: true %>
     <% end %>
   </div>
 

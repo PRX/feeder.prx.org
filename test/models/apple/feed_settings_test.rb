@@ -71,6 +71,17 @@ describe Apple::FeedSettings do
       assert_equal "show-2", public_feed.reload.apple_show_feed_binding.apple_show_id
     end
 
+    it "skips HLS video when the delivery disconnects the feed's show" do
+      public_feed = create(:public_feed, podcast: podcast)
+      own = create(:apple_show_feed_binding, feed: public_feed, apple_show_id: "show-2")
+      create(:delegated_delivery_config, feed: public_feed, show_feed_binding: own)
+
+      assert public_feed.update(apple_settings: {delivery: "", hls_enabled: "1"})
+
+      assert_nil public_feed.reload.apple_show_feed_binding
+      assert_equal 0, Apple::HlsConfig.count
+    end
+
     it "saves ordinary metadata without verifying the unchanged Apple connection" do
       public_feed = binding.feed
       public_feed.title = "Changed"

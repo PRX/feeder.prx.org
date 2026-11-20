@@ -1,0 +1,237 @@
+require "test_helper"
+
+module Apple
+  describe HlsAlternateAsset do
+    let(:podcast) { create(:podcast) }
+    let(:episode) { create(:episode, podcast: podcast) }
+    let(:show_feed_binding) { create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast), apple_show_id: "show-1") }
+    let(:guid) { "guid-1" }
+    let(:staged_json) { {"id" => "staged-1", "attributes" => alternate_asset_attributes("https://example.com/a.m3u8")} }
+
+    def alternate_asset_attributes(url, kind: HlsAlternateAsset::CONTENT_KIND, mime_type: HlsAlternateAsset::MIME_TYPE)
+      {"alternateAssetContentUrl" => url, "alternateAssetContentKind" => kind, "alternateAssetMimeType" => mime_type}
+    end
+
+    def upsert(**opts)
+      HlsAlternateAsset.upsert_from_apple!(episode: episode, show_feed_binding: show_feed_binding, feeder_guid: guid, **opts)
+    end
+
+    it "enforces one row per show and GUID" do
+      create(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: guid)
+      dup = build(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-1", feeder_guid: guid)
+
+      refute dup.valid?
+      assert build(:apple_hls_alternate_asset, episode: episode, apple_show_id: "show-2", feeder_guid: guid).valid?
+    end
+
+    describe ".upsert_from_apple!" do
+      it "records a staged asset" do
+        asset = upsert(resource_type: :staged_alternate_asset, response: staged_json)
+
+        assert asset.staged?
+        assert_equal "staged-1", asset.staged_alternate_asset_id
+        assert_equal "https://example.com/a.m3u8", asset.content_url
+        assert_equal ["show-1", guid], [asset.apple_show_id, asset.feeder_guid]
+        assert_equal episode, asset.episode
+        assert asset.last_checked_at.present?
+      end
+
+      it "updates the same row when the asset links to an Apple episode" do
+        staged = upsert(resource_type: :staged_alternate_asset, response: staged_json)
+        episode_json = {"id" => "ep-1", "attributes" => {"alternateAssetContentUrl" => "https://example.com/b.m3u8"}}
+
+        linked = upsert(resource_type: :episode, response: episode_json)
+
+        assert_equal staged.id, linked.id
+        assert linked.linked?
+        assert_equal "ep-1", linked.apple_episode_id
+        assert_equal "https://example.com/b.m3u8", linked.content_url
+        assert_equal 1, HlsAlternateAsset.count
+      end
+
+      it "marks an Apple episode without an alternate asset as an error" do
+        upsert(resource_type: :staged_alternate_asset, response: staged_json)
+
+        asset = upsert(resource_type: :episode, response: {"id" => "ep-1", "attributes" => {"alternateAssetContentUrl" => nil}})
+
+        assert asset.error?
+        assert_equal "ep-1", asset.apple_episode_id
+        assert_nil asset.content_url
+        assert_match(/without an alternate asset/, asset.last_error)
+      end
+
+      it "marks an Apple episode with an outdated URL as an error" do
+        episode.define_singleton_method(:apple_hls_master_url) { |feed:| "https://example.com/new.m3u8" }
+
+        asset = upsert(resource_type: :episode, response: {"id" => "ep-1", "attributes" => {"alternateAssetContentUrl" => "https://example.com/b.m3u8"}})
+
+        assert asset.error?
+        assert_equal "ep-1", asset.apple_episode_id
+        assert_equal "https://example.com/b.m3u8", asset.content_url
+        assert_match(/outdated/, asset.last_error)
+      end
+
+      it "marks a staged asset with an outdated URL as an error" do
+        episode.define_singleton_method(:apple_hls_master_url) { |feed:| "https://example.com/new.m3u8" }
+
+        asset = upsert(resource_type: :staged_alternate_asset, response: staged_json)
+
+        assert asset.error?
+        assert_equal "staged-1", asset.staged_alternate_asset_id
+        assert_equal "https://example.com/a.m3u8", asset.content_url
+        assert_match(/outdated/, asset.last_error)
+      end
+
+      it "records a staged asset whose URL matches the episode" do
+        episode.define_singleton_method(:apple_hls_master_url) { |feed:| "https://example.com/a.m3u8" }
+
+        assert upsert(resource_type: :staged_alternate_asset, response: staged_json).staged?
+      end
+
+      it "records an Apple episode whose alternate asset matches" do
+        episode.define_singleton_method(:apple_hls_master_url) { |feed:| "https://example.com/b.m3u8" }
+
+        asset = upsert(resource_type: :episode, response: {"id" => "ep-1", "attributes" => alternate_asset_attributes("https://example.com/b.m3u8")})
+
+        assert asset.linked?
+        assert_nil asset.last_error
+      end
+
+      it "marks an Apple episode with a matching URL but wrong MIME type as an error" do
+        episode.define_singleton_method(:apple_hls_master_url) { |feed:| "https://example.com/b.m3u8" }
+        upsert(resource_type: :episode, response: {"id" => "ep-1", "attributes" => alternate_asset_attributes("https://example.com/b.m3u8")})
+
+        attributes = alternate_asset_attributes("https://example.com/b.m3u8", mime_type: "audio/mpeg")
+        asset = upsert(resource_type: :episode, response: {"id" => "ep-1", "attributes" => attributes})
+
+        assert asset.error?
+        assert_equal "https://example.com/b.m3u8", asset.content_url
+        assert_equal "Apple has an outdated alternate asset MIME type", asset.last_error
+      end
+
+      it "marks a staged asset with a matching URL but wrong content kind as an error" do
+        episode.define_singleton_method(:apple_hls_master_url) { |feed:| "https://example.com/a.m3u8" }
+        staged_json["attributes"]["alternateAssetContentKind"] = "AUDIO"
+
+        asset = upsert(resource_type: :staged_alternate_asset, response: staged_json)
+
+        assert asset.error?
+        assert_equal "staged-1", asset.staged_alternate_asset_id
+        assert_equal "Apple has an outdated alternate asset content kind", asset.last_error
+      end
+
+      it "returns nil when Apple has neither resource and there is no prior row" do
+        assert_nil upsert(resource_type: nil)
+        assert_equal 0, HlsAlternateAsset.count
+      end
+
+      it "marks a vanished staged asset expired" do
+        upsert(resource_type: :staged_alternate_asset, response: staged_json)
+
+        asset = upsert(resource_type: nil)
+
+        assert asset.expired?
+        assert_equal "staged-1", asset.staged_alternate_asset_id
+        assert_equal 1, HlsAlternateAsset.count
+      end
+
+      it "marks a vanished linked episode as an error" do
+        upsert(resource_type: :episode, response: {"id" => "ep-1", "attributes" => {"alternateAssetContentUrl" => "https://example.com/b.m3u8"}})
+
+        asset = upsert(resource_type: nil)
+
+        assert asset.error?
+        assert_equal "ep-1", asset.apple_episode_id
+        assert_match(/no longer reports/, asset.last_error)
+      end
+
+      it "replaces a prior error when Apple has neither resource" do
+        upsert(error: StandardError.new("boom"))
+
+        asset = upsert(resource_type: nil)
+
+        assert asset.error?
+        assert_equal "Apple reports neither the episode nor a staged alternate asset", asset.last_error
+        assert_equal 1, HlsAlternateAsset.count
+      end
+
+      it "records Apple errors and clears them on success" do
+        upsert(resource_type: :staged_alternate_asset, response: staged_json)
+
+        failed = upsert(error: StandardError.new("boom"))
+        assert failed.error?
+        assert_equal "boom", failed.last_error
+        assert_equal "staged-1", failed.staged_alternate_asset_id
+
+        recovered = upsert(resource_type: :staged_alternate_asset, response: staged_json)
+        assert recovered.staged?
+        assert_nil recovered.last_error
+      end
+
+      it "skips a poll's write when the row was checked after the poll started" do
+        polled_at = 1.minute.ago
+        upsert(resource_type: :episode, response: {"id" => "ep-1", "attributes" => {"alternateAssetContentUrl" => "https://example.com/b.m3u8"}})
+
+        asset = upsert(resource_type: nil, unless_checked_after: polled_at)
+
+        assert asset.linked?
+        assert asset.reload.linked?
+        assert_nil asset.last_error
+      end
+
+      it "writes a poll's result when the row was checked before the poll started" do
+        upsert(resource_type: :staged_alternate_asset, response: staged_json)
+
+        asset = travel_to(1.minute.from_now) { upsert(resource_type: nil, unless_checked_after: Time.current) }
+
+        assert asset.reload.expired?
+      end
+
+      it "rejects unknown resource types" do
+        assert_raises(ArgumentError) { upsert(resource_type: :show) }
+      end
+    end
+
+    describe ".outdated_attributes" do
+      it "returns the expected and actual value of each differing attribute" do
+        response = {"attributes" => alternate_asset_attributes("https://example.com/old.m3u8", mime_type: "audio/mpeg")}
+
+        assert_equal(
+          {
+            alternateAssetContentUrl: {expected: "https://example.com/new.m3u8", actual: "https://example.com/old.m3u8"},
+            alternateAssetMimeType: {expected: HlsAlternateAsset::MIME_TYPE, actual: "audio/mpeg"}
+          },
+          HlsAlternateAsset.outdated_attributes(response, "https://example.com/new.m3u8")
+        )
+      end
+
+      it "is empty when Apple holds the expected attributes" do
+        response = {"attributes" => alternate_asset_attributes("https://example.com/a.m3u8")}
+
+        assert_empty HlsAlternateAsset.outdated_attributes(response, "https://example.com/a.m3u8")
+      end
+    end
+
+    describe "#checked_after?" do
+      it "compares the last check to a time" do
+        asset = build(:apple_hls_alternate_asset, episode: episode, last_checked_at: 1.minute.ago)
+
+        assert asset.checked_after?(2.minutes.ago)
+        refute asset.checked_after?(Time.current)
+      end
+
+      it "is false for a row that was never checked" do
+        refute build(:apple_hls_alternate_asset, episode: episode, last_checked_at: nil).checked_after?(1.day.ago)
+      end
+    end
+
+    describe "#recently_checked?" do
+      it "is true within the poll interval" do
+        asset = build(:apple_hls_alternate_asset, episode: episode, last_checked_at: 30.seconds.ago)
+
+        assert asset.recently_checked?
+        travel_to(HlsAlternateAsset::POLL_INTERVAL.from_now) { refute asset.recently_checked? }
+      end
+    end
+  end
+end
