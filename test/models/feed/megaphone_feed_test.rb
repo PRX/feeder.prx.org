@@ -28,4 +28,23 @@ describe Feeds::MegaphoneFeed do
     refute status.delivered?
     refute status.uploaded?
   end
+
+  it "builds the Megaphone publisher with the heartbeat" do
+    publisher = Minitest::Mock.new
+    publisher.expect(:publish!, :published)
+    heartbeat_lambda = -> {}
+    build = ->(feed, heartbeat:) {
+      assert_equal megaphone_feed, feed
+      assert_same heartbeat_lambda, heartbeat
+      publisher
+    }
+
+    megaphone_feed.stub(:publish_integration?, true) do
+      Megaphone::Publisher.stub(:new, build) do
+        assert_equal :published, megaphone_feed.publish_integration!(:megaphone, heartbeat: heartbeat_lambda)
+      end
+    end
+
+    publisher.verify
+  end
 end

@@ -63,8 +63,8 @@ module FeedApple
     integration == :apple && publish_to_apple?
   end
 
-  def publish_integration!(integration)
-    delegated_delivery_config.build_publisher.publish! if publish_integration?(integration)
+  def publish_integration!(integration, heartbeat:)
+    delegated_delivery_config.build_publisher(heartbeat: heartbeat).publish! if publish_integration?(integration)
   end
 
   # Whether an episode is eligible for this feed's Apple delivery.

@@ -124,4 +124,30 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       assert_equal pdf.episode, podcast_container.episode
     end
   end
+  describe "waiting" do
+    # Done once polled the given number of times; save! is a no-op
+    def fake_pdf(polls_until_done)
+      pdf = OpenStruct.new(polls: 0, podcast_delivery: OpenStruct.new(completed?: false), asset_processing_state: "x")
+      pdf.define_singleton_method(:delivered?) { polls >= polls_until_done }
+      pdf.define_singleton_method(:processed?) { polls >= polls_until_done }
+      pdf.define_singleton_method(:save!) { true }
+      pdf
+    end
+
+    [:wait_for_delivery, :wait_for_processing].each do |wait|
+      it "calls the callback on every #{wait} tick" do
+        pdf = fake_pdf(2)
+        poll = ->(_api, pdfs) { pdfs.each { |p| p.polls += 1 } }
+        seen = []
+
+        Apple::ApiWaiting.stub(:sleep, nil) do
+          Apple::PodcastDeliveryFile.stub(:get_and_update_api_response, poll) do
+            Apple::PodcastDeliveryFile.send(wait, nil, [pdf]) { |still_waiting| seen << still_waiting }
+          end
+        end
+
+        assert_equal [[pdf], []], seen
+      end
+    end
+  end
 end

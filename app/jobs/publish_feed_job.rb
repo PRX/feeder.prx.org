@@ -19,50 +19,58 @@ class PublishFeedJob < ApplicationJob
     return :null if null_publishing_item?(podcast, pub_item)
     return :mismatched if mismatched_publishing_item?(podcast, pub_item)
 
-    Rails.logger.info("Starting publishing pipeline via PublishFeedJob", {podcast_id: podcast.id, publishing_queue_item_id: pub_item.id})
-
-    PublishingPipelineState.start!(podcast)
-
-    # Publish each integration for each feed (e.g. apple, megaphone)
-    podcast.feeds.each do |feed|
-      feed.integration_types.each { |integration| publish_integration(podcast, feed, integration) }
-    end
-
-    # After integrations, publish RSS, if appropriate
-    podcast.feeds.each { |feed| publish_rss(podcast, feed) }
-
-    PublishingPipelineState.complete!(podcast)
-  # Top-level error handling, capping the entire pipeline's error status
-  # Intermediate errors are handled by publish_integration and publish_rss
-  rescue Apple::RetryPublishingError
-    # Terminal state: retry
-    PublishingPipelineState.retry!(podcast)
-  rescue => e
-    # Terminal state: error
-    PublishingPipelineState.error!(podcast)
-    Rails.logger.error(e.message, {podcast_id: podcast.id})
-    raise e
+    publish_pipeline(podcast, pub_item)
+  rescue PublishingPipelineState::LostOwnershipError => e
+    # Covers error!/retry! in publish_pipeline too; stop without writing state
+    Rails.logger.warn("Aborting PublishFeedJob, lost pipeline ownership", {podcast_id: podcast.id, publishing_queue_item_id: pub_item.id, error: e.message, cause: e.cause&.message})
   ensure
     PublishingPipelineState.settle_remaining!(podcast)
   end
 
-  def publish_integration(podcast, feed, integration)
+  def publish_pipeline(podcast, pub_item)
+    Rails.logger.info("Starting publishing pipeline via PublishFeedJob", {podcast_id: podcast.id, publishing_queue_item_id: pub_item.id})
+
+    PublishingPipelineState.start!(pub_item)
+
+    # Publish each integration for each feed (e.g. apple, megaphone)
+    podcast.feeds.each do |feed|
+      feed.integration_types.each { |integration| publish_integration(podcast, pub_item, feed, integration) }
+    end
+
+    # After integrations, publish RSS, if appropriate
+    podcast.feeds.each { |feed| publish_rss(podcast, pub_item, feed) }
+
+    PublishingPipelineState.complete!(pub_item)
+  # Top-level error handling, capping the entire pipeline's error status
+  # Intermediate errors are handled by publish_integration and publish_rss
+  rescue Apple::RetryPublishingError
+    # Terminal state: retry
+    PublishingPipelineState.retry!(pub_item)
+  rescue => e
+    # Terminal state: error. Log first, the error! write can lose ownership.
+    Rails.logger.error(e.message, {podcast_id: podcast.id})
+    PublishingPipelineState.error!(pub_item)
+    raise e
+  end
+
+  def publish_integration(podcast, pub_item, feed, integration)
     return unless feed.publish_integration?(integration)
 
     config = feed.integration_config(integration)
     context = {feed_id: feed.id, integration: integration}
     tags = ["integration:#{integration}", "feed:#{feed.id}"]
+    heartbeat = -> { PublishingPipelineState.heartbeat!(pub_item) }
 
     Rails.logger.tagged(*tags) do
       Rails.logger.info("Starting integration feed publish", context)
-      res = feed.publish_integration!(integration)
-      PublishingPipelineState.publish_integration!(podcast)
+      res = feed.publish_integration!(integration, heartbeat: heartbeat)
+      PublishingPipelineState.publish_integration!(pub_item)
       Rails.logger.info("Completed integration feed publish", context)
       res
     rescue Apple::AssetStateTimeoutError => e
       # Apple timeout errors indicate the async publishing job is still in progress
       # We always mark the integration as errored in the pipeline state
-      PublishingPipelineState.error_integration!(podcast)
+      PublishingPipelineState.error_integration!(pub_item)
 
       # Log at the error's specified level (INFO, WARN, or ERROR)
       e.log_error!
@@ -74,20 +82,20 @@ class PublishFeedJob < ApplicationJob
       end
     rescue => e
       Rails.logger.error("Integration feed publish failed", context.merge(error: e))
-      PublishingPipelineState.error_integration!(podcast)
+      PublishingPipelineState.error_integration!(pub_item)
 
       # Without sync_blocks_rss, swallow the error so RSS publishing proceeds
       raise e if config.sync_blocks_rss
     end
   end
 
-  def publish_rss(podcast, feed)
+  def publish_rss(podcast, pub_item, feed)
     rss_builder = save_file(podcast, feed)
     after_publish_rss(podcast, feed, rss_builder.episodes)
-    PublishingPipelineState.publish_rss!(podcast)
+    PublishingPipelineState.publish_rss!(pub_item)
     rss_builder
   rescue => e
-    PublishingPipelineState.error_rss!(podcast)
+    PublishingPipelineState.error_rss!(pub_item)
     raise e
   end
 
