@@ -320,10 +320,10 @@ module Apple
     def delivery_requirements
       if own_show?
         if connection.blank?
-          errors.add(:connection, "Apple Show ID must be selected")
+          errors.add(:connection, :blank)
         elsif (other = binding&.other_feed_config)
           label = other.feed&.label || "another feed"
-          errors.add(:connection, "Apple Show ID is already used for delegated delivery by #{label}. Map that feed to a different public feed before publishing this feed to its own Apple show")
+          errors.add(:connection, :delegated_elsewhere, label: label)
         end
       elsif delivery.present? && !mapped_binding
         errors.add(:delivery, :not_connectable)

@@ -294,6 +294,9 @@ en:
       models:
         apple/feed_settings:
           attributes:
+            connection:
+              blank: Apple Show ID must be selected
+              delegated_elsewhere: Apple Show ID is already used for delegated delivery by %{label}. Map that feed to a different public feed before publishing this feed to its own Apple show
             delivery:
               not_connectable: must be this feed's own Apple show or a public feed on this podcast
             hls_enabled:
