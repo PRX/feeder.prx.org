@@ -124,4 +124,147 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       assert_equal pdf.episode, podcast_container.episode
     end
   end
+
+  describe "expired delivery files" do
+    let(:podcast_container) { create(:apple_podcast_container) }
+    let(:podcast_delivery) {
+      Apple::PodcastDelivery.create!(podcast_container: podcast_container, episode: podcast_container.episode)
+    }
+    let(:other_delivery) {
+      Apple::PodcastDelivery.create!(podcast_container: podcast_container, episode: podcast_container.episode)
+    }
+    let(:apple_api) { build(:apple_api) }
+    let(:expired_pdf) {
+      create(:apple_podcast_delivery_file, podcast_delivery: podcast_delivery, episode: podcast_container.episode, api_marked_as_uploaded: true)
+    }
+    let(:readable_pdf) {
+      create(:apple_podcast_delivery_file, podcast_delivery: other_delivery, episode: podcast_container.episode, api_marked_as_uploaded: true)
+    }
+
+    def bridge_row(pdf, status:, data:)
+      {
+        request_metadata: {
+          apple_episode_id: "1234",
+          podcast_delivery_id: pdf.podcast_delivery_id,
+          apple_podcast_delivery_file_id: pdf.apple_id
+        },
+        api_url: "https://aardvark.prx.org/podcastDeliveryFiles/#{pdf.apple_id}",
+        api_parameters: {},
+        api_response: {ok: status < 300, err: status >= 300, val: data}
+      }
+    end
+
+    def not_found_row(pdf)
+      bridge_row(pdf, status: 404, data: {data: {status: 404, body: {errors: [{status: "404", code: "NOT_FOUND"}]}}})
+    end
+
+    def readable_row(pdf, **attrs)
+      resp = build(:podcast_delivery_file_api_response, podcast_delivery_id: pdf.podcast_delivery_id, **attrs)
+      bridge_row(pdf, status: 200, data: resp["api_response"]["api_response"]["val"])
+    end
+
+    # Stub the raw bridge HTTP call so Apple::Api#unwrap_bridge_response
+    # handles the ignored 404 rows for real.
+    def stub_bridge(rows, &block)
+      bridge = ->(_resource, _params, **_kwargs) { OpenStruct.new(code: "200", body: rows.to_json) }
+      apple_api.stub(:bridge_remote, bridge, &block)
+    end
+
+    def fast_wait(&block)
+      original = Apple::ApiWaiting.method(:wait_for)
+      fast = ->(records, **_kwargs, &wait_block) { original.call(records, wait_timeout: 0.seconds, wait_interval: 0.seconds, &wait_block) }
+      Apple::ApiWaiting.stub(:wait_for, fast, &block)
+    end
+
+    it "soft deletes an uploaded delivery file that Apple no longer has" do
+      expired = nil
+      logs = capture_json_logs do
+        stub_bridge([not_found_row(expired_pdf), readable_row(readable_pdf, asset_delivery_state: "COMPLETE")]) do
+          expired = Apple::PodcastDeliveryFile.expire_missing_delivery_files(apple_api, [expired_pdf, readable_pdf])
+        end
+      end
+
+      assert_equal [expired_pdf], expired
+      assert expired_pdf.deleted?
+      refute readable_pdf.deleted?
+      assert_equal [readable_pdf], podcast_container.podcast_delivery_files.reset.to_a
+
+      log = logs.find { |l| l[:msg] == "Podcast delivery file not found on Apple, treating as expired" }
+      assert log.present?
+      assert_equal expired_pdf.id, log[:podcast_delivery_file_id]
+    end
+
+    it "does not expire a sibling file on the same delivery" do
+      sibling_pdf = create(:apple_podcast_delivery_file, podcast_delivery: podcast_delivery, episode: podcast_container.episode, api_marked_as_uploaded: true)
+      sibling_pdf.apple_sync_log.api_response["api_response"]["val"]["data"]["id"] = "sibling-delivery-file-id"
+      sibling_pdf.apple_sync_log.save!
+      refute_equal expired_pdf.apple_id, sibling_pdf.apple_id
+
+      expired = nil
+      stub_bridge([not_found_row(expired_pdf), readable_row(sibling_pdf, asset_delivery_state: "COMPLETE")]) do
+        expired = Apple::PodcastDeliveryFile.expire_missing_delivery_files(apple_api, [expired_pdf, sibling_pdf])
+      end
+
+      assert_equal [expired_pdf], expired
+      assert expired_pdf.deleted?
+      refute sibling_pdf.deleted?
+    end
+
+    it "expires a missing delivery file that was never marked as uploaded" do
+      expired_pdf.update!(api_marked_as_uploaded: false)
+
+      stub_bridge([not_found_row(expired_pdf)]) do
+        assert_equal [expired_pdf], Apple::PodcastDeliveryFile.expire_missing_delivery_files(apple_api, [expired_pdf])
+      end
+
+      assert expired_pdf.reload.deleted?
+    end
+
+    it "does not expire when the bridge returns no row for an uploaded file" do
+      stub_bridge([readable_row(readable_pdf, asset_delivery_state: "COMPLETE")]) do
+        assert_empty Apple::PodcastDeliveryFile.expire_missing_delivery_files(apple_api, [expired_pdf, readable_pdf])
+      end
+
+      refute expired_pdf.reload.deleted?
+      refute readable_pdf.reload.deleted?
+    end
+
+    it "raises without expiring for errors other than not found" do
+      server_error = bridge_row(expired_pdf, status: 500, data: {data: {status: 500, body: {errors: [{status: "500"}]}}})
+
+      stub_bridge([server_error]) do
+        assert_raises(Apple::ApiError) do
+          Apple::PodcastDeliveryFile.expire_missing_delivery_files(apple_api, [expired_pdf])
+        end
+      end
+
+      refute expired_pdf.reload.deleted?
+    end
+
+    it "raises without deleting when a file goes missing while waiting for delivery" do
+      fast_wait do
+        stub_bridge([not_found_row(expired_pdf), readable_row(readable_pdf, asset_delivery_state: "COMPLETE")]) do
+          assert_raises(Apple::ApiError) do
+            Apple::PodcastDeliveryFile.wait_for_delivery(apple_api, [expired_pdf, readable_pdf])
+          end
+        end
+      end
+
+      refute expired_pdf.reload.deleted?
+      refute readable_pdf.reload.deleted?
+    end
+
+    it "raises without deleting when the bridge returns no row while waiting" do
+      fast_wait do
+        stub_bridge([readable_row(readable_pdf, asset_delivery_state: "COMPLETE")]) do
+          error = assert_raises(RuntimeError) do
+            Apple::PodcastDeliveryFile.wait_for_processing(apple_api, [expired_pdf, readable_pdf])
+          end
+          assert_equal "Missing response for podcast delivery file", error.message
+        end
+      end
+
+      refute expired_pdf.reload.deleted?
+    end
+  end
 end

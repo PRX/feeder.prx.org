@@ -90,7 +90,7 @@ module Apple
       eps_to_unarchive = eps.select(&:archived?)
       eps_to_redraft = eps.select(&:apple_published?)
 
-      # Both paths reset delivery state after unarchive because Apple may prune archived media assets.
+      # Both paths reset delivery state after unarchive because Apple may expire archived media assets.
       unarchive_draft_candidates!(eps_to_unarchive) if eps_to_unarchive.any?
       redraft_published_draft_candidates!(eps_to_redraft) if eps_to_redraft.any?
     end
@@ -180,7 +180,12 @@ module Apple
         reset_asset_wait_for_prior_uploads!(eps)
         increment_asset_wait!(eps)
 
+        expire_missing_delivery_files!(eps)
         wait_for_upload_processing(eps)
+
+        log_container_audio_mismatches(eps)
+        rejected_pdfs = mark_delivery_file_errors!(eps)
+        missing_audio_eps = mark_missing_container_audio!(eps)
 
         error_audio_state_eps = []
 
@@ -198,12 +203,19 @@ module Apple
         end
 
         raise_asset_state_failure_retry!(error_audio_state_eps) if error_audio_state_eps.any?
+        raise_delivery_file_errors!(rejected_pdfs)
+
+        if missing_audio_eps.any?
+          raise Apple::RetryPublishingError.new(
+            "Found expired delivery files without processed container audio on #{missing_audio_eps.length} episodes #{missing_audio_eps.map(&:feeder_id)}, marked as not delivered"
+          )
+        end
       end
     end
 
     def wait_for_asset_state(eps, wait_timeout: EPISODE_ASSET_WAIT_TIMEOUT, wait_interval: EPISODE_ASSET_WAIT_INTERVAL, &finisher_block)
       Rails.logger.tagged("##{__method__}") do
-        remaining_eps = filter_episodes_awaiting_asset_state(eps)
+        remaining_eps = eps.filter { |e| e.delivery_status(true).uploaded? }
 
         (timed_out, final_waiting) = Apple::ApiWaiting.wait_for(remaining_eps,
           wait_timeout: wait_timeout,
@@ -299,20 +311,17 @@ module Apple
       end
 
       # This will raise and mark for reupload if any validation failures
-      raise_for_processing_state(eps, :processed_validation_failed?)
+      raise_delivery_file_errors!(mark_delivery_file_errors!(eps))
 
       true
     end
 
-    def raise_for_processing_state(eps, filter_method)
-      # Derive the state name from the filter method (e.g., :processed_duplicate? -> "DUPLICATE")
-      state_name = filter_method.to_s.delete_prefix("processed_").delete_suffix("?").upcase
-
-      problem_pdfs = eps.flat_map(&:podcast_delivery_files).filter(&filter_method)
+    def mark_delivery_file_errors!(eps)
+      problem_pdfs = eps.flat_map(&:podcast_delivery_files).filter(&:processed_validation_failed?)
       apple_episodes_by_feeder_id = eps.index_by(&:feeder_id)
 
       problem_pdfs.each do |pdf|
-        Rails.logger.error("Podcast delivery file has #{state_name} state, marking as not delivered",
+        Rails.logger.error("Podcast delivery file has VALIDATION_FAILED state, marking as not delivered",
           {episode_id: pdf.episode.id,
            podcast_delivery_file_id: pdf.id,
            asset_processing_state: pdf.asset_processing_state,
@@ -324,10 +333,51 @@ module Apple
         apple_episodes_by_feeder_id.fetch(pdf.episode_id).mark_as_not_delivered!
       end
 
-      if problem_pdfs.any?
-        raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
-          "Found #{state_name} state on #{problem_pdfs.length} podcast delivery files, episodes marked as not delivered"
-        )
+      problem_pdfs
+    end
+
+    def raise_delivery_file_errors!(problem_pdfs)
+      return if problem_pdfs.empty?
+
+      raise Apple::PodcastDeliveryFile::DeliveryFileError.new(
+        "Found VALIDATION_FAILED state on #{problem_pdfs.length} podcast delivery files, episodes marked as not delivered"
+      )
+    end
+
+    def mark_missing_container_audio!(eps)
+      missing_audio_eps = eps.filter do |e|
+        e.delivery_status(true).uploaded? && !e.container_upload_complete? && e.podcast_delivery_files.empty?
+      end
+
+      missing_audio_eps.each do |ep|
+        Rails.logger.error("Found expired delivery files without processed container audio, marking as not delivered",
+          Apple::Episode.apple_episode_log_context(ep))
+
+        ep.mark_as_not_delivered!
+      end
+
+      missing_audio_eps
+    end
+
+    def log_container_audio_mismatches(eps)
+      eps.each do |ep|
+        next unless ep.delivery_status(true).uploaded?
+
+        pdfs = ep.podcast_delivery_files
+        next if pdfs.empty?
+
+        delivery_file_errors = ep.delivery_file_errors?
+        container_upload_complete = ep.container_upload_complete?
+        next unless delivery_file_errors == container_upload_complete
+
+        Rails.logger.warn("Podcast delivery file state disagrees with podcast container audio",
+          Apple::Episode.apple_episode_log_context(ep).merge(
+            delivery_file_errors: delivery_file_errors,
+            container_upload_complete: container_upload_complete,
+            podcast_delivery_file_ids: pdfs.map(&:id),
+            asset_processing_states: pdfs.map(&:asset_processing_state),
+            asset_delivery_states: pdfs.map(&:asset_delivery_state)
+          ))
       end
     end
 
@@ -360,6 +410,19 @@ module Apple
           Apple::MediaInfo.wait_for_versioned_source_metadata(api, eps)
         raise "Timed out waiting for audio version" if waiting_timed_out
         media_infos
+      end
+    end
+
+    def expire_missing_delivery_files!(eps)
+      Rails.logger.tagged("##{__method__}") do
+        expired = Apple::PodcastDeliveryFile.expire_missing_delivery_files(api, eps.flat_map(&:podcast_delivery_files))
+
+        if expired.any?
+          Rails.logger.info("Expired #{expired.length} podcast delivery files missing on Apple",
+            {episode_ids: expired.map(&:episode_id).uniq, podcast_delivery_file_ids: expired.map(&:id)})
+        end
+
+        expired
       end
     end
 
@@ -616,11 +679,10 @@ module Apple
         # Guard: verify all episodes are in a consistent local and remote state
         verify_publishing_state!(eps)
 
-        drafting_eps, non_ready_eps = eps.partition { |ep| ep.drafting? && ep.container_upload_complete? }
+        drafting_eps, non_ready_eps = eps.partition(&:drafting?)
         non_ready_eps.each do |ep|
           Rails.logger.info("Skipping publish for non-ready episode", {episode_id: ep.feeder_id,
-                                                                     publishing_state: ep.publishing_state,
-                                                                     container_upload_complete: ep.container_upload_complete?})
+                                                                     publishing_state: ep.publishing_state})
         end
 
         Rails.logger.info("Publishing #{drafting_eps.length} drafting episodes.", {drafting_episode_ids: drafting_eps.map(&:feeder_id)}) if drafting_eps.any?
@@ -686,10 +748,6 @@ module Apple
 
         raise error
       end
-    end
-
-    def filter_episodes_awaiting_asset_state(eps)
-      eps.filter { |e| e.podcast_delivery_files.any?(&:api_marked_as_uploaded?) }
     end
 
     def partition_episodes_by_readiness(waiting_eps)
