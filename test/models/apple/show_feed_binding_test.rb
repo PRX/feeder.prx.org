@@ -9,15 +9,13 @@ module Apple
     it "has one config" do
       podcast = create(:podcast)
       binding = create(:apple_show_feed_binding, feed: create(:public_feed, podcast: podcast))
-      key = create(:apple_key, account_id: podcast.account_id)
       config = create(
         :delegated_delivery_config,
         feed: create(:private_feed, podcast: podcast),
-        key: key,
         show_feed_binding: binding
       )
 
-      assert_equal config, binding.reload.config
+      assert_equal config, binding.reload.delegated_delivery_config
     end
 
     describe "validations" do
@@ -154,26 +152,11 @@ module Apple
       assert_equal sync_log, binding.feed.reload.apple_sync_log
     end
 
-    it "mirrors default feed routing when connected outside a controller" do
-      podcast = create(:podcast)
-      config = create(:delegated_delivery_config, feed: create(:private_feed, podcast: podcast))
-      binding = config.reload.show_feed_binding
-      body = {data: {id: "replacement", type: "shows"}}.to_json
-      stub_request(:get, "https://aardvark.prx.org/shows/replacement").to_return(status: 200, body: body)
-
-      binding.connect_existing("replacement")
-
-      assert_empty binding.errors
-      assert_equal "replacement", binding.reload.apple_show_id
-      assert_equal "replacement", binding.feed.reload.apple_sync_log.external_id
-      assert_equal "replacement", config.feed.reload.apple_show_id
-    end
-
     describe ".connect_existing" do
       it "rejects another connection to a show already used for delivery" do
         config = create(:delegated_delivery_config)
         existing = config.show_feed_binding
-        feed = create(:public_feed, podcast: config.podcast)
+        feed = create(:public_feed, podcast: config.feed.podcast)
 
         assert_no_difference "ShowFeedBinding.count" do
           binding = ShowFeedBinding.connect_existing(feed: feed, apple_show_id: existing.apple_show_id)

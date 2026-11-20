@@ -10,7 +10,7 @@ class Apple::PodcastContainerTest < ActiveSupport::TestCase
   let(:apple_api) { Apple::Api.from_delegated_delivery_config(delegated_delivery_config) }
   let(:public_feed) { podcast.default_feed }
   let(:private_feed) { create(:private_feed, podcast: podcast) }
-  let(:apple_show) { Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed) }
+  let(:apple_show) { Apple::Show.new(api: apple_api, public_feed: public_feed, private_feed: private_feed, show_feed_binding: build(:apple_show_feed_binding, feed: public_feed, apple_show_id: "show-1")) }
 
   let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
 

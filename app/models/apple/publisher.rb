@@ -27,13 +27,6 @@ module Apple
     end
 
     def poll!(eps = episodes_to_sync)
-      if show.apple_id.nil?
-        Rails.logger.warn "No connected Apple Podcasts show. Skipping polling!", {public_feed_id: public_feed.id,
-                                                                                  private_feed_id: private_feed.id,
-                                                                                  podcast_id: podcast.id}
-        return
-      end
-
       Rails.logger.tagged("Apple::Publisher#poll!") do
         eps.each_slice(PUBLISH_CHUNK_LEN) do |eps|
           poll_episodes!(eps)
@@ -51,7 +44,6 @@ module Apple
 
     def publish!
       show.sync!
-      raise "Missing Show!" unless show.apple_id.present?
 
       sync_drafting_episode_states!
 

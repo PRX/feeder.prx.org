@@ -1,24 +1,18 @@
 FactoryBot.define do
   factory :apple_show, class: Apple::Show do
-    api { build(:apple_api) }
+    skip_create
 
     transient do
-      podcast { nil }
-      public_feed { nil }
-      private_feed { nil }
+      api { build(:apple_api) }
+      podcast { create(:podcast) }
+      private_feed { create(:private_feed, podcast: podcast) }
+      public_feed { podcast.default_feed }
+      apple_show_id { "show-1" }
+      show_feed_binding { build(:apple_show_feed_binding, feed: public_feed, apple_show_id: apple_show_id) }
     end
 
-    after(:build) do |show, evaluator|
-      podcast =
-        if evaluator.podcast.nil?
-          create(:podcast)
-        else
-          evaluator.podcast
-        end
-
-      show["private_feed"] = evaluator.private_feed || create(:private_feed, podcast: podcast)
-      show["public_feed"] = evaluator.private_feed || podcast.default_feed
+    initialize_with do
+      new(api: api, public_feed: public_feed, private_feed: private_feed, show_feed_binding: show_feed_binding)
     end
-    initialize_with { attributes }
   end
 end

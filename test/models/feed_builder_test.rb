@@ -38,7 +38,7 @@ describe FeedBuilder do
 
   [false, true].each do |has_apple_feed|
     it "loads Apple configs once regardless of episode count with has_apple_feed=#{has_apple_feed}" do
-      create(:apple_feed, podcast: podcast) if has_apple_feed
+      create(:delegated_delivery_feed, podcast: podcast) if has_apple_feed
       query_counts = [1, 4].map do |episode_count|
         create_list(:episode, episode_count - 1, podcast: podcast) if episode_count > 1
         feed.episodes = podcast.episodes.reload

@@ -19,7 +19,7 @@ describe Podcast do
     key = create(:apple_key, account_id: podcast.account_id)
     podcast.update!(apple_key: key)
     binding = create(:apple_show_feed_binding, feed: podcast.default_feed)
-    config = create(:delegated_delivery_config, feed: podcast.default_feed, show_feed_binding: binding, key: key)
+    config = create(:delegated_delivery_config, feed: podcast.default_feed, show_feed_binding: binding)
 
     podcast.destroy!
 

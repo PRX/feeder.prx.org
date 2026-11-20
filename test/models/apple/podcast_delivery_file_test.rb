@@ -65,7 +65,8 @@ class ApplePodcastDeliveryFileTest < ActiveSupport::TestCase
       let(:apple_show) do
         Apple::Show.new(api: apple_api,
           public_feed: public_feed,
-          private_feed: private_feed)
+          private_feed: private_feed,
+          show_feed_binding: build(:apple_show_feed_binding, feed: public_feed, apple_show_id: "show-1"))
       end
       let(:apple_episode) { build(:apple_episode, show: apple_show, feeder_episode: episode) }
 

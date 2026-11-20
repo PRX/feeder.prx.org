@@ -5,7 +5,7 @@ describe Feed, "Apple delegated delivery" do
   let(:delivery_feed) { create(:private_feed, podcast: podcast, label: "Members") }
   let(:key) { create(:apple_key, account_id: podcast.account_id) }
   let(:binding) { create(:apple_show_feed_binding, feed: podcast.default_feed, apple_show_id: "show-1") }
-  let(:apple_feed) { build(:apple_feed, podcast: podcast) }
+  let(:delegated_delivery_feed) { build(:delegated_delivery_feed, podcast: podcast) }
 
   before do
     podcast.update!(apple_key: key)
@@ -95,7 +95,7 @@ describe Feed, "Apple delegated delivery" do
   it "requires a token when a feed delivering through its own show becomes private" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    create(:delegated_delivery_config, feed: public_feed, key: key, show_feed_binding: connection)
+    create(:delegated_delivery_config, feed: public_feed, show_feed_binding: connection)
 
     refute public_feed.reload.update(private: true)
     assert_includes public_feed.errors[:tokens], "must have a token"
@@ -105,7 +105,7 @@ describe Feed, "Apple delegated delivery" do
   it "keeps a connected feed public when its own delivery is removed in the same save" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    config = create(:delegated_delivery_config, feed: public_feed, key: key, show_feed_binding: connection)
+    config = create(:delegated_delivery_config, feed: public_feed, show_feed_binding: connection)
     public_feed.reload.assign_attributes(private: true, tokens: [FeedToken.new(label: "apple")])
 
     refute public_feed.update(apple_settings: {delivery: ""})
@@ -118,7 +118,7 @@ describe Feed, "Apple delegated delivery" do
   it "keeps a connected feed public while another feed delivers to its show" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: connection)
+    create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: connection)
 
     refute public_feed.update(private: true, tokens: [FeedToken.new(label: "apple")])
     assert_includes public_feed.errors[:private], "cannot be enabled while Members delivers to this feed's Apple show"
@@ -138,7 +138,7 @@ describe Feed, "Apple delegated delivery" do
   it "allows a connected feed with HLS video turned off to become private" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    create(:delegated_delivery_config, feed: public_feed, key: key, show_feed_binding: connection)
+    create(:delegated_delivery_config, feed: public_feed, show_feed_binding: connection)
     create(:apple_hls_config, show_feed_binding: connection, enabled: false)
 
     assert public_feed.reload.update(private: true, tokens: [FeedToken.new(label: "apple")])
@@ -147,7 +147,7 @@ describe Feed, "Apple delegated delivery" do
   it "allows a feed delivering through its own show to become private" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    create(:delegated_delivery_config, feed: public_feed, key: key, show_feed_binding: connection)
+    create(:delegated_delivery_config, feed: public_feed, show_feed_binding: connection)
 
     assert public_feed.reload.update(private: true, tokens: [FeedToken.new(label: "apple")])
     assert_equal connection, public_feed.reload.delegated_delivery_config.show_feed_binding
@@ -164,7 +164,7 @@ describe Feed, "Apple delegated delivery" do
   it "preserves the feed and its associations when delivery prevents deletion" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    config = create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: connection)
+    config = create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: connection)
     episode = create(:episode, podcast: podcast)
     public_feed.episodes << episode
 
@@ -178,7 +178,7 @@ describe Feed, "Apple delegated delivery" do
   it "allows deletion after dependent delivery is removed" do
     public_feed = create(:public_feed, podcast: podcast)
     connection = create(:apple_show_feed_binding, feed: public_feed)
-    config = create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: connection)
+    config = create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: connection)
     config.destroy!
 
     assert public_feed.reload.destroy
@@ -187,7 +187,7 @@ describe Feed, "Apple delegated delivery" do
 
   it "allows deleting a feed that delivers through its own show" do
     connection = create(:apple_show_feed_binding, feed: delivery_feed, apple_show_id: "own-show")
-    config = create(:delegated_delivery_config, feed: delivery_feed, key: key, show_feed_binding: connection)
+    config = create(:delegated_delivery_config, feed: delivery_feed, show_feed_binding: connection)
     sync_log = Apple::SyncLog.log!(feeder_id: delivery_feed.id, feeder_type: :feeds, external_id: "own-show")
 
     assert delivery_feed.reload.destroy
@@ -240,29 +240,29 @@ describe Feed, "Apple delegated delivery" do
   end
 
   it "excludes drafts when private Apple delivery is paused" do
-    apple_feed.save!
+    delegated_delivery_feed.save!
     draft = create(:episode_with_media, podcast: podcast, published_at: nil)
-    assert_includes apple_feed.integration_draft_episodes(:apple), draft
+    assert_includes delegated_delivery_feed.integration_draft_episodes(:apple), draft
 
-    apple_feed.delegated_delivery_config.update!(publish_enabled: false)
+    delegated_delivery_feed.delegated_delivery_config.update!(publish_enabled: false)
 
-    refute apple_feed.serve_drafts
-    assert_empty apple_feed.integration_draft_episodes(:apple)
-    refute apple_feed.integration_episode?(draft, :apple)
+    refute delegated_delivery_feed.serve_drafts
+    assert_empty delegated_delivery_feed.integration_draft_episodes(:apple)
+    refute delegated_delivery_feed.integration_episode?(draft, :apple)
   end
   describe "#integration_draft_episodes" do
     [-1.day.to_i, 0, 1.day.to_i].each do |offset|
       it "partitions episodes at the release boundary with offset #{offset}" do
         freeze_time do
-          apple_feed.update!(episode_offset_seconds: offset, display_episodes_count: nil)
+          delegated_delivery_feed.update!(episode_offset_seconds: offset, display_episodes_count: nil)
           cutoff = Time.current - offset
           released = create(:episode, podcast: podcast, published_at: cutoff - 1.second)
           boundary = create(:episode, podcast: podcast, published_at: cutoff)
           upcoming = create(:episode, podcast: podcast, published_at: cutoff + 1.second)
           draft = create(:episode, podcast: podcast, published_at: nil)
 
-          assert_equal [boundary.id, released.id].sort, apple_feed.feed_episode_ids.sort
-          assert_equal [upcoming.id, draft.id].sort, apple_feed.integration_draft_episodes(:apple).pluck(:id).sort
+          assert_equal [boundary.id, released.id].sort, delegated_delivery_feed.feed_episode_ids.sort
+          assert_equal [upcoming.id, draft.id].sort, delegated_delivery_feed.integration_draft_episodes(:apple).pluck(:id).sort
         end
       end
     end
@@ -344,7 +344,7 @@ describe Feed, "Apple delegated delivery" do
   describe "#integration_episode" do
     it "resolves the show-scoped sync log through the integration facade" do
       episode = create(:episode, podcast: podcast)
-      apple_feed = create(:apple_feed, podcast: podcast, apple_show_id: "show-1")
+      delegated_delivery_feed = create(:delegated_delivery_feed, podcast: podcast, apple_show_id: "show-1")
       sync_log = SyncLog.create!(
         integration: :apple,
         feeder_type: :episodes,
@@ -353,17 +353,17 @@ describe Feed, "Apple delegated delivery" do
         external_show_id: "show-1"
       )
 
-      assert_equal sync_log, apple_feed.integration_episode(episode, :apple).sync_log
+      assert_equal sync_log, delegated_delivery_feed.integration_episode(episode, :apple).sync_log
     end
 
     it "builds the Apple facade scoped to this feed's show" do
-      apple_feed.save!
+      delegated_delivery_feed.save!
       episode = create(:episode, podcast: podcast, published_at: 1.hour.ago)
 
-      facade = apple_feed.integration_episode(episode, :apple)
+      facade = delegated_delivery_feed.integration_episode(episode, :apple)
 
       assert_instance_of Apple::Episode, facade
-      assert_equal apple_feed.delegated_delivery_config.apple_show_id, facade.apple_show_id
+      assert_equal delegated_delivery_feed.delegated_delivery_config.apple_show_id, facade.apple_show_id
       assert_equal episode, facade.feeder_episode
     end
 
@@ -376,49 +376,49 @@ describe Feed, "Apple delegated delivery" do
 
   describe "#integration_episode?" do
     it "keeps early releases beyond the feed limit out of both episode sets" do
-      apple_feed.update!(episode_offset_seconds: -1.day.to_i, display_episodes_count: 1)
+      delegated_delivery_feed.update!(episode_offset_seconds: -1.day.to_i, display_episodes_count: 1)
       excluded = create(:episode_with_media, podcast: podcast, published_at: 1.hour.from_now)
       included = create(:episode_with_media, podcast: podcast, published_at: 2.hours.from_now)
 
-      assert_equal [included.id], apple_feed.feed_episode_ids
-      assert_empty apple_feed.integration_draft_episodes(:apple)
-      refute apple_feed.integration_episode?(excluded, :apple)
-      assert apple_feed.integration_episode?(included, :apple)
+      assert_equal [included.id], delegated_delivery_feed.feed_episode_ids
+      assert_empty delegated_delivery_feed.integration_draft_episodes(:apple)
+      refute delegated_delivery_feed.integration_episode?(excluded, :apple)
+      assert delegated_delivery_feed.integration_episode?(included, :apple)
     end
 
     it "returns true for published episodes in feed_episodes" do
-      apple_feed.save!
+      delegated_delivery_feed.save!
       published = create(:episode, podcast: podcast, published_at: 1.hour.ago)
 
-      assert apple_feed.integration_episode?(published, :apple)
+      assert delegated_delivery_feed.integration_episode?(published, :apple)
     end
 
     it "returns false for published episodes not in feed_episodes" do
-      apple_feed.save!
+      delegated_delivery_feed.save!
       published = create(:episode, podcast: podcast, published_at: 1.hour.ago)
-      apple_feed.episodes_feeds.where(episode: published).delete_all
+      delegated_delivery_feed.episodes_feeds.where(episode: published).delete_all
 
-      refute apple_feed.integration_episode?(published, :apple)
+      refute delegated_delivery_feed.integration_episode?(published, :apple)
     end
 
     it "returns true for draft and scheduled episodes with uploadable media" do
-      apple_feed.save!
+      delegated_delivery_feed.save!
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
       scheduled = create(:episode_with_media, podcast: podcast, published_at: 1.day.from_now)
 
-      assert apple_feed.integration_episode?(draft, :apple)
-      assert apple_feed.integration_episode?(scheduled, :apple)
+      assert delegated_delivery_feed.integration_episode?(draft, :apple)
+      assert delegated_delivery_feed.integration_episode?(scheduled, :apple)
     end
 
     it "returns false for draft episodes with no media" do
-      apple_feed.save!
+      delegated_delivery_feed.save!
       no_media = create(:episode, podcast: podcast, published_at: nil)
 
-      refute apple_feed.integration_episode?(no_media, :apple)
+      refute delegated_delivery_feed.integration_episode?(no_media, :apple)
     end
 
     it "returns false for draft episodes with incomplete media (enclosure not complete)" do
-      apple_feed.save!
+      delegated_delivery_feed.save!
       processing = create(:episode,
         podcast: podcast,
         published_at: nil,
@@ -429,11 +429,11 @@ describe Feed, "Apple delegated delivery" do
       # enclosure_ready?(false) would be true, but enclosure_ready?(true) is false
       assert processing.enclosure_ready?(false)
       refute processing.enclosure_ready?(true)
-      refute apple_feed.integration_episode?(processing, :apple)
+      refute delegated_delivery_feed.integration_episode?(processing, :apple)
     end
 
     it "returns false for draft episodes that are not feed-ready" do
-      apple_feed.save!
+      delegated_delivery_feed.save!
       not_ready = create(:episode,
         podcast: podcast,
         published_at: nil,
@@ -441,18 +441,18 @@ describe Feed, "Apple delegated delivery" do
         segment_count: 1,
         contents: [build(:content, status: "created")])
 
-      refute apple_feed.integration_episode?(not_ready, :apple)
+      refute delegated_delivery_feed.integration_episode?(not_ready, :apple)
     end
 
     it "returns false for draft episodes not assigned to this feed" do
-      apple_feed.save!
+      delegated_delivery_feed.save!
       draft = create(:episode_with_media, podcast: podcast, published_at: nil)
-      assert apple_feed.integration_episode?(draft, :apple)
+      assert delegated_delivery_feed.integration_episode?(draft, :apple)
 
-      apple_feed.episodes_feeds.where(episode: draft).delete_all
-      apple_feed.reload
+      delegated_delivery_feed.episodes_feeds.where(episode: draft).delete_all
+      delegated_delivery_feed.reload
 
-      refute apple_feed.integration_episode?(draft, :apple)
+      refute delegated_delivery_feed.integration_episode?(draft, :apple)
     end
   end
 end

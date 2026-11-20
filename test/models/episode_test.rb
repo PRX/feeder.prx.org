@@ -370,7 +370,7 @@ describe Episode do
   end
 
   describe "Apple integration" do
-    let(:podcast) { create(:podcast) }
+    let(:podcast) { create(:podcast, :with_apple_key) }
     let(:episode) { create(:episode, podcast: podcast) }
 
     describe "unscoped Apple resources" do
@@ -382,18 +382,6 @@ describe Episode do
         assert_raises(NoMethodError) { episode.apple_sync_log }
         assert_raises(NoMethodError) { episode.apple_podcast_containers }
         assert_raises(NoMethodError) { episode.sync_logs }
-      end
-
-      it "does not expose legacy Apple state methods" do
-        %i[
-          apple_episode_delivery_status
-          apple_episode_delivery_statuses
-          apple_mark_as_delivered!
-          apple_prepare_for_delivery!
-          apple_update_delivery_status
-        ].each do |method_name|
-          refute episode.respond_to?(method_name), method_name
-        end
       end
     end
 

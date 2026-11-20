@@ -15,20 +15,6 @@ module Apple
 
     attr_accessor :provider_id, :key_id, :key, :bridge_url
 
-    def self.from_env
-      apple_key_id = ENV["APPLE_KEY_ID"]
-      apple_provider_id = ENV["APPLE_PROVIDER_ID"]
-      apple_key_pem_b64 = ENV["APPLE_KEY_PEM_B64"]
-
-      raise "Apple::Api.from_env Apple key details missing from ENV" if [apple_key_id, apple_provider_id, apple_key_pem_b64].any?(&:blank?)
-
-      apple_key_pem = Base64.decode64(apple_key_pem_b64)
-
-      new(provider_id: apple_provider_id,
-        key_id: apple_key_id,
-        key: apple_key_pem)
-    end
-
     def self.api_base
       ENV["APPLE_PODCASTS_CONNECT_API_URL"]
     end
@@ -44,17 +30,10 @@ module Apple
     end
 
     def self.from_delegated_delivery_config(delegated_delivery_config)
-      apple_key = delegated_delivery_config.routing_key
+      apple_key = delegated_delivery_config.apple_key
+      raise "Missing Apple key for podcast" unless apple_key
 
-      if apple_key.blank?
-        Rails.logger.info("No Apple API keys in config object, falling back to environment default keys",
-          {delegated_delivery_config_id: delegated_delivery_config.id,
-           podcast_id: delegated_delivery_config.podcast_id,
-           podcast_title: delegated_delivery_config.podcast_title})
-        from_env
-      else
-        from_key(apple_key)
-      end
+      from_key(apple_key)
     end
 
     def initialize(provider_id:, key_id:, key:, bridge_url: nil)
@@ -168,11 +147,6 @@ module Apple
       local_api_retry_errors(tries: tries) do
         update_remote(Net::HTTP::Delete, uri, {})
       end
-    end
-
-    def countries_and_regions
-      json = unwrap_response(get("countriesAndRegions?limit=200"))
-      json["data"].map { |h| h.slice("type", "id") }
     end
 
     def check_row(row_operation)
