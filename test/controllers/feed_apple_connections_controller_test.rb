@@ -43,6 +43,21 @@ class FeedAppleConnectionsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'select[name="feed[apple_settings][connection]"] option[value="show-1"]'
   end
 
+  test "keeps a failed save's connection errors on the loaded field" do
+    get podcast_feed_apple_connection_url(podcast, private_feed, selection: "", errors: ["must be selected"])
+
+    assert_response :success
+    assert_select 'select.is-invalid[name="feed[apple_settings][connection]"]'
+    assert_select ".invalid-feedback", text: "Must be selected"
+  end
+
+  test "renders the loaded field without errors by default" do
+    get podcast_feed_apple_connection_url(podcast, private_feed)
+
+    assert_response :success
+    assert_select 'select.is-invalid[name="feed[apple_settings][connection]"]', count: 0
+  end
+
   test "does not look up shows for Megaphone feeds" do
     podcast.update!(apple_key: create(:apple_key, account_id: podcast.account_id))
 
