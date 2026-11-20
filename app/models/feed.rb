@@ -6,8 +6,6 @@ class Feed < ApplicationRecord
   include FeedITunesCategory
   include FeedApple
 
-  self.ignored_columns += ["apple_show_id"]
-
   DEFAULT_FILE_NAME = "feed-rss.xml".freeze
 
   AUDIO_MIME_TYPES = {
