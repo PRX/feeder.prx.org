@@ -218,7 +218,7 @@ module Apple
         # Return true, because there is no error.
         return true if !hls_enabled || @disconnected
 
-        errors.add(:hls_enabled, "HLS video requires an Apple show connection")
+        errors.add(:hls_enabled, :requires_connection)
         return false
       end
 
@@ -326,7 +326,7 @@ module Apple
           errors.add(:connection, "Apple Show ID is already used for delegated delivery by #{label}. Map that feed to a different public feed before publishing this feed to its own Apple show")
         end
       elsif delivery.present? && !mapped_binding
-        errors.add(:delivery, "must be this feed's own Apple show or a public feed on this podcast")
+        errors.add(:delivery, :not_connectable)
       end
     end
 
@@ -358,7 +358,7 @@ module Apple
       true
     rescue => error
       Rails.logger.error("Unable to check Apple HLS eligibility", feed_id: feed.id, apple_show_id: binding.apple_show_id, error: error)
-      errors.add(:hls_enabled, "Could not check Apple video eligibility for this show")
+      errors.add(:hls_enabled, :eligibility_unavailable)
       false
     end
   end

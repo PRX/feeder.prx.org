@@ -289,6 +289,16 @@ en:
     "zh-tw": Chinese Traditional (Taiwan)
     "zu-za": Zulu
   # validation error messages https://guides.rubyonrails.org/i18n.html#error-message-interpolation
+  activemodel:
+    errors:
+      models:
+        apple/feed_settings:
+          attributes:
+            delivery:
+              not_connectable: must be this feed's own Apple show or a public feed on this podcast
+            hls_enabled:
+              requires_connection: HLS video requires an Apple show connection
+              eligibility_unavailable: Could not check Apple video eligibility for this show
   activerecord:
     errors:
       messages:
