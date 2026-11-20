@@ -15,13 +15,21 @@ module FeedsHelper
   # feed's show. Feed options carry the link the form displays.
   def apple_delivery_options(settings)
     options = [[t("feeds.form_apple_settings.deliveries.none"), ""]]
-    options << [t("feeds.form_apple_settings.deliveries.own"), Apple::FeedSettings::OWN] if settings.own_available?
+    options << [apple_own_delivery_label(settings), Apple::FeedSettings::OWN] if settings.own_available?
     settings.mappable_bindings.each do |binding|
       label = t("feeds.form_apple_settings.deliveries.mapped", feed: binding.feed.label, show_id: binding.apple_show_id)
       data = {feed_url: podcast_feed_path(binding.feed.podcast_id, binding.feed)}
       options << [label, binding.id.to_s, {data: data}]
     end
     options
+  end
+
+  def apple_own_delivery_label(settings)
+    if settings.connection_was.present?
+      t("feeds.form_apple_settings.deliveries.own_connected", show_id: settings.connection_was)
+    else
+      t("feeds.form_apple_settings.deliveries.own_new")
+    end
   end
 
   def episode_offset_options
