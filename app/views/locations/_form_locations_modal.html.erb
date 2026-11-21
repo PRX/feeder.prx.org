@@ -11,7 +11,7 @@
       <div class="modal-body">
         <div class="col-12 mb-4">
           <div class="form-floating input-group">
-            <%= tag.input type: "search", id: "location-query-#{form.index}", class: "form-control", placeholder: t(".search"),
+            <%= tag.input type: "search", id: "location-query-#{form.index}", class: "form-control", placeholder: t(".search"), autocomplete: "off",
                   data: {location_target: "query", action: "keydown.enter->location#search:prevent change->location#ignore"} %>
             <%= label_tag "location-query-#{form.index}", t(".search") %>
             <%= tag.button type: "button", class: "input-group-text prx-input-group-text", aria: {label: t(".search_button")}, data: {action: "location#search"} do %>
@@ -34,7 +34,7 @@
 
         <div class="col-12 mb-4">
           <div class="form-floating input-group">
-            <%= form.text_field :name, maxlength: 128, data: {action: "location#change", location_target: "nameField"} %>
+            <%= form.text_field :name, maxlength: 128, autocomplete: "off", data: {action: "location#change", location_target: "nameField"} %>
             <%= form.label :name, required: true %>
             <%= field_help_text t(".help.name") %>
           </div>
