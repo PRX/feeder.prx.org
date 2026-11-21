@@ -1,0 +1,138 @@
+# frozen_string_literal: true
+
+module Apple
+  class HlsAlternateAsset < ApplicationRecord
+    CONTENT_KIND = "VIDEO"
+    MIME_TYPE = "application/vnd.apple.mpegurl"
+    RESOURCE_TYPES = %i[staged_alternate_asset episode].freeze
+    ATTRIBUTE_LABELS = {
+      alternateAssetContentUrl: "URL",
+      alternateAssetContentKind: "content kind",
+      alternateAssetMimeType: "MIME type"
+    }.freeze
+    # Coalesces repeat page views and frame reloads into one Apple lookup.
+    POLL_INTERVAL = 1.minute
+
+    belongs_to :episode, -> { with_deleted }, class_name: "::Episode"
+
+    enum :status, {staged: 0, linked: 1, expired: 2, error: 3}
+
+    validates :apple_show_id, :feeder_guid, :status, presence: true
+    validates :feeder_guid, uniqueness: {scope: :apple_show_id}
+
+    # Records the status of remote Apple resource state.
+    # Takes in the JSON of the Apple resource that currently holds the
+    # alternate-asset fields:
+    #
+    #   resource_type: :staged_alternate_asset, response: staged asset JSON
+    #   resource_type: :episode, response: Apple episode JSON
+    #   resource_type: nil, when Apple returned neither resource
+    #
+    def self.upsert_from_apple!(episode:, show_feed_binding:, feeder_guid:, resource_type: nil, response: nil, error: nil, unless_checked_after: nil)
+      if resource_type && !RESOURCE_TYPES.include?(resource_type)
+        raise ArgumentError, "unknown resource_type: #{resource_type.inspect}"
+      end
+
+      key = {apple_show_id: show_feed_binding.apple_show_id, feeder_guid: feeder_guid}
+      asset = find_by(key)
+      return asset if unless_checked_after && asset&.checked_after?(unless_checked_after)
+      return nil if asset.nil? && resource_type.nil? && error.nil?
+
+      asset ||= new(key)
+      asset.episode = episode
+      asset.last_checked_at = Time.current
+
+      if error
+        asset.status = :error
+        asset.last_error = error.respond_to?(:message) ? error.message : error.to_s
+      elsif resource_type
+        content_url = response&.dig("attributes", "alternateAssetContentUrl").presence
+        if resource_type == :episode
+          asset.apple_episode_id = response&.dig("id") || asset.apple_episode_id
+          asset.content_url = content_url
+          if content_url
+            asset.status = :linked
+            asset.last_error = nil
+          else
+            asset.status = :error
+            asset.last_error = "Apple reports the episode without an alternate asset"
+          end
+        else
+          asset.staged_alternate_asset_id = response&.dig("id") || asset.staged_alternate_asset_id
+          asset.content_url = content_url || asset.content_url
+          asset.status = :staged
+          asset.last_error = nil
+        end
+
+        if (outdated = outdated_error(response, episode, show_feed_binding))
+          asset.status = :error
+          asset.last_error = outdated
+        end
+      # We have no remote apple episode or alternate asset, but we have local state
+      elsif asset.staged? || asset.expired?
+        asset.status = :expired
+        asset.last_error = nil
+      elsif asset.linked?
+        asset.status = :error
+        asset.last_error = "Apple no longer reports the linked episode or a staged alternate asset"
+      elsif asset.error?
+        # Replace any earlier error so the badge reflects Apple's current state
+        asset.last_error = "Apple reports neither the episode nor a staged alternate asset"
+      end
+
+      asset.save!
+      asset
+    end
+
+    def self.apple_attributes(url)
+      {
+        alternateAssetContentUrl: url,
+        alternateAssetContentKind: CONTENT_KIND,
+        alternateAssetMimeType: MIME_TYPE
+      }
+    end
+
+    # Whether an Apple episode or staged asset JSON holds the expected URL,
+    # content kind, and MIME type.
+    def self.current_on_apple?(response, url)
+      outdated_attributes(response, url).empty?
+    end
+
+    def self.outdated_attributes(response, url)
+      attributes = response&.dig("attributes") || {}
+      apple_attributes(url).filter_map do |key, expected|
+        actual = attributes[key.to_s]
+        [key, {expected: expected, actual: actual}] unless actual == expected
+      end.to_h
+    end
+
+    def self.outdated_error(response, episode, show_feed_binding)
+      return if response&.dig("attributes", "alternateAssetContentUrl").blank?
+
+      expected_url = episode.apple_hls_master_url(feed: show_feed_binding.feed)
+      return if expected_url.blank?
+
+      outdated = outdated_attributes(response, expected_url)
+      return if outdated.empty?
+
+      Rails.logger.warn("Apple HLS alternate asset outdated", {
+        episode_id: episode.id,
+        feed_id: show_feed_binding.feed.id,
+        apple_show_id: show_feed_binding.apple_show_id,
+        apple_resource_id: response["id"],
+        outdated: outdated
+      })
+
+      "Apple has an outdated alternate asset #{outdated.keys.map { |key| ATTRIBUTE_LABELS.fetch(key) }.to_sentence}"
+    end
+    private_class_method :outdated_error
+
+    def checked_after?(time)
+      last_checked_at.present? && last_checked_at.after?(time)
+    end
+
+    def recently_checked?
+      checked_after?(POLL_INTERVAL.ago)
+    end
+  end
+end

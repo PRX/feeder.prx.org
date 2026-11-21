@@ -138,6 +138,34 @@ describe Feed do
     end
   end
 
+  describe "#rss_episode?" do
+    it "checks membership in rss_episodes" do
+      e1 = create(:episode, podcast: podcast, published_at: 1.day.ago)
+      e2 = create(:episode, podcast: podcast, published_at: 1.minute.ago)
+      e3 = create(:episode, podcast: podcast, published_at: 1.minute.from_now)
+      draft = create(:episode, podcast: podcast, published_at: nil)
+
+      [e1, e2, e3, draft].each do |e|
+        assert_equal feed1.rss_episodes.include?(e), feed1.rss_episode?(e)
+      end
+
+      feed1.episode_offset_seconds = -3600
+      assert feed1.rss_episode?(e3)
+
+      feed1.display_episodes_count = 2
+      assert feed1.rss_episode?(e2)
+      refute feed1.rss_episode?(e1)
+    end
+
+    it "excludes episodes that are not feed ready" do
+      episode = create(:episode, podcast: podcast, published_at: 1.hour.ago)
+
+      episode.stub(:feed_ready?, false) do
+        refute feed1.rss_episode?(episode)
+      end
+    end
+  end
+
   describe "#integration_episode?" do
     it "excludes feeds without Apple delivery" do
       published = create(:episode, podcast: podcast, published_at: 1.hour.ago)
