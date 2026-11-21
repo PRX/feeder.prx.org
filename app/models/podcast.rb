@@ -35,12 +35,14 @@ class Podcast < ApplicationRecord
   has_many :delegated_delivery_configs, through: :feeds, source: :delegated_delivery_config
   has_many :tasks, as: :owner
   has_many :persons, as: :owner, inverse_of: :owner
+  has_many :locations, as: :owner, inverse_of: :owner
   has_many :podcast_imports, dependent: :destroy
   has_many :subscribe_links, dependent: :destroy
   has_many :stream_resources, through: :stream_recording
 
   accepts_nested_attributes_for :default_feed
   accepts_nested_attributes_for :persons, allow_destroy: true, reject_if: :all_blank
+  accepts_nested_attributes_for :locations, allow_destroy: true, reject_if: :all_blank
   accepts_nested_attributes_for :subscribe_links, allow_destroy: true
 
   validates :title, presence: true

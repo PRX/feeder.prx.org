@@ -130,6 +130,9 @@ class PodcastsController < ApplicationController
       ],
       persons_attributes: [
         :id, :name, :role, :organization, :href, :_destroy
+      ],
+      locations_attributes: [
+        :id, :name, :rel, :latitude, :longitude, :osm, :country, :_destroy
       ]
     )
   end

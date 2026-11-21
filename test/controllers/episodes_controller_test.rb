@@ -108,6 +108,32 @@ class EpisodesControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  test "updates episode locations" do
+    location = create(:location, owner: episode)
+    attrs = {
+      "0" => {id: location.id, name: "Austin, TX"},
+      "1" => {name: "Hogwarts", rel: "subject"}
+    }
+
+    Episode.stub_any_instance(:copy_media, true) do
+      patch episode_url(episode), params: {episode: params.merge(locations_attributes: attrs)}
+      assert_redirected_to edit_episode_url(episode)
+    end
+
+    locations = episode.locations.reload.order(:id)
+    assert_equal ["Austin, TX", "Hogwarts"], locations.map(&:name)
+    assert_equal "R113314", locations.first.osm
+    assert_nil locations.last.latitude
+    assert_nil locations.last.longitude
+  end
+
+  test "validates episode locations" do
+    attrs = {"0" => {name: "Hogwarts"}}
+    patch episode_url(episode), params: {episode: params.merge(locations_attributes: attrs)}
+    assert_response :unprocessable_entity
+    assert_empty episode.locations.reload
+  end
+
   test "optimistically locks updating episodes" do
     patch episode_url(episode), params: {episode: {lock_version: episode.lock_version - 1}}
     assert_response :conflict

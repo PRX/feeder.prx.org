@@ -192,7 +192,8 @@ class EpisodesController < ApplicationController
       categories: [],
       feed_ids: [],
       images_attributes: %i[id original_url size alt_text caption credit _destroy _retry],
-      persons_attributes: %i[id name role organization href _destroy]
+      persons_attributes: %i[id name role organization href _destroy],
+      locations_attributes: %i[id name rel latitude longitude osm country _destroy]
     ).tap do |p|
       p[:released_at] = released_at_zone.parse(p[:released_at]) if p[:released_at].present?
     end)

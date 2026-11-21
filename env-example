@@ -67,6 +67,11 @@ PODPING_HOST=podping.cloud
 PODPING_AUTH_TOKEN=
 # WebSub hub, defaults to https://pubsubhubbub.appspot.com/ (blank to disable)
 # WEBSUB_HUB_URL=
+# Location search, defaults to https://nominatim.openstreetmap.org
+# NOMINATIM_URL=
+# NOMINATIM_EMAIL=
+# OpenStreetMap links, defaults to https://www.openstreetmap.org
+# OSM_URL=
 
 # RSS settings
 # FEEDER_GENERATOR=

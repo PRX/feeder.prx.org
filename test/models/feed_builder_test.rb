@@ -266,6 +266,38 @@ describe FeedBuilder do
     end
   end
 
+  describe "locations" do
+    before do
+      create(:location, owner: podcast)
+      create(:location, owner: podcast, name: "Hogwarts", rel: "subject", latitude: nil, longitude: nil, osm: nil, country: nil)
+      create(:location, owner: episode, name: "Birmingham Civil Rights Museum", rel: "subject", latitude: 33.5159981, longitude: -86.8146098, osm: "R6930627")
+      feed.set_default_episodes
+    end
+
+    it "includes podcast locations" do
+      locations = rss_feed.xpath("podcast:location", "podcast" => "https://podcastindex.org/namespace/1.0")
+      assert_equal 2, locations.length
+
+      assert_equal "Austin", locations[0].text
+      assert_equal "creator", locations[0]["rel"]
+      assert_equal "geo:30.2711286,-97.7436995", locations[0]["geo"]
+      assert_equal "R113314", locations[0]["osm"]
+      assert_equal "US", locations[0]["country"]
+
+      assert_equal "Hogwarts", locations[1].text
+      assert_equal({"rel" => "subject"}, locations[1].attributes.transform_values(&:value))
+    end
+
+    it "includes episode locations" do
+      locations = rss_feed.css("item")[0].css("podcast|location")
+      assert_equal 1, locations.length
+      assert_equal "Birmingham Civil Rights Museum", locations[0].text
+      assert_equal "subject", locations[0]["rel"]
+      assert_equal "geo:33.5159981,-86.8146098", locations[0]["geo"]
+      assert_equal "R6930627", locations[0]["osm"]
+    end
+  end
+
   it "displays the transcript attributes" do
     feed.set_default_episodes
     podcast_transcript = rss_feed.css("podcast|transcript")

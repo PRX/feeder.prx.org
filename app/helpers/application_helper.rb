@@ -41,6 +41,16 @@ module ApplicationHelper
     end
   end
 
+  def field_state_class(record, field)
+    if record.errors[field].present? && record.changes[field].present?
+      "is-changed is-invalid"
+    elsif record.errors[field].present?
+      "is-invalid"
+    elsif record.changes[field].present?
+      "is-changed"
+    end
+  end
+
   def field_help_text(text)
     tag.a class: "input-group-text prx-input-group-text", tabindex: 0, role: "button", data: {popover_target: "trigger", bs_trigger: "focus", bs_content: text} do
       tag.span "help", class: "material-icons"

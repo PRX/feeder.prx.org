@@ -102,6 +102,8 @@ class EpisodeRssImport < EpisodeImport
     episode.url = episode_url(entry)
     episode.itunes_type = entry[:itunes_episode_type] unless entry[:itunes_episode_type].blank?
 
+    import_locations(episode, entry[:podcast_locations])
+
     # categories setter does the work of sanitizing these
     cats = Array(entry[:categories])
     keys = (entry[:itunes_keywords] || "").split(",")

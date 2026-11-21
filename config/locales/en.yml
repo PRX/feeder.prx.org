@@ -481,6 +481,16 @@ en:
         alt_text: Alt Text
         caption: Caption
         credit: Credit
+      location:
+        country: Country
+        latitude: Latitude
+        longitude: Longitude
+        name: Name
+        osm: OpenStreetMap
+        rel: Type
+        rels:
+          creator: Where it's made
+          subject: What it's about
       metrics:
         downloads_by_season: "Season %{season_number}"
       person:
@@ -1245,6 +1255,42 @@ en:
       continue: Continue Editing
       discard: Discard changes
       title: Warning! Another user has updated this form.
+  location_searches:
+    busy:
+      searching: Searching...
+    show:
+      attribution_html: Search data &copy; %{link}
+      busy: Location search is busy - try again in a moment
+      empty: No places found
+      error: Error searching for places - try again later
+      too_short: Enter at least 2 characters to search
+  locations:
+    form_locations:
+      add: Add a Location
+      edit: Edit
+      empty: No Locations
+      remove: Remove
+      title: Locations
+    form_locations_location:
+      edit: Edit this location
+      remove: Remove this location
+    form_locations_modal:
+      add: Add
+      cancel: Cancel
+      clear: Clear place data
+      close: Close
+      help:
+        latitude: The latitude of the place, from the selected search result.
+        longitude: The longitude of the place, from the selected search result.
+        name: The name of this location, as shown in podcast apps. Locations are public, so use a city or region rather than a home address.
+        osm: The OpenStreetMap identifier of the place, from the selected search result.
+        rel: Whether this is a place the content is about, or where it was made.
+        search: Search OpenStreetMap for a place, then select a result. For a fictional place, skip the search and just enter a name.
+      okay: Okay
+      search: Search for a place
+      search_button: Search
+      title_add: Add a Location
+      title_edit: Edit Location
   metrics:
     episodes_card:
       table_header:

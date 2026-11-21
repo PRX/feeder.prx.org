@@ -42,6 +42,21 @@ describe EpisodeRssImport do
     ENV["PORTER_SNS_TOPIC"] = prev_sns
   end
 
+  it "imports episode locations" do
+    episode_import.import!
+    locations = episode_import.episode.locations.reload
+    assert_equal 1, locations.length
+    assert_equal "Smithsonian Institution", locations[0].name
+    assert_equal "subject", locations[0].rel
+    assert_equal "geo:38.8881,-77.026", locations[0].geo
+    assert_nil locations[0].osm
+    assert_equal "US", locations[0].country
+
+    # stored entries are round-tripped through json
+    episode_import.reload.import!
+    assert_equal ["Smithsonian Institution"], episode_import.episode.locations.reload.map(&:name)
+  end
+
   it "creates an episode on import" do
     episode_import.import!
     f = episode_import.episode
@@ -165,9 +180,9 @@ describe EpisodeRssImport do
       %w[UnClean y N 1 0].each { |x| _(episode_import.explicit(x)).must_be_nil }
     end
   end
-end
 
-def stub_requests
-  stub_request(:get, "http://feeds.prx.org/transistor_stem")
-    .to_return(status: 200, body: test_file("/fixtures/transistor_two.xml"), headers: {})
+  def stub_requests
+    stub_request(:get, "http://feeds.prx.org/transistor_stem")
+      .to_return(status: 200, body: test_file("/fixtures/transistor_two.xml"), headers: {})
+  end
 end
