@@ -4,7 +4,7 @@ import { Controller } from "@hotwired/stimulus"
 const mirror = (toElements, text, value, valueWas = null) => {
   toElements.forEach((el) => {
     el.innerHTML = value ? text : "&mdash;"
-    if (valueWas && valueWas !== value) {
+    if (valueWas !== undefined && valueWas !== value) {
       el.classList.add("is-changed")
     } else {
       el.classList.remove("is-changed")

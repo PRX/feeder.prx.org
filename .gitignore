@@ -7,6 +7,13 @@
 # Ignore bundler config.
 /.bundle
 
+#ignore vscode settings
+.vscode
+.ruby-lsp
+
+# ignore aws
+.aws
+
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*

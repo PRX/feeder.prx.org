@@ -77,6 +77,30 @@ class PodcastsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  test "updates podcast locations" do
+    location = create(:location, owner: podcast)
+    attrs = {
+      "0" => {id: location.id, _destroy: "true"},
+      "1" => {name: "Marlow", rel: "creator", latitude: "51.5718706", longitude: "-0.7769654", osm: "R3727240", country: "gb"}
+    }
+
+    Podcast.stub_any_instance(:copy_media, true) do
+      patch podcast_url(podcast), params: {podcast: params.merge(locations_attributes: attrs)}
+      assert_redirected_to edit_podcast_url(podcast)
+    end
+
+    assert_equal ["Marlow"], podcast.locations.reload.map(&:name)
+    assert_equal "GB", podcast.locations.first.country
+    assert_equal "geo:51.5718706,-0.7769654", podcast.locations.first.geo
+  end
+
+  test "validates podcast locations" do
+    attrs = {"0" => {name: "Marlow", rel: "creator", osm: "relation/3727240"}}
+    patch podcast_url(podcast), params: {podcast: params.merge(locations_attributes: attrs)}
+    assert_response :unprocessable_entity
+    assert_empty podcast.locations.reload
+  end
+
   test "optimistically locks updating podcasts" do
     patch podcast_url(podcast), params: {podcast: {lock_version: podcast.lock_version - 1}}
     assert_response :conflict

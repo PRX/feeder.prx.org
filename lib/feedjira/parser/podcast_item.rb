@@ -36,6 +36,8 @@ module Feedjira
       elements :"media:content", as: :media_contents, class: MediaContent
       elements :"media:group", as: :media_groups, class: MediaGroup
 
+      elements :"podcast:location", as: :podcast_locations, class: PodcastLocation
+
       element :"content:encoded", as: :content
       element :"wfw:commentRss", as: :comment_rss_url
       element :"slash:comments", as: :comment_count

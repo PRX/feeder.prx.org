@@ -1,6 +1,6 @@
 <% nobody = form.object.persons.length == 0 %>
 
-<div class="card collapsible_card border-0 shadow" data-controller="person-add">
+<div class="card collapsible_card border-0 mb-4 shadow" data-controller="table-row-add" data-table-row-add-edit-selector-value="[data-person-target=edit]">
   <a hidden href="<%= request.fullpath %>" data-dynamic-form-target="link"></a>
 
   <div class="card-header card-header-light text-uppercase">
@@ -28,7 +28,7 @@
             </tr>
           </thead>
 
-          <tbody data-person-add-target="table">
+          <tbody data-table-row-add-target="table">
             <tr class="show-if-last">
               <td class="text-center align-middle text-muted p-4" colspan="100"><%= t(".empty") %></td>
             </tr>
@@ -45,12 +45,12 @@
       <% new_person = Person.new(owner: form.object) %>
 
       <% if policy(new_person).create? %>
-        <button type="button" class="btn btn-primary btn-sm" data-action="person-add#add">
+        <button type="button" class="btn btn-primary btn-sm" data-action="table-row-add#add">
           <span class="material-icons" aria-label="hidden">add</span>
           <%= t(".add") %>
         </button>
 
-        <template data-person-add-target="template">
+        <template data-table-row-add-target="template">
           <%= form.fields_for :persons, new_person, child_index: "__INDEX__", include_id: false do |fields| %>
             <%= render "people/form_people_person", form: fields, person: fields.object %>
           <% end %>

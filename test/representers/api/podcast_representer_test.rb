@@ -43,6 +43,14 @@ describe Api::PodcastRepresenter do
     assert_equal json["guid"], "someguid"
   end
 
+  it "includes locations" do
+    create(:location, owner: podcast)
+    podcast.locations.reload
+
+    expected = {"name" => "Austin", "rel" => "creator", "latitude" => 30.2711286, "longitude" => -97.7436995, "osm" => "R113314", "country" => "US"}
+    assert_equal [expected], json["locations"]
+  end
+
   it "has links" do
     assert_equal json["_links"]["self"]["href"], "/api/v1/podcasts/#{podcast.id}"
     assert_equal json["_links"]["prx:account"]["href"], "https://id.prx.org#{podcast.prx_account_uri}"

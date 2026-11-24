@@ -3,6 +3,7 @@ require "feedjira/parser/media_content"
 require "feedjira/parser/media_group"
 require "feedjira/parser/podcast_image"
 require "feedjira/parser/podcast_item_enclosure"
+require "feedjira/parser/podcast_location"
 require "feedjira/parser/podcast_item"
 
 module Feedjira
@@ -62,6 +63,7 @@ module Feedjira
       element :"podcast:guid", as: :podcast_guid
       element :"podcast:locked", as: :podcast_locked
       element :"podcast:funding", as: :podcast_funding
+      elements :"podcast:location", as: :podcast_locations, class: PodcastLocation
 
       def published
         [last_modified, pub_date, last_built].compact.max

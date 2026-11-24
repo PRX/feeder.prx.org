@@ -45,6 +45,28 @@ describe PodcastRssImport do
     _ { importer.feed }.must_raise(RuntimeError)
   end
 
+  it "imports podcast locations" do
+    create(:location, owner: podcast, name: "Old Location")
+
+    importer.feed_rss = test_file("/fixtures/transistor_two.xml")
+    importer.create_or_update_podcast!
+
+    locations = importer.podcast.locations.reload.order(:id)
+    assert_equal ["Austin, TX", "Hogwarts"], locations.map(&:name)
+
+    austin, hogwarts = locations
+    assert_equal "creator", austin.rel
+    assert_equal "geo:30.2711286,-97.7436995", austin.geo
+    assert_equal "R113314", austin.osm
+    assert_equal "US", austin.country
+
+    # invalid values dropped, rel defaults to subject
+    assert_equal "subject", hogwarts.rel
+    assert_nil hogwarts.geo
+    assert_nil hogwarts.osm
+    assert_nil hogwarts.country
+  end
+
   it "fails when the feed is locked" do
     importer.feed_rss = test_file("/fixtures/transistor_locked.xml")
     assert !importer.valid?
@@ -252,21 +274,21 @@ describe PodcastRssImport do
       _(importer.podcast.episodes.count).must_equal 0
     end
   end
-end
 
-def stub_requests
-  stub_request(:get, "http://feeds.prx.org/transistor_stem")
-    .to_return(status: 200, body: test_file("/fixtures/transistor_two.xml"), headers: {})
+  def stub_requests
+    stub_request(:get, "http://feeds.prx.org/transistor_stem")
+      .to_return(status: 200, body: test_file("/fixtures/transistor_two.xml"), headers: {})
 
-  stub_request(:get, "http://test.prx.org/transistor_import_config.json")
-    .to_return(status: 200, body: json_file("transistor_import_config"), headers: {})
+    stub_request(:get, "http://test.prx.org/transistor_import_config.json")
+      .to_return(status: 200, body: json_file("transistor_import_config"), headers: {})
 
-  stub_request(:get, "https://www.prx.org/search/all.atom?q=radio")
-    .to_return(status: 200, body: test_file("/fixtures/prx-atom.xml"), headers: {})
+    stub_request(:get, "https://www.prx.org/search/all.atom?q=radio")
+      .to_return(status: 200, body: test_file("/fixtures/prx-atom.xml"), headers: {})
 
-  stub_request(:get, "http://feeds.prx.org/transistor_stem_duped")
-    .to_return(status: 200, body: test_file("/fixtures/transistor_dupped_guids.xml"), headers: {})
+    stub_request(:get, "http://feeds.prx.org/transistor_stem_duped")
+      .to_return(status: 200, body: test_file("/fixtures/transistor_dupped_guids.xml"), headers: {})
 
-  stub_request(:get, "http://feeds.prx.org/feed_with_video")
-    .to_return(status: 200, body: test_file("/fixtures/99pi-feed-rss.xml"), headers: {})
+    stub_request(:get, "http://feeds.prx.org/feed_with_video")
+      .to_return(status: 200, body: test_file("/fixtures/99pi-feed-rss.xml"), headers: {})
+  end
 end

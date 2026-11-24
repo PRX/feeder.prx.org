@@ -1,0 +1,59 @@
+<% nowhere = form.object.locations.length == 0 %>
+
+<div class="card collapsible_card border-0 shadow" data-controller="table-row-add" data-table-row-add-edit-selector-value="[data-location-target=edit]">
+  <div class="card-header card-header-light text-uppercase">
+    <a data-bs-toggle="collapse" href="#locations-card" role="button" aria-expanded="false" aria-controls="locations-card" class="<%= "collapsed" if nowhere %>">
+      <span><%= t(".title") %></span>
+      <span class="material-icons expanded_icon">expand_less</span>
+      <span class="material-icons collapsed_icon">expand_more</span>
+    </a>
+  </div>
+
+  <div id="locations-card" class="<%= "collapse" if nowhere %>">
+    <div class="card-body mb-0 pb-0">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr class="table-secondary">
+              <th scope="col"><%= t("helpers.label.location.name") %></th>
+              <th scope="col"><%= t("helpers.label.location.rel") %></th>
+              <th scope="col"><%= t("helpers.label.location.country") %></th>
+              <th scope="col"><%= t("helpers.label.location.osm") %></th>
+              <% if policy(form.object).update? %>
+                <th scope="col" width="1" class="text-center"><%= t(".edit") %></th>
+                <th scope="col" width="1" class="text-center"><%= t(".remove") %></th>
+              <% end %>
+            </tr>
+          </thead>
+
+          <tbody data-table-row-add-target="table">
+            <tr class="show-if-last">
+              <td class="text-center align-middle text-muted p-4" colspan="100"><%= t(".empty") %></td>
+            </tr>
+
+            <%= form.fields_for :locations do |fields| %>
+              <%= render "locations/form_locations_location", form: fields, location: fields.object, search_url: location_search_url(form.object) %>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-footer border-0">
+      <% new_location = Location.new(owner: form.object) %>
+
+      <% if policy(new_location).create? %>
+        <button type="button" class="btn btn-primary btn-sm" data-action="table-row-add#add">
+          <span class="material-icons" aria-label="hidden">add</span>
+          <%= t(".add") %>
+        </button>
+
+        <template data-table-row-add-target="template">
+          <%= form.fields_for :locations, new_location, child_index: "__INDEX__", include_id: false do |fields| %>
+            <%= render "locations/form_locations_location", form: fields, location: fields.object, search_url: location_search_url(form.object) %>
+          <% end %>
+        </template>
+      <% end %>
+    </div>
+  </div>
+</div>

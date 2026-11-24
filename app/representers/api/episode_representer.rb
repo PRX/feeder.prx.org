@@ -49,6 +49,8 @@ class Api::EpisodeRepresenter < Api::BaseRepresenter
     decorator: Api::MediaResourceRepresenter,
     class: MediaResource
 
+  collection :locations, decorator: Api::LocationRepresenter, class: Location, writeable: false
+
   property :image, decorator: Api::ImageRepresenter, class: EpisodeImage
   property :podcast_image, decorator: Api::ImageRepresenter
 

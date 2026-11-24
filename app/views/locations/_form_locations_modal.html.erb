@@ -1,0 +1,92 @@
+<div class="modal" id="location-modal-<%= form.index %>" tabindex="-1" aria-labelledby="location-modal-title-<%= form.index %>" aria-hidden="true" data-action="hidden.bs.modal->location#modalClosed">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="location-modal-title-<%= form.index %>">
+          <%= location.new_record? ? t(".title_add") : t(".title_edit") %>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="<%= t(".close") %>"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <%= tag.input type: "search", id: "location-query-#{form.index}", class: "form-control", placeholder: t(".search"), autocomplete: "off",
+                  data: {location_target: "query", action: "keydown.enter->location#search:prevent change->location#ignore"} %>
+            <%= label_tag "location-query-#{form.index}", t(".search") %>
+            <%= tag.button type: "button", class: "input-group-text prx-input-group-text", aria: {label: t(".search_button")}, data: {action: "location#search"} do %>
+              <span class="material-icons text-primary">search</span>
+            <% end %>
+            <%= field_help_text t(".help.search") %>
+          </div>
+          <%= turbo_frame_tag "location-search-#{form.index}", class: "d-block mt-2", data: {location_target: "results"} do %>
+            <%= render "location_searches/busy" %>
+          <% end %>
+        </div>
+
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <%= form.select :rel, location_rel_options, {include_blank: true}, data: {action: "location#change"} %>
+            <%= form.label :rel, required: true %>
+            <%= field_help_text t(".help.rel") %>
+          </div>
+        </div>
+
+        <div class="col-12 mb-4">
+          <div class="form-floating input-group">
+            <%= form.text_field :name, maxlength: 128, autocomplete: "off", data: {action: "location#change", location_target: "nameField"} %>
+            <%= form.label :name, required: true %>
+            <%= field_help_text t(".help.name") %>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-4">
+            <div class="form-floating input-group">
+              <%= form.text_field :latitude, readonly: true, data: {action: "location#change", location_target: "latitudeField"} %>
+              <%= form.label :latitude %>
+              <%= field_help_text t(".help.latitude") %>
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-4">
+            <div class="form-floating input-group">
+              <%= form.text_field :longitude, readonly: true, data: {action: "location#change", location_target: "longitudeField"} %>
+              <%= form.label :longitude %>
+              <%= field_help_text t(".help.longitude") %>
+            </div>
+          </div>
+
+          <div class="col-md-8 mb-4">
+            <div class="form-floating input-group">
+              <%= form.text_field :osm, readonly: true, data: {action: "location#change", location_target: "osmField"} %>
+              <%= form.label :osm %>
+              <%= field_link location.osm_url if location.osm_url.present? %>
+              <%= field_help_text t(".help.osm") %>
+            </div>
+          </div>
+
+          <div class="col-md-4 mb-4">
+            <div class="form-floating input-group">
+              <%= form.text_field :country, readonly: true, data: {action: "location#change", location_target: "countryField"} %>
+              <%= form.label :country %>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-link btn-sm p-0" data-action="location#clear"><%= t(".clear") %></button>
+      </div>
+
+      <div class="modal-footer">
+        <% if location.new_record? %>
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal" data-action="click->location#destroy"><%= t(".cancel") %></button>
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal"><%= t(".add") %></button>
+        <% else %>
+          <%= form.hidden_field :id %>
+          <%= form.text_field :_destroy, class: "d-none", data: {location_target: "destroy"} %>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal"><%= t(".okay") %></button>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

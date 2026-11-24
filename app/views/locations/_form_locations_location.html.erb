@@ -1,0 +1,21 @@
+<tr data-controller="location" data-location-search-url-value="<%= search_url %>" data-location-osm-url-value="<%= Location.osm_url %>">
+  <td class="align-middle <%= field_state_class(location, :name) %>" data-location-target="name"><%= blank_dash(location.name) %></td>
+  <td class="align-middle <%= field_state_class(location, :rel) %>" data-location-target="rel"><%= blank_dash(location.rel) { t("helpers.label.location.rels.#{location.rel}") } %></td>
+  <td class="align-middle <%= field_state_class(location, :country) %>" data-location-target="country"><%= blank_dash(location.country) %></td>
+  <td class="align-middle <%= field_state_class(location, :osm) %>" data-location-target="osm"><%= blank_dash(location.osm_url) { link_to(location.osm, location.osm_url, target: "_blank", rel: "noopener") } %></td>
+
+  <% if policy(location).update? %>
+    <td class="align-middle">
+      <button type="button" class="btn text-primary" data-bs-toggle="modal" data-bs-target="#location-modal-<%= form.index %>" data-location-target="edit">
+        <span class="material-icons" aria-label="<%= t(".edit") %>">edit</span>
+      </button>
+      <%= render "locations/form_locations_modal", form: form, location: location %>
+    </td>
+
+    <td class="align-middle">
+      <button type="button" class="btn text-danger" data-action="location#destroy">
+        <span class="material-icons" aria-label="<%= t(".remove") %>">delete</span>
+      </button>
+    </td>
+  <% end %>
+</tr>
