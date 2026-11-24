@@ -289,6 +289,19 @@ en:
     "zh-tw": Chinese Traditional (Taiwan)
     "zu-za": Zulu
   # validation error messages https://guides.rubyonrails.org/i18n.html#error-message-interpolation
+  activemodel:
+    errors:
+      models:
+        apple/feed_settings:
+          attributes:
+            connection:
+              blank: Apple Show ID must be selected
+              delegated_elsewhere: Apple Show ID is already used for delegated delivery by %{label}. Map that feed to a different public feed before publishing this feed to its own Apple show
+            delivery:
+              not_connectable: must be this feed's own Apple show or a public feed on this podcast
+            hls_enabled:
+              requires_connection: HLS video requires an Apple show connection
+              eligibility_unavailable: Could not check Apple video eligibility for this show
   activerecord:
     errors:
       messages:
@@ -970,13 +983,14 @@ en:
       confirm_remove: Are you sure you want to remove this Apple connection?
       confirm_leave_own_show: Are you sure you want to stop publishing to this feed's own Apple show? Saving will remove its Apple connection. Choose a public feed mapping to keep delegated delivery.
       view_mapped_feed: Go to the mapped feed
-      no_mappings: No public feed on this podcast has an available Apple show connection. Connect one in a public feed's Apple Settings, or publish to this feed's own Apple show.
-      no_mappings_own_show: No other public feed on this podcast has an available Apple show connection. Choose "This feed's own Apple show" instead.
+      no_mappings: No public feed on this podcast has an available Apple show connection. Connect one in a public feed's Apple Settings, or choose "Connect a new Apple show to this feed" to set one up here.
+      no_mappings_own_show: No other public feed on this podcast has an available Apple show connection. Choose this feed's Apple show instead.
       mapped_feed: Feed mapped to Apple Subscriptions
       deliveries:
         none: No delegated delivery
-        own: This feed's own Apple show
-        mapped: "%{feed} (%{show_id})"
+        own_new: Connect a new Apple show to this feed
+        own_connected: "This feed's Apple show (%{show_id})"
+        mapped: "%{feed}'s Apple show (%{show_id})"
       connections:
         show: "%{title} (%{show_id})"
       create_feed: "+ Create a new feed"
@@ -986,7 +1000,7 @@ en:
       hls_last_checked_html: "HLS eligibility last checked: %{time}"
       help:
         connection: Select the Apple show Apple crawls this feed for.
-        delivery: Choose where this feed's episodes go in Apple Podcasts Connect, this feed's own Apple show or a public feed's.
+        delivery: Choose which Apple show this feed's episodes are delivered to in Apple Podcasts Connect. Use a show already connected to one of this podcast's public feeds, or connect a new Apple show to this feed.
         publish_enabled: Enable publishing this feed's episodes to Apple Podcasts Connect.
         sync_blocks_rss: Require Apple publishing to succeed before public RSS publishing continues.
         hls_enabled: Deliver this feed's HLS video to Apple Podcasts. Turning this off stops Feeder managing the video and leaves video already on Apple in place.
