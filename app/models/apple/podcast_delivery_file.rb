@@ -75,12 +75,28 @@ module Apple
 
     def self.get_and_update_api_response(api, pdfs)
       unwrapped = get_podcast_delivery_files(api, pdfs)
+
       pdfs.each do |pdf|
-        matched = unwrapped.detect { |r| r["request_metadata"]["podcast_delivery_id"] == pdf.podcast_delivery_id }
+        matched = unwrapped.detect { |r| response_row_for?(r, pdf) }
         raise "Missing response for podcast delivery file" unless matched.present?
 
         pdf.apple_sync_log.api_response = matched
       end
+    end
+
+    def self.expire_missing_delivery_files(api, pdfs)
+      (_oks, errs) = api.bridge_remote_and_retry("getPodcastDeliveryFiles", get_delivery_files_bridge_params(api, pdfs), batch_size: 1)
+      not_found, errs = errs.partition { |err| err.dig("api_response", "val", "data", "status").to_i == Apple::Api::NOT_FOUND }
+      api.raise_bridge_api_error(errs) if errs.present?
+
+      pdfs
+        .select { |pdf| not_found.any? { |r| response_row_for?(r, pdf) } }
+        .each(&:mark_as_expired!)
+    end
+
+    def self.response_row_for?(row, pdf)
+      row["request_metadata"]["podcast_delivery_id"] == pdf.podcast_delivery_id &&
+        row["request_metadata"]["apple_podcast_delivery_file_id"] == pdf.apple_id
     end
 
     def self.mark_uploaded(api, pdfs)
@@ -151,11 +167,14 @@ module Apple
     end
 
     def self.get_podcast_delivery_files(api, pdfs)
-      bridge_params = pdfs.map do |pdf|
+      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", get_delivery_files_bridge_params(api, pdfs), batch_size: 1)
+    end
+
+    def self.get_delivery_files_bridge_params(api, pdfs)
+      pdfs.map do |pdf|
         api_url = api.join_url("podcastDeliveryFiles/#{pdf.apple_id}").to_s
         get_delivery_file_bridge_params(pdf.apple_episode_id, pdf.podcast_delivery_id, pdf.apple_id, api_url)
       end
-      api.bridge_remote_and_retry!("getPodcastDeliveryFiles", bridge_params, batch_size: 1)
     end
 
     def self.get_podcast_delivery_files_via_deliveries(api, podcast_deliveries)
@@ -294,6 +313,16 @@ module Apple
 
     def podcast_delivery_file_id
       id
+    end
+
+    def mark_as_expired!
+      Rails.logger.warn("Podcast delivery file not found on Apple, treating as expired",
+        {episode_id: episode_id,
+         podcast_delivery_id: podcast_delivery_id,
+         podcast_delivery_file_id: id,
+         apple_id: apple_id})
+
+      destroy
     end
 
     def mark_uploaded_parameters

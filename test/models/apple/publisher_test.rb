@@ -1322,6 +1322,7 @@ describe Apple::Publisher do
       }
 
       apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
+        apple_publisher.define_singleton_method(:expire_missing_delivery_files!) { |_eps| [] }
         apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
           apple_publisher.stub(:log_asset_wait_duration!, ->(*) {}) do
             apple_publisher.stub(:check_for_stuck_episodes, ->(*) {}) do
@@ -1676,6 +1677,7 @@ describe Apple::Publisher do
       }
 
       apple_publisher.stub(:upload_media!, ->(*) { flunk "rescheduling must preserve the existing upload" }) do
+        apple_publisher.define_singleton_method(:expire_missing_delivery_files!) { |_eps| [] }
         apple_publisher.stub(:wait_for_upload_processing, wait_for_upload) do
           apple_publisher.stub(:wait_for_asset_state, ready_assets) do
             apple_publisher.stub(:publish_drafting!, ->(eps) { published.concat(eps) }) do
@@ -2120,6 +2122,7 @@ describe Apple::Publisher do
 
       # Set up method stubs
       apple_publisher.stub(:increment_asset_wait!, increment_mock) do
+        apple_publisher.define_singleton_method(:expire_missing_delivery_files!) { |_eps| [] }
         apple_publisher.stub(:wait_for_upload_processing, wait_upload_mock) do
           apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
             apple_publisher.stub(:verify_publishing_state!, ->(*) {}) do
@@ -2153,6 +2156,7 @@ describe Apple::Publisher do
       }
 
       apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
+        apple_publisher.define_singleton_method(:expire_missing_delivery_files!) { |_eps| [] }
         apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
           apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
             Apple::Episode.stub(:probe_asset_state, ->(api, eps) { [eps, []] }) do
@@ -2202,6 +2206,7 @@ describe Apple::Publisher do
       }
 
       apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
+        apple_publisher.define_singleton_method(:expire_missing_delivery_files!) { |_eps| [] }
         apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
           apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
             apple_publisher.stub(:check_for_stuck_episodes, ->(*) {}) do
@@ -2222,6 +2227,284 @@ describe Apple::Publisher do
       assert probe_call_count == 2
     end
 
+    describe "container audio gate" do
+      def process_with_ready_asset_state(eps)
+        published = []
+        original_wait = apple_publisher.method(:wait_for_asset_state)
+        fast_wait = ->(waiting, **_kwargs, &block) {
+          original_wait.call(waiting, wait_timeout: 100.seconds, wait_interval: 0.seconds, &block)
+        }
+
+        apple_publisher.define_singleton_method(:expire_missing_delivery_files!) { |_eps| [] }
+
+        apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
+          apple_publisher.stub(:wait_for_asset_state, fast_wait) do
+            apple_publisher.stub(:verify_publishing_state!, ->(*) {}) do
+              Apple::Episode.stub(:probe_asset_state, ->(_api, batch) { [batch, []] }) do
+                Apple::Episode.stub(:publish, ->(_api, _show, batch) { published.concat(batch) }) do
+                  yield
+                end
+              end
+            end
+          end
+        end
+        published
+      end
+
+      def set_processing_state(ep, state)
+        ep.podcast_delivery_files.each do |pdf|
+          pdf.apple_sync_log.update!(**build(:podcast_delivery_file_api_response, asset_processing_state: state))
+        end
+      end
+
+      def mismatch_logs(logs)
+        logs.select { |l| l[:msg] == "Podcast delivery file state disagrees with podcast container audio" }
+      end
+
+      it "delivers an uploaded episode whose delivery files were expired" do
+        episode.podcast_delivery_files.each(&:destroy)
+        assert_empty episode.podcast_delivery_files
+        episode.define_singleton_method(:container_upload_complete?) { true }
+        episode.define_singleton_method(:drafting?) { true }
+
+        published = process_with_ready_asset_state([episode]) do
+          apple_publisher.process_delivery!([episode])
+        end
+
+        assert_equal [episode], published
+        assert episode.delivery_status.delivered
+      end
+
+      it "takes processed delivery files at face value and logs a container mismatch" do
+        set_processing_state(episode, "COMPLETED")
+        refute_empty episode.podcast_delivery_files
+        episode.define_singleton_method(:container_upload_complete?) { false }
+        episode.define_singleton_method(:drafting?) { true }
+
+        published = nil
+        logs = capture_json_logs do
+          published = process_with_ready_asset_state([episode]) do
+            apple_publisher.process_delivery!([episode])
+          end
+        end
+
+        assert_equal [episode], published
+        assert episode.delivery_status.delivered
+
+        mismatches = mismatch_logs(logs)
+        assert_equal 1, mismatches.length
+        assert_equal episode.feeder_id, mismatches.first[:episode_id]
+        assert_equal false, mismatches.first[:delivery_file_errors]
+        assert_equal false, mismatches.first[:container_upload_complete]
+      end
+
+      it "does not log a mismatch when delivery files and container agree" do
+        set_processing_state(episode, "COMPLETED")
+        episode.define_singleton_method(:container_upload_complete?) { true }
+        episode.define_singleton_method(:drafting?) { true }
+
+        logs = capture_json_logs do
+          process_with_ready_asset_state([episode]) do
+            apple_publisher.process_delivery!([episode])
+          end
+        end
+
+        assert_empty mismatch_logs(logs)
+        assert episode.delivery_status.delivered
+      end
+
+      it "marks a expired episode without container audio for reupload" do
+        episode.podcast_delivery_files.each(&:destroy)
+        assert_empty episode.podcast_delivery_files
+        episode.define_singleton_method(:container_upload_complete?) { false }
+
+        error = nil
+        published = process_with_ready_asset_state([episode]) do
+          error = assert_raises(Apple::RetryPublishingError) do
+            apple_publisher.process_delivery!([episode])
+          end
+        end
+
+        assert_includes error.message, episode.feeder_id.to_s
+        assert_empty published
+        refute episode.delivery_status.delivered
+        refute episode.delivery_status.uploaded
+        assert episode.needs_upload?
+      end
+
+      it "reuploads when Apple has neither the delivery files nor the container audio" do
+        pdfs = episode.podcast_delivery_files.to_a
+        refute_empty pdfs
+
+        container = episode.podcast_container
+        empty_container = build(:podcast_container_api_response, podcast_container_id: container.apple_id)
+        empty_container["api_response"]["api_response"]["val"]["data"]["attributes"]["files"] = []
+        container.apple_sync_log.update!(**empty_container)
+        refute episode.container_upload_complete?
+
+        not_found_rows = pdfs.map do |pdf|
+          {
+            request_metadata: {podcast_delivery_id: pdf.podcast_delivery_id, apple_podcast_delivery_file_id: pdf.apple_id},
+            api_url: "https://aardvark.prx.org/podcastDeliveryFiles/#{pdf.apple_id}",
+            api_parameters: {},
+            api_response: {ok: false, err: true, val: {data: {status: 404, body: {errors: [{status: "404", code: "NOT_FOUND"}]}}}}
+          }
+        end
+        bridge = ->(_resource, _params, **_kwargs) { OpenStruct.new(code: "200", body: not_found_rows.to_json) }
+
+        error = nil
+        logs = capture_json_logs do
+          apple_publisher.api.stub(:bridge_remote, bridge) do
+            apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
+              error = assert_raises(Apple::RetryPublishingError) do
+                apple_publisher.process_delivery!([episode])
+              end
+            end
+          end
+        end
+
+        assert_empty episode.podcast_delivery_files
+        assert pdfs.all? { |pdf| pdf.reload.deleted? }
+        assert_includes error.message, episode.feeder_id.to_s
+        refute episode.delivery_status.uploaded
+        refute episode.delivery_status.delivered
+        assert episode.needs_upload?
+        assert logs.any? { |l| l[:msg] == "Found expired delivery files without processed container audio, marking as not delivered" }
+      end
+
+      it "expires missing delivery files before waiting and reuploads without container audio" do
+        refute_empty episode.podcast_delivery_files
+        episode.define_singleton_method(:container_upload_complete?) { false }
+
+        calls = []
+        expire = ->(_api, pdfs) {
+          calls << :expire
+          pdfs.each(&:destroy)
+        }
+        wait_for_upload = ->(eps) {
+          calls << :wait
+          assert_empty eps.flat_map(&:podcast_delivery_files)
+        }
+
+        Apple::PodcastDeliveryFile.stub(:expire_missing_delivery_files, expire) do
+          apple_publisher.stub(:wait_for_upload_processing, wait_for_upload) do
+            apple_publisher.stub(:wait_for_asset_state, ->(*, **) {}) do
+              assert_raises(Apple::RetryPublishingError) do
+                apple_publisher.process_delivery!([episode])
+              end
+            end
+          end
+        end
+
+        assert_equal [:expire, :wait], calls
+        assert episode.needs_upload?
+      end
+
+      it "logs a expired episode without container audio when the asset wait times out" do
+        episode.podcast_delivery_files.each(&:destroy)
+        episode.define_singleton_method(:container_upload_complete?) { false }
+        timeout = ->(*, **) { raise Apple::AssetStateTimeoutError.new([]) }
+
+        logs = capture_json_logs do
+          apple_publisher.define_singleton_method(:expire_missing_delivery_files!) { |_eps| [] }
+          apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
+            apple_publisher.stub(:wait_for_asset_state, timeout) do
+              assert_raises(Apple::AssetStateTimeoutError) do
+                apple_publisher.process_delivery!([episode])
+              end
+            end
+          end
+        end
+
+        log = logs.find { |l| l[:msg] == "Found expired delivery files without processed container audio, marking as not delivered" }
+        assert log.present?
+        assert_equal episode.feeder_id, log[:episode_id]
+        assert episode.needs_upload?
+      end
+
+      it "delivers ready episodes before raising for a expired episode without container audio" do
+        ready_episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+        ready_episode.define_singleton_method(:container_upload_complete?) { true }
+        ready_episode.define_singleton_method(:drafting?) { true }
+
+        episode.podcast_delivery_files.each(&:destroy)
+        episode.define_singleton_method(:container_upload_complete?) { false }
+
+        published = process_with_ready_asset_state([ready_episode, episode]) do
+          assert_raises(Apple::RetryPublishingError) do
+            apple_publisher.process_delivery!([ready_episode, episode])
+          end
+        end
+
+        assert_equal [ready_episode], published
+        assert ready_episode.delivery_status.delivered
+        refute episode.delivery_status.uploaded
+      end
+
+      it "marks an episode with rejected delivery files for reupload" do
+        set_processing_state(episode, "VALIDATION_FAILED")
+        assert episode.delivery_file_errors?
+        episode.define_singleton_method(:container_upload_complete?) { false }
+
+        published = nil
+        logs = capture_json_logs do
+          published = process_with_ready_asset_state([episode]) do
+            assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
+              apple_publisher.process_delivery!([episode])
+            end
+          end
+        end
+
+        assert_empty published
+        refute episode.delivery_status.delivered
+        refute episode.delivery_status.uploaded
+        assert episode.needs_upload?
+        assert_empty mismatch_logs(logs)
+      end
+
+      it "logs a mismatch when rejected delivery files have container audio" do
+        set_processing_state(episode, "VALIDATION_FAILED")
+        episode.define_singleton_method(:container_upload_complete?) { true }
+
+        published = nil
+        logs = capture_json_logs do
+          published = process_with_ready_asset_state([episode]) do
+            assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
+              apple_publisher.process_delivery!([episode])
+            end
+          end
+        end
+
+        assert_empty published
+        refute episode.delivery_status.uploaded
+
+        mismatches = mismatch_logs(logs)
+        assert_equal 1, mismatches.length
+        assert_equal true, mismatches.first[:delivery_file_errors]
+        assert_equal true, mismatches.first[:container_upload_complete]
+      end
+
+      it "delivers ready episodes before raising for rejected delivery files" do
+        ready_episode = build(:uploaded_apple_episode, show: apple_publisher.show)
+        set_processing_state(ready_episode, "COMPLETED")
+        ready_episode.define_singleton_method(:container_upload_complete?) { true }
+        ready_episode.define_singleton_method(:drafting?) { true }
+
+        set_processing_state(episode, "VALIDATION_FAILED")
+        episode.define_singleton_method(:container_upload_complete?) { false }
+
+        published = process_with_ready_asset_state([ready_episode, episode]) do
+          assert_raises(Apple::PodcastDeliveryFile::DeliveryFileError) do
+            apple_publisher.process_delivery!([ready_episode, episode])
+          end
+        end
+
+        assert_equal [ready_episode], published
+        assert ready_episode.delivery_status.delivered
+        refute episode.delivery_status.uploaded
+      end
+    end
+
     it "processes episodes in batches of PUBLISH_CHUNK_LEN" do
       # Create 75 test doubles (3 batches of 25)
       # Use simple doubles instead of expensive full episode instances
@@ -2230,9 +2513,11 @@ describe Apple::Publisher do
         OpenStruct.new(
           feeder_id: i,
           podcast_delivery_files: [pdf],
-          audio_asset_state_success?: true
+          audio_asset_state_success?: true,
+          container_upload_complete?: true,
+          delivery_file_errors?: false
         ).tap do |ep|
-          ep.define_singleton_method(:delivery_status) { |_with_default = false| OpenStruct.new(asset_processing_attempts: 1) }
+          ep.define_singleton_method(:delivery_status) { |_with_default = false| OpenStruct.new(asset_processing_attempts: 1, uploaded?: true) }
         end
       }
 
@@ -2250,6 +2535,7 @@ describe Apple::Publisher do
       }
 
       apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
+        apple_publisher.define_singleton_method(:expire_missing_delivery_files!) { |_eps| [] }
         apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
           apple_publisher.stub(:check_for_stuck_episodes, ->(*) {}) do
             apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
@@ -2311,6 +2597,7 @@ describe Apple::Publisher do
       }
 
       apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
+        apple_publisher.define_singleton_method(:expire_missing_delivery_files!) { |_eps| [] }
         apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
           apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
             apple_publisher.stub(:check_for_stuck_episodes, ->(*) {}) do
@@ -2364,6 +2651,7 @@ describe Apple::Publisher do
           }
 
           apple_publisher.stub(:increment_asset_wait!, ->(*) {}) do
+            apple_publisher.define_singleton_method(:expire_missing_delivery_files!) { |_eps| [] }
             apple_publisher.stub(:wait_for_upload_processing, ->(*) {}) do
               apple_publisher.stub(:wait_for_asset_state, wait_for_asset_state_stub) do
                 apple_publisher.stub(:check_for_stuck_episodes, ->(*) {}) do
