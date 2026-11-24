@@ -79,6 +79,8 @@ class PrxSegmentMarker {
     // Handle - create with default y, the real value is set in fitToView().
     const handleX = -(this._handleWidth / 2) + 0.5 // Place in the middle of the marker
     const handle = new Konva.Group({
+      // Looked up by waveform_inspector_controller#handleMarkerDragFallback.
+      name: "handle",
       x: handleX,
       y: 0,
     })

@@ -63,6 +63,8 @@ class PrxPointMarker {
     if (this._options.draggable) {
       const handleX = -(this._handleWidth - this._lineWidth) / 2 // Place in the middle of the marker
       const handle = new Konva.Group({
+        // Looked up by waveform_inspector_controller#handleMarkerDragFallback.
+        name: "handle",
         x: handleX,
         y: 0,
       })
